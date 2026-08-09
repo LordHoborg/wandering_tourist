@@ -2,7 +2,7 @@
 
 ## Project Identity
 
-- **Current project status:** Phase 2 Technical Architecture is complete and awaiting approval; Phase 1 is complete and approved; production code has not started.
+- **Current project status:** Phase 2 is complete and approved. Phase 3 is in progress but blocked before project creation because no Godot 4 executable is available; production code has not started.
 
 - **Platform:** Android, portrait orientation
 - **Engine:** Godot 4 latest stable/LTS

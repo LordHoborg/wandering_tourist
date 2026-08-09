@@ -27,7 +27,8 @@
 
 - [x] Define modular Godot architecture, scene tree, data resources, signals, ownership, and test strategy.
 - [x] Record autoload, state-machine, event, and input-abstraction decisions.
-- [ ] Receive explicit approval to begin Phase 3 prototype implementation.
+- [x] Receive explicit approval to begin Phase 3 prototype implementation.
+- [ ] Install or provide current stable Godot 4, then create and test Prototype v0.1.
 
 ## Future Phases
 
