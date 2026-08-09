@@ -41,7 +41,7 @@ func _run_tests() -> void:
 	_check(not service.apply({&"hunger": -60.1}), "below-20 failure")
 	service = ParameterServiceClass.new([hunger, rest, fun])
 	_check(not service.apply({&"hunger": 30.1}), "above-80 failure")
-	service = ParameterService.new([hunger, rest, fun])
+	service = ParameterServiceClass.new([hunger, rest, fun])
 	_check(is_equal_approx(service.state.values[&"hunger"], 50.0) and service.tick(1.0) and is_equal_approx(service.state.values[&"hunger"], 49.7), "decay behavior")
 	_check(service.apply({&"hunger": 1.0, &"rest": -2.0, &"fun": 3.0}) and service.state.values[&"hunger"] > 50.0 and service.state.values[&"rest"] < 50.0 and service.state.values[&"fun"] > 50.0, "multiple parameter deltas")
 	var machine = RunStateMachineClass.new()

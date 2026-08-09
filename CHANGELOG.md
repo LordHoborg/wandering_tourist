@@ -2,6 +2,9 @@
 
 All notable project changes are recorded here.
 
+- Recorded verified Phase 3 foundation/service gate: 23 tests passed, 0 failed.
+- Added item transaction and deterministic spawn/fairness foundations.
+
 ## Unreleased
 
 ### Added

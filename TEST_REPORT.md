@@ -1,5 +1,12 @@
 # Test Report
 
+## TR-010 - Phase 3 Service Gate
+
+- **Date:** 2026-08-10
+- **Godot:** 4.7.1.stable.official.a13da4feb
+- **External verified results:** Foundation suite 9 passed/0 failed; service check-only exit 0; service runtime 14 passed/0 failed, exit 0.
+- **Total verified:** 23 passed, 0 failed.
+
 ## TR-001 — Phase 0 Documentation Baseline
 
 - **Date:** 2026-08-09
