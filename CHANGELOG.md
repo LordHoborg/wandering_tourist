@@ -7,4 +7,8 @@ All notable project changes are recorded here.
 ### Added
 
 - Phase 0 documentation baseline.
-- Missing-source-material record for the original concept PDF.
+- Evidence-based Phase 0 concept analysis from the original PDF.
+
+### Changed
+
+- First-playable scope explicitly defers the original document's ads, coins, cosmetics, extra parameters, and extra islands.

@@ -6,4 +6,4 @@ No known bugs. No executable project exists yet.
 
 | ID | Status | Description | Impact | Resolution |
 | --- | --- | --- | --- | --- |
-| LIM-001 | Open | Original concept PDF was not supplied. | Phase 0 analysis cannot be completed reliably. | Provide the source PDF. |
+| LIM-001 | Resolved | Original concept PDF was not supplied. | Phase 0 analysis was temporarily blocked. | PDF reviewed on 2026-08-09. |

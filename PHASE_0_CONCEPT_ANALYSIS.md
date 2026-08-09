@@ -1,77 +1,100 @@
 # Phase 0 — Concept Analysis
 
-## Status
+## Source Reviewed
 
-**Blocked pending original concept PDF.** The supplied brief names a PDF as the original vision, but no PDF was attached or found in the supplied attachment set. The sections below separate confirmed requirements from unconfirmed design questions; they are not a replacement for analysis of the original vision.
+`Wandering Tourist - Game Document.pdf`, 8 pages, dated 2023. The visual mock-up confirms a portrait, four-column playfield with a parameter HUD on the left, two bottom electric-line controls, pause, timer, and tropical-island placeholder art.
 
-## 1. Confirmed Concept Scope
+## 1. Concept Analysis
 
-Wandering Tourist is planned as a portrait Android 2D game in Godot 4. The first playable must focus on a single island and one gameplay loop with three named parameters: Hunger, Rest, and Fun. Its purpose is to validate whether the gameplay is fun, not to establish monetization or a broad content platform.
+Wandering Tourist is a real-time multitasking game. Items fall through two gameplay lanes; the player taps an electric line at a lane bottom to cut them. The central tension is selective attention: collect beneficial items for parameters approaching their safe boundary while preventing harmful items from destabilizing them. The original document describes themed islands and progressively added parameters; the current first-playable brief deliberately reduces that to one island and exactly Hunger, Rest, and Fun.
 
 ## 2. Gameplay Loop Analysis
 
-The actual loop is **unknown**. The brief does not state what the player does to change Hunger, Rest, or Fun; how a turn, timer, or day progresses; or what creates trade-offs. These rules determine whether the game is real-time, turn-based, task-based, or simulation-driven.
+**Moment-to-moment:** scan falling items, identify lane/item value, tap the matching line at a safe moment, then reassess three decaying parameters.
 
-| Ambiguity | Why it matters | Alternatives | Recommendation | Status |
-| --- | --- | --- | --- | --- |
-| Core player action | Determines controls, scene structure, and fun hypothesis. | Tap locations; drag avatar; select actions; hybrid. | Derive from the PDF, then validate one low-complexity loop in prototype. | OPEN |
-| Time model | Controls parameter decay, tension, and pause behavior. | Real-time; discrete turns; activity time costs. | Derive from the PDF. | OPEN |
-| Primary objective | Defines score and success state. | Survive duration; complete itinerary; maximize satisfaction; reach location. | Derive from the PDF. | OPEN |
+**Run loop:** start a timed level, keep all active parameters in the safe range, accumulate score, finish the timer if still alive, record score/best score, then restart.
+
+**Skill expression:** prioritization, reaction timing, and managing both low and high parameter risk. This is distinct from an endless tapper only if item identity and lane choice create meaningful decisions.
 
 ## 3. Game Systems
 
-Only these systems are confirmed: parameter display/updates, controls, pause/restart, timer, score, best score, basic UI/animation, and an island/level container. Interaction, movement, economy, events, inventory, NPCs, progression, save behavior, and audio are unconfirmed and must not be assumed.
+| System | Evidence | First-playable status |
+| --- | --- | --- |
+| Falling-item lanes | PDF specifies two main falling-item sections and bottom electric lines. | Required |
+| Parameter HUD | PDF specifies parameter display and thresholds. | Required, limited to three parameters |
+| Parameter simulation | PDF specifies start 50, -1/second, +7 for positive items, safe range 20-80, warnings at 30/70. | Candidate baseline; approve before implementation |
+| Timer, score, best score | Current brief requires all three; mock-up includes a timer. | Required; formulas are open |
+| Pause/restart | Current brief and mock-up require them. | Required |
+| Island theme and basic animation | Current brief and PDF require them. | Required, placeholder only |
+| Extra parameters/islands | PDF describes them every five levels. | Deferred beyond first playable |
+| Ads, coins, cosmetics | PDF describes them. | Explicitly excluded from first playable |
 
 ## 4. Missing Information and 5. Ambiguities
 
-The source PDF is the principal missing information. In addition, the brief does not establish player fantasy, camera view, island layout, activity catalog, parameter scale and decay, action costs, score formula, timer behavior, success/failure rules, best-score persistence, visual/audio direction, localization, or accessibility needs. Each is logged as open because it materially affects the executable GDD and architecture.
+| ID | Ambiguity | Why it matters | Options | Recommendation |
+| --- | --- | --- | --- | --- |
+| A-001 | The PDF says three starting parameters but does not name them; its mock-up shows Hunger, Social, Hygiene. | Determines item families and HUD. | Use current brief; use mock-up trio; choose another trio. | Use Hunger, Rest, Fun because the current first-playable brief explicitly names them. |
+| A-002 | Positive and negative item outcomes are not defined. | The central decision loop cannot be specified or balanced. | Positive raises/negative lowers one parameter; negative raises a parameter toward overflow; mixed effects. | Define a compact item matrix in Phase 1; retain both lower- and upper-bound pressure. |
+| A-003 | It is unclear whether a tap cuts every item in a lane, the next item, or a single chosen item. | Changes precision, control feel, and difficulty. | Whole-lane pulse; front-most item; direct item tap. | Use a lane pulse that affects the front-most eligible item; simple on mobile but preserves timing. |
+| A-004 | Timer duration, score formula, and level-completion conditions are omitted. | Required for a testable run and best score. | Survival score; item-value score; hybrid. | Time-limited survival with score per correctly resolved item; exact values remain open. |
+| A-005 | “Four sections” conflicts with “two main sections” and the mock-up's four vertical columns. | Determines layout and interaction model. | Two active lanes plus HUD/utility zones; four active lanes. | Treat only two columns as active lanes and reserve other columns for non-interactive separation/HUD until approved. |
+| A-006 | The original monetization and cosmetics conflict with the first-playable scope. | Avoids accidental scope creep. | Include now; defer; remove forever. | Defer; first-playable brief is the controlling scope. |
 
 ## 6. Risks
 
-- **Design risk:** Building a parameter system before defining the core action can produce a disconnected UI rather than a fun loop.
-- **Scope risk:** “One island” can still become too large without an activity and time budget.
-- **Validation risk:** “Fun” has no testable success metric yet.
-- **Continuity risk:** Starting implementation before source material and approval would violate the project governance.
+- **Readability risk:** fast falling objects and a parameter HUD compete for portrait-screen attention.
+- **Fairness risk:** a hidden or ambiguous item effect makes losses feel arbitrary.
+- **Control risk:** two bottom buttons need unmistakable lane mapping and feedback to avoid accidental cuts.
+- **Balance risk:** the PDF's universal -1/second decay may create impossible recovery patterns without spawn-rate and item-effect tuning.
+- **Scope risk:** themed islands, five parameters, ads, coins, and cosmetics must remain out of the first playable.
 
 ## 7. Technical Risks
 
-- Godot and Android export versions are not selected or verified yet.
-- Device aspect-ratio, safe-area, touch-target, and performance budgets are unknown.
-- Best-score persistence needs a confirmed reset and storage policy.
-- The eventual parameter timing model will determine pause, lifecycle, and backgrounding behavior.
+- Android touch latency, safe areas, and aspect ratios can undermine reaction-based gameplay; input and layout need device validation.
+- A countdown and parameter decay must stop exactly while paused and handle Android background/resume predictably.
+- Best-score persistence needs a local, documented storage and reset policy.
+- Item resolution must be deterministic enough for balancing tests and future automated simulation.
 
 ## 8. Prototype Scope
 
-The approved maximum first-playable scope is the constraints in `GAME_DESIGN_DOCUMENT.md`. Recommended prototype guardrails, subject to the concept PDF: one playable loop, one map/scene, no unlocks, no network dependencies, no purchasable content, and placeholder assets only. Exact activities, duration, and success criteria remain open.
+One tropical placeholder island; one timed level; two active falling-item lanes; Hunger, Rest, Fun; defined positive/negative item families; tap and mouse controls; pause/restart; timer/score/best score; basic animation and feedback. No additional islands/parameters, ads, coins, cosmetics, shop, analytics, online, account, or social features.
 
 ## 9. Recommended Controls
 
-No control scheme can be recommended responsibly without knowing the core action. Preserve these platform requirements: portrait single-hand reachability, visible touch affordances, touch targets appropriate for Android, and equivalent mouse input for desktop testing. Choose the simplest input model that directly expresses the approved loop.
+Use two large, fixed bottom buttons/lines, one per active lane. A tap triggers a brief line pulse and resolves the front-most eligible item in that lane. Mirror the same behavior for left/right mouse clicks on the corresponding controls. This matches the PDF's electric-line concept, avoids obscuring falling objects, and suits portrait one-hand play.
 
 ## 10. Alternative Controls
 
-Candidate patterns awaiting the concept: direct tap-to-interact; tap to select then tap destination; drag-and-drop; virtual joystick; and discrete action buttons. Virtual joystick is generally higher UI and tuning cost and should only be selected when continuous character movement is essential to the approved concept.
+| Alternative | Benefit | Cost | Recommendation |
+| --- | --- | --- | --- |
+| Tap the falling item directly | Precise and intuitive. | Finger obscures small, fast targets. | Do not use for first prototype. |
+| Swipe across a lane | Expressive cutting gesture. | Recognition errors and higher accessibility risk. | Consider only after core loop validation. |
+| Four active lane buttons | Higher multitasking depth. | Exceeds the two-lane evidence and hurts readability. | Defer. |
 
 ## 11. Win/Lose Conditions
 
-Unknown. The timer, score, and three parameters imply possible pressure, but they do not define a win or loss. Candidate models are duration survival, destination/itinerary completion, score threshold, or a hybrid. Official conditions must be taken from the PDF or explicitly approved.
+**Lose:** any active parameter leaves the inclusive safe range of 20-80. This follows the PDF but needs approval that exactly 20 and 80 are still safe.
+
+**Win:** remain in range until the level timer reaches zero. The PDF does not specify a timer length or completion rule; the proposed rule makes the current brief's timer meaningful and keeps the run finite.
+
+**Score:** award points for correctly resolved items, with no unapproved coin economy. Exact values are a Phase 1 decision.
 
 ## 12. Parameter System Proposal
 
-Use one data-driven definition per confirmed parameter: display name, range, starting value, minimum/maximum effects, decay/change triggers, feedback thresholds, and contributing actions. Do not choose numbers or behavior until the underlying loop is confirmed. A final parameter model must specify whether zero causes failure, penalty, restricted actions, or recovery opportunity.
+Start Hunger, Rest, and Fun at 50. The source baseline is decay of 1 point per second, a +7 change from positive items, warnings at 30/70, and loss outside 20-80. Use a data-driven definition for each parameter: identifier, label, start value, safe minimum/maximum, warning thresholds, passive rate, item-effect mapping, and visual/audio feedback. Negative items must be explicitly defined: the recommended model is that they change their tagged parameter toward the nearest unsafe boundary, enabling both starvation/exhaustion/boredom and overflow pressure.
 
 ## 13. Balancing Proposal
 
-After the loop is approved, establish a short target session duration and work backward from it: starting values, expected activity cadence, recovery amounts, and score opportunities. Store all values in named configuration data and record every change with hypothesis and observed test result. No numeric targets are set in Phase 0 because they would be unsupported assumptions.
+Treat the PDF numbers as an unvalidated baseline, not final balance. Instrument test runs with parameter trajectories, item spawns, taps, hits, misses, and cause of loss. Establish the desired first-run duration in Phase 1, then tune spawn cadence and effects so a player who recognizes and reacts correctly can recover from warnings, while random tapping cannot reliably win. Every value belongs in central configuration data with a rationale and test result.
 
 ## 14. Roadmap
 
-The phase roadmap is in `ROADMAP.md`. The immediate dependency is source analysis and Phase 0 approval; only then may the executable GDD, architecture, and prototype proceed.
+Phase 0 ends after decisions A-001 through A-005 and the proposed win/loss model are approved or amended. Phase 1 turns those choices into an executable GDD. Phase 2 defines the Godot architecture. Only then can the prototype begin.
 
 ## 15. Architecture Proposal
 
-Architecture is deliberately deferred to Phase 2. The only current recommendation is a modular, data-driven Godot 4 structure with typed GDScript and documented scenes, scripts, resources, autoloads, and signals. Choosing concrete modules before gameplay is approved would be speculative.
+For Phase 2, use a data-driven composition: a game-flow coordinator; independent lane, falling-item, parameter, scoring, timer, input, persistence, and UI modules; and resource-based definitions for parameters, item types, level settings, and tuning. Scenes communicate through documented signals, with no hidden cross-scene logic. This is a proposal only; no production architecture or code is approved yet.
 
-## Required Decision to Continue
+## Phase 0 Approval Request
 
-Provide the original concept PDF. Then this document will be updated with traceable analysis, formal recommendations, and only those open decisions the source does not resolve. Phase 0 will end with a review, documentation test, checkpoint, and explicit approval request.
+Approve or amend the recommendations for A-001 through A-005, the proposed loss boundaries, and time-limited survival completion. On approval, Phase 0 can be checkpointed as complete and Phase 1 can author the executable GDD.

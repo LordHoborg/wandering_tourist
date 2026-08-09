@@ -1,15 +1,12 @@
 # TODO
 
-## Blocking
-
-- [ ] Obtain the original Wandering Tourist concept PDF.
-
 ## Phase 0 — Concept Analysis
 
-- [ ] Analyze the original vision without adding unsupported assumptions.
-- [ ] Identify gameplay loop, systems, scope, controls, conditions, parameters, balancing, risks, roadmap, and architecture options.
-- [ ] Record ambiguities with alternatives and recommendations.
-- [ ] Review, test documentation completeness, checkpoint, and request approval.
+- [x] Obtain and review the original Wandering Tourist concept PDF.
+- [x] Identify gameplay loop, systems, scope, controls, conditions, parameters, balancing, risks, roadmap, and architecture options.
+- [x] Record ambiguities with alternatives and recommendations.
+- [ ] Obtain approval or amendments for A-001 through A-005 and DEC-003/DEC-004.
+- [ ] Checkpoint Phase 0 and request approval to begin Phase 1.
 
 ## Future Phases
 
