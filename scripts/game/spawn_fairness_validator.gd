@@ -14,3 +14,21 @@ func accept(item: ItemDefinition) -> bool:
 		if drought[id] > max_drought:
 			return false
 	return true
+
+func has_recovery_for_all(items: Array[ItemDefinition]) -> bool:
+	for id: StringName in drought:
+		var found := false
+		for item: ItemDefinition in items:
+			if item.deltas.get(id, 0.0) > 0.0: found = true; break
+		if not found: return false
+	return true
+
+func repair(candidate: ItemDefinition, items: Array[ItemDefinition]) -> ItemDefinition:
+	for replacement: ItemDefinition in items:
+		if replacement != candidate and _would_accept(replacement): return replacement
+	return candidate
+
+func _would_accept(item: ItemDefinition) -> bool:
+	for id: StringName in drought:
+		if item.deltas.get(id, 0.0) <= 0.0 and drought[id] + 1 > max_drought: return false
+	return true
