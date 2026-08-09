@@ -4,7 +4,7 @@
 | --- | --- | --- | --- |
 | 0 | Concept Analysis | Complete | Source PDF retained in repository; approved prototype direction documented; remaining values formally deferred. |
 | 1 | Executable GDD | In review | Executable v0.1 GDD complete; explicit approval required before Phase 2. |
-| 2 | Technical Architecture | Pending | Modular Godot architecture and data model approved. |
+| 2 | Technical Architecture | In review | Modular Godot architecture, ownership rules, data, signals, and Phase 3 order complete; approval required. |
 | 3 | Prototype | Pending | Core gameplay loop playable; Prototype v0.1 checkpoint. |
 | 4 | Gameplay Iteration | Pending | Fun, controls, and balance validated through iterations. |
 | 5 | Vertical Slice | Pending | Polished one-island experience; v0.5 checkpoint. |

@@ -1,18 +1,135 @@
-# Technical Architecture
+# Wandering Tourist - Technical Architecture
 
 ## Status
 
-Draft placeholder. Technical architecture is a Phase 2 deliverable and must be informed by the approved GDD.
+**Phase 2 complete, awaiting approval.** This specification defines the Godot 4 architecture for Prototype v0.1. No Godot project, production scene, or gameplay script has been created.
 
-## Confirmed Technology Constraints
+## Architecture Decisions
 
-- Godot 4 latest stable/LTS.
-- Typed GDScript.
-- Android portrait target.
-- 2D rendering.
-- Modular, maintainable, documented architecture.
-- Gameplay values will reside in configurable resources or centralized data files.
+| Concern | Alternatives | Decision | Reason |
+| --- | --- | --- | --- |
+| Global access | Many autoloads; one event bus; composition root | One `AppSettings` autoload only; composition root owns gameplay services. | Avoids hidden gameplay globals while retaining settings access. |
+| State machine | Boolean flags; scene switching; explicit enum state | `RunStateMachine` with typed enum and legal transitions. | Testable pause/result behavior. |
+| Data | Constants; dictionaries; Resources | Typed immutable `Resource` definitions, runtime state classes. | Inspector-editable and testable tuning. |
+| Events | Direct UI calls; global bus; local typed signals | Local typed signals between direct collaborators. | Clear ownership and no broadcast coupling. |
+| Input | UI-owned input; action adapter; per-control logic | `LaneInputAdapter` interface with fixed-line implementation. | Enables direct-tap/swipe experiments without gameplay rewrites. |
 
-## Deferred Design
+## Folder Tree and Naming
 
-Scenes, scripts, resources, autoloads, signals, save strategy, UI composition, test approach, and Android export configuration are intentionally deferred until approved design and architecture phases. Input mapping must preserve a replaceable lane-input boundary so fixed controls, direct tap, and swipe can be tested without rewriting gameplay systems.
+```text
+res://
+  scenes/
+    app/app_root.tscn
+    gameplay/gameplay_root.tscn
+    gameplay/lane_view.tscn
+    gameplay/item_view.tscn
+    ui/hud.tscn
+    ui/pause_overlay.tscn
+    ui/result_overlay.tscn
+  scripts/
+    app/app_root.gd
+    game/gameplay_coordinator.gd
+    game/run_state_machine.gd
+    game/timer_service.gd
+    game/score_service.gd
+    game/best_score_repository.gd
+    game/parameter_service.gd
+    game/item_resolver.gd
+    game/spawn_scheduler.gd
+    game/spawn_fairness_validator.gd
+    game/lane_input_adapter.gd
+    game/fixed_line_input_adapter.gd
+    game/run_debug_logger.gd
+    ui/hud_presenter.gd
+    ui/pause_presenter.gd
+    ui/result_presenter.gd
+    data/parameter_definition.gd
+    data/item_definition.gd
+    data/level_definition.gd
+    data/feedback_definition.gd
+    state/parameter_state.gd
+    state/item_instance.gd
+    state/run_snapshot.gd
+  resources/
+    parameters/prototype_parameters.tres
+    items/prototype_items.tres
+    levels/prototype_level.tres
+    feedback/prototype_feedback.tres
+  tests/
+    unit/
+    integration/
+  autoload/
+    app_settings.gd
+```
+
+Use `snake_case` for paths, files, nodes, variables, methods, signals, and resource IDs; `PascalCase` for classes; suffix scenes with `_root`, `_view`, or `_overlay`; suffix data resources with `_definition`; suffix runtime state with `_state`. One public class per script.
+
+## Scenes and Nodes
+
+```text
+AppRoot (Node)
+  GameplayRoot (Node2D)
+    GameplayCoordinator (Node)
+    LaneContainer (Node2D)
+      LeftLaneView (Node2D)
+      RightLaneView (Node2D)
+    ItemContainer (Node2D)
+    GameplayHud (CanvasLayer)
+  PauseOverlay (CanvasLayer)
+  ResultOverlay (CanvasLayer)
+```
+
+`AppRoot` composes dependencies and owns scene-level navigation. `GameplayCoordinator` owns a single run and services. Lane/item views render supplied state only. HUD and overlays present signals/state and emit user intent only; they never change parameters, score, spawns, or timer directly.
+
+## Data and Runtime State
+
+`ParameterDefinition` contains ID, label, start/safe/warning values and decay. `ItemDefinition` contains ID, visual key, category, deltas, score rules, and spawn weight. `LevelDefinition` contains duration, lane limits, bag ratios, drought limit, spawn/fall/cut timings, neutral target, and completion bonus. `FeedbackDefinition` contains cue IDs and warning timings. Resources contain defaults only; runtime values live in `ParameterState`, `ItemInstance`, and `RunSnapshot` and are never written into resources.
+
+## Ownership and Dependency Rules
+
+`GameplayCoordinator` may call services and bind their signals. `ParameterService` owns parameter mutation/validation. `ItemResolver` owns transaction calculation and asks `ParameterService` to apply deltas; it never changes score. `ScoreService` owns score math and best-score candidate. `SpawnScheduler` chooses timing/lane/category; `SpawnFairnessValidator` validates/repairs candidate selection and owns no clock. `TimerService` owns active elapsed time. Views depend only on presenters/contracts, never services.
+
+Forbidden coupling: UI-to-service mutation; item resolver-to-UI; score service-to-item nodes; spawning-to-parameter mutation; fairness-to-lane view; resource mutation at runtime; gameplay access through autoload; stringly typed signal payloads; one system reaching through another node's children.
+
+## Signals and Event Map
+
+| Owner | Signal | Payload | Consumers |
+| --- | --- | --- | --- |
+| RunStateMachine | `state_changed` | previous, current | Coordinator, UI |
+| TimerService | `time_changed`, `timer_completed` | remaining; none | Coordinator, HUD |
+| ParameterService | `parameters_changed`, `warning_entered`, `failure_detected` | snapshot; ID/band; ID/value | Coordinator, HUD, feedback |
+| SpawnScheduler | `item_spawn_requested` | item definition, lane ID | Coordinator/view factory/logger |
+| ItemResolver | `item_resolved` | transaction result | Coordinator, score/logger/feedback |
+| ScoreService | `score_changed` | score | HUD |
+| LaneInputAdapter | `lane_activated` | lane ID | Coordinator |
+| BestScoreRepository | `best_score_changed` | best | HUD/result |
+
+Signals are typed, documented beside declaration, and connect only in the composition root/coordinator.
+
+## Game State and Data Flow
+
+States: `IDLE -> RUNNING -> PAUSED -> RUNNING`, `RUNNING -> FAILED`, `RUNNING -> COMPLETED`, `FAILED/COMPLETED -> IDLE`. Illegal transitions are rejected and logged. On each active tick, coordinator advances timer, decay, scheduler, and item motion. Input produces a lane ID; coordinator requests the front eligible item; resolver produces a transaction; parameter service applies it and validates failure; score service consumes the final transaction result; presenters render snapshots. Pause freezes all active services. Android focus loss requests pause before frame processing resumes.
+
+## Save, Settings, Debug, and Testing
+
+`BestScoreRepository` is an injected file-backed repository using `user://`; only it reads/writes best score. `AppSettings` is the sole autoload and owns mute, SFX volume, reduced motion, and persisted settings. `RunDebugLogger` receives structured snapshots/events only in debug builds and can export deterministic seed, bag contents, lane choices, transactions, and state transitions.
+
+Unit test services with fake clock, RNG, repository, input adapter, and logger. Cover parameter boundaries, trade-off distance scoring, bag/drought fairness, lane selection, pause clock freeze, best-score strictness, and state transitions. Integration tests use a deterministic seed to run a full 120-second simulation and assert acceptance criteria inputs. Manual Android tests cover small/large portrait layouts, pause/background behavior, touch targets, audio/mute, and reduced motion.
+
+## Android and Export Considerations
+
+Use portrait lock, safe-area-aware HUD margins, CanvasItem scaling from a documented reference resolution, touch-first controls, app-pause handling on focus loss, and local `user://` persistence. Configure Android package/version/signing/export only in Phase 6; no SDK, manifest, or export files are created now. Target stable Godot 4/LTS selected at project creation and record its exact version in build notes.
+
+## Phase 3 Implementation Order
+
+1. Create project, resources, typed data/state classes, and unit-test harness.
+2. Implement run state, timer, parameters, score, repository, and tests.
+3. Implement item resolver, distance scoring, bag/fairness, scheduler, and tests.
+4. Build lane input adapter and headless coordinator integration tests.
+5. Add minimal views/HUD/overlays and bind typed signals.
+6. Add feedback, accessibility settings, debug logging, and manual test checklist.
+7. Produce Prototype v0.1 checkpoint and APK preparation only after prototype acceptance review.
+
+## Phase Gate
+
+Phase 3 is blocked until explicit approval of this architecture.

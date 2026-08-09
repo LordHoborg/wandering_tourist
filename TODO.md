@@ -25,6 +25,12 @@
 
 ## Future Phases
 
+## Phase 2 - Technical Architecture
+
+- [x] Define modular Godot architecture, scene tree, data resources, signals, ownership, and test strategy.
+- [x] Record autoload, state-machine, event, and input-abstraction decisions.
+- [ ] Receive explicit approval to begin Phase 3 prototype implementation.
+
 - [ ] Phase 1: Executable Game Design Document.
 - [ ] Phase 2: Technical Architecture.
 - [ ] Phase 3: Prototype.
