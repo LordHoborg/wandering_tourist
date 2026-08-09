@@ -79,7 +79,7 @@ AppRoot (Node)
   ResultOverlay (CanvasLayer)
 ```
 
-`AppRoot` composes dependencies and owns scene-level navigation. `GameplayCoordinator` owns a single run and services. Lane/item views render supplied state only. HUD and overlays present signals/state and emit user intent only; they never change parameters, score, spawns, or timer directly.
+`AppRoot` composes dependencies, owns scene navigation and lifecycle translation. `GameplayCoordinator` owns a single run and services. `HudPresenter`, `PausePresenter`, and `ResultPresenter` subscribe to coordinator-facing signals, create view-facing snapshots/events, and are the only gameplay-facing dependency of HUD/overlay views. Lane/item views render supplied state only. Views emit user intent only; they never change parameters, score, spawns, or timer directly.
 
 ## Data and Runtime State
 
@@ -95,20 +95,22 @@ Forbidden coupling: UI-to-service mutation; item resolver-to-UI; score service-t
 
 | Owner | Signal | Payload | Consumers |
 | --- | --- | --- | --- |
-| RunStateMachine | `state_changed` | previous, current | Coordinator, UI |
-| TimerService | `time_changed`, `timer_completed` | remaining; none | Coordinator, HUD |
-| ParameterService | `parameters_changed`, `warning_entered`, `failure_detected` | snapshot; ID/band; ID/value | Coordinator, HUD, feedback |
-| SpawnScheduler | `item_spawn_requested` | item definition, lane ID | Coordinator/view factory/logger |
-| ItemResolver | `item_resolved` | transaction result | Coordinator, score/logger/feedback |
-| ScoreService | `score_changed` | score | HUD |
-| LaneInputAdapter | `lane_activated` | lane ID | Coordinator |
-| BestScoreRepository | `best_score_changed` | best | HUD/result |
+| RunStateMachine | `state_changed` | previous, current | GameplayCoordinator, presenters |
+| TimerService | `time_changed`, `timer_completed` | remaining; none | GameplayCoordinator |
+| ParameterService | `parameters_changed`, `warning_entered`, `failure_detected` | snapshot; ID/band; ID/value | GameplayCoordinator |
+| SpawnScheduler | `item_spawn_requested` | item definition, lane ID | GameplayCoordinator/view factory/logger |
+| ItemResolver | `item_resolved` | transaction result | GameplayCoordinator, score/logger/feedback |
+| ScoreService | `score_changed` | score | GameplayCoordinator |
+| LaneInputAdapter | `lane_activated` | lane ID | GameplayCoordinator |
+| BestScoreRepository | `best_score_changed` | best | GameplayCoordinator |
+| GameplayCoordinator | `hud_state_changed`, `pause_state_changed`, `result_ready` | HUD snapshot; pause snapshot; result snapshot | corresponding presenter only |
+| HudPresenter/PausePresenter/ResultPresenter | view update signals | immutable view model/event | corresponding view only |
 
-Signals are typed, documented beside declaration, and connect only in the composition root/coordinator.
+Signals are typed, documented beside declaration, and connect only in the composition root/coordinator. Services never connect directly to views; presenters never expose service objects to views.
 
 ## Game State and Data Flow
 
-States: `IDLE -> RUNNING -> PAUSED -> RUNNING`, `RUNNING -> FAILED`, `RUNNING -> COMPLETED`, `FAILED/COMPLETED -> IDLE`. Illegal transitions are rejected and logged. On each active tick, coordinator advances timer, decay, scheduler, and item motion. Input produces a lane ID; coordinator requests the front eligible item; resolver produces a transaction; parameter service applies it and validates failure; score service consumes the final transaction result; presenters render snapshots. Pause freezes all active services. Android focus loss requests pause before frame processing resumes.
+States: `IDLE -> RUNNING -> PAUSED -> RUNNING`, `RUNNING -> FAILED`, `RUNNING -> COMPLETED`, `FAILED/COMPLETED -> IDLE`. Illegal transitions are rejected and logged. On each active tick, coordinator advances timer, decay, scheduler, and item motion. Input produces a lane ID; coordinator requests the front eligible item; resolver produces a transaction; parameter service applies it and validates failure; score service consumes the final transaction result; coordinator publishes snapshots to presenters; presenters render through views. Pause freezes all active services. `AppRoot` owns Godot lifecycle notifications and translates focus/background loss into a pause intent sent to `GameplayCoordinator`, which requests the state transition. The domain never receives Android/OS/Godot lifecycle APIs; desktop tests invoke the same pause intent directly.
 
 ## Save, Settings, Debug, and Testing
 

@@ -2,6 +2,8 @@
 
 ## Project Identity
 
+- **Current project status:** Phase 2 Technical Architecture is complete and awaiting approval; Phase 1 is complete and approved; production code has not started.
+
 - **Platform:** Android, portrait orientation
 - **Engine:** Godot 4 latest stable/LTS
 - **Language:** Typed GDScript

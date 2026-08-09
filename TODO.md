@@ -23,13 +23,13 @@
 - [ ] Receive explicit approval to begin Phase 2.
 - [x] Add recovery fairness, contextual trade-off scoring, and core-fun validation to the Phase 1 GDD.
 
-## Future Phases
-
 ## Phase 2 - Technical Architecture
 
 - [x] Define modular Godot architecture, scene tree, data resources, signals, ownership, and test strategy.
 - [x] Record autoload, state-machine, event, and input-abstraction decisions.
 - [ ] Receive explicit approval to begin Phase 3 prototype implementation.
+
+## Future Phases
 
 - [ ] Phase 1: Executable Game Design Document.
 - [ ] Phase 2: Technical Architecture.

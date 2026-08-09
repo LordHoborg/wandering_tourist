@@ -18,3 +18,4 @@ All notable project changes are recorded here.
 - Added the executable Prototype v0.1 GDD, Phase 1 decisions, configurable balance defaults, and acceptance criteria.
 - Added item-family recovery fairness, context-sensitive trade-off scoring, and core-fun validation criteria.
 - Added Phase 2 Godot architecture, folder/scene plan, data contracts, signal map, and test strategy.
+- Corrected presenter signal ownership and added AppRoot lifecycle translation boundary.
