@@ -21,6 +21,7 @@
 - [x] Receive authorization and complete executable Prototype v0.1 GDD.
 - [x] Record configurable rules, balancing, item matrix, and acceptance criteria.
 - [ ] Receive explicit approval to begin Phase 2.
+- [x] Add recovery fairness, contextual trade-off scoring, and core-fun validation to the Phase 1 GDD.
 
 ## Future Phases
 

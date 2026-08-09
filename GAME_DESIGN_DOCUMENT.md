@@ -49,6 +49,10 @@ Use a rolling 10-item bag: 7 simple single-parameter items and 3 visually distin
 
 The small pool is intentional. Its goal is to make players sometimes ask whether an item benefits their current state, not merely whether it is positive or negative.
 
+### Item-Family Recovery Fairness
+
+Every complete 10-item bag must contain at least one recovery opportunity for Hunger, Rest, and Fun. A recovery opportunity is any simple boost or contextual item with a positive effect for that parameter. The configurable maximum recovery drought is 6 spawned items: no parameter may go more than 6 consecutive spawns without a recovery opportunity. When a prospective spawn violates this limit, replace it with a valid item from the current bag while preserving lane randomness; lanes remain non-parameter-locked.
+
 ## Spawn and Motion
 
 | Setting | Default | Rule |
@@ -64,7 +68,7 @@ Log bag composition, lane selection, saturation, and item outcomes during protot
 
 ## Scoring and Best Score
 
-Score is the sum of item events in the matrix plus 500 for completing the timer. Cutting a hazard, missing a boost/trade-off, or tapping with no eligible item gives zero points. Store Best locally at the end of any run only when final score strictly exceeds the saved Best. Failed runs may set Best; the completion bonus makes successful runs more valuable. Restart cannot update Best.
+Score is the sum of item events in the matrix plus 500 for completing the timer. Cutting a hazard, missing a boost/trade-off, or tapping with no eligible item gives zero points. For a cut trade-off item, calculate `BeforeDistance = abs(Hunger-50)+abs(Rest-50)+abs(Fun-50)` immediately before applying it and `AfterDistance` immediately after. Award +150 only when the transaction does not fail the run and `AfterDistance < BeforeDistance`; otherwise award 0. This deterministic, configurable neutral target makes contextually beneficial trade-offs score differently from harmful ones. Store Best locally at the end of any run only when final score strictly exceeds the saved Best. Failed runs may set Best; the completion bonus makes successful runs more valuable. Restart cannot update Best.
 
 ## Warning, Feedback, and Accessibility
 
@@ -106,6 +110,10 @@ All defaults are configurable, not permanent truths. Changes require a documente
 | AC-07 | No more than 1 of 5 sessions reports an unavoidable unreadable-overlap or hidden-effect loss. |
 | AC-08 | Testers distinguish warning/item meaning without relying only on color or audio. |
 | AC-09 | Best persists across restart and changes only for a strictly higher final score. |
+| AC-10 | In a five-person first-time test, at least 4 testers voluntarily start a second run after their first result, without prompting. |
+| AC-11 | In that same test, at least 4 testers rate core gameplay >=3/5 for enjoyment and at least 2 rate it >=4/5. |
+
+For AC-10 and AC-11, give each tester one short control/item reference explanation, allow one uninterrupted first run, present the normal result screen, and observe for 30 seconds without suggesting replay. Record voluntary replay before collecting a private 1-5 enjoyment rating and one optional reason. These are prototype indicators, not production KPIs.
 
 ## Phase Gate
 
