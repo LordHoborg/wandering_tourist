@@ -15,3 +15,4 @@ All notable project changes are recorded here.
 - Clarified the source layout as four sections with two confirmed active falling-item areas.
 - Recorded approved parameter, time-limited survival, and fixed-control directions; added the hybrid item-model investigation.
 - Added the canonical concept PDF and formally closed Phase 0.
+- Added the executable Prototype v0.1 GDD, Phase 1 decisions, configurable balance defaults, and acceptance criteria.

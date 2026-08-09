@@ -3,7 +3,7 @@
 | Phase | Goal | Status | Exit Condition |
 | --- | --- | --- | --- |
 | 0 | Concept Analysis | Complete | Source PDF retained in repository; approved prototype direction documented; remaining values formally deferred. |
-| 1 | Executable GDD | Pending | Design rules and content requirements approved. |
+| 1 | Executable GDD | In review | Executable v0.1 GDD complete; explicit approval required before Phase 2. |
 | 2 | Technical Architecture | Pending | Modular Godot architecture and data model approved. |
 | 3 | Prototype | Pending | Core gameplay loop playable; Prototype v0.1 checkpoint. |
 | 4 | Gameplay Iteration | Pending | Fun, controls, and balance validated through iterations. |

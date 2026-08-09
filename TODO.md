@@ -16,6 +16,12 @@
 - [ ] Receive explicit authorization to enter Phase 1.
 - [ ] Translate approved Phase 0 direction into an executable GDD without starting implementation.
 
+## Phase 1 - Executable Game Design Document
+
+- [x] Receive authorization and complete executable Prototype v0.1 GDD.
+- [x] Record configurable rules, balancing, item matrix, and acceptance criteria.
+- [ ] Receive explicit approval to begin Phase 2.
+
 ## Future Phases
 
 - [ ] Phase 1: Executable Game Design Document.
