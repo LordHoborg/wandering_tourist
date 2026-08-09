@@ -11,7 +11,7 @@
 
 ## Source Material Status
 
-The original vision is the 8-page `docs/source/Wandering Tourist - Game Document.pdf` (dated 2023). It was reviewed for Phase 0, but the PDF is not yet stored at that repository-relative location. Add the source file there before Phase 1 so the project remains self-contained. The PDF confirms a four-section portrait layout with two confirmed active falling-item areas, bottom electric-line controls, and parameter management. The Phase 0 analysis records interpretations and unresolved details separately from source evidence.
+The original vision is the 8-page `docs/source/Wandering Tourist - Game Document.pdf` (dated 2023). The source copy was added and SHA-256-verified against the supplied PDF on 2026-08-09. The PDF confirms a four-section portrait layout with two confirmed active falling-item areas, bottom electric-line controls, and parameter management. The Phase 0 analysis records interpretations and unresolved details separately from source evidence.
 
 ## Confirmed First-Playable Constraints
 
@@ -24,16 +24,19 @@ One island and one level; Hunger, Rest, and Fun parameters; touch and mouse supp
 - Store gameplay values in documented configuration resources or central data files; do not hardcode balancing values.
 - Each milestone requires a documented checkpoint and, when available, a playable Android APK.
 
-## Current Checkpoint
+## Phase 0 Completion Checkpoint
 
-- **Completed analysis:** Source PDF extraction and visual review; confirmed layout and controls; gameplay-loop, system, risk, prototype-scope, control, parameter, balancing, roadmap, and architecture analysis; documentation baseline and consistency checks.
-- **Approved decisions:** Hunger, Rest, and Fun for the first playable; two fixed electric-line lane controls resolving the front-most eligible item; time-limited survival for the prototype.
-- **Proposed decisions:** Treat failure after a parameter leaves a configurable safe range; compare simple, contextual, and hybrid item-effect models; use a hybrid item model as the recommended prototype test.
-- **Unresolved questions:** Exact timer duration, score formula, safe-boundary semantics, balancing values, lane-to-parameter mapping, item-effect matrix, and whether the PDF's four sections map to only two active lanes plus utility/HUD regions.
-- **Work remaining before approval:** Record the official source PDF at `docs/source/Wandering Tourist - Game Document.pdf`; approve or amend the proposed item model and remaining design decisions; confirm all open questions are intentionally deferred to Phase 1/prototype iteration.
+- **Status:** COMPLETE — Phase 0 is formally closed. Phase 1 has not started.
+- **Phase 0 completion:** 100%.
+- **Current version/build:** Not started / no build.
+- **Completed analysis:** Source PDF extraction and visual review; confirmed layout and controls; gameplay-loop, systems, risks, prototype scope, controls, parameters, balancing, roadmap, and architecture analysis; documentation baseline and consistency checks.
+- **Approved decisions:** Hunger, Rest, and Fun; two fixed electric-line lane controls resolving the front-most eligible item; time-limited survival; hybrid item-effect model with approximately 70% simple single-parameter items and 30% visually distinct contextual multi-parameter trade-off items; intentionally small, readable prototype item pool; configurable ratios.
+- **Intentionally deferred:** Exact timer duration, score formula, safe-boundary semantics, balancing values, lane-to-parameter mapping, exact item-effect matrix, and visual/audio feedback details. These are Phase 1/prototype-iteration decisions.
+- **Incomplete features:** No Godot project, production code, scene, asset pipeline, automated test, Android export configuration, or APK exists; all are outside completed Phase 0 scope.
+- **Open questions:** None block Phase 0. Deferred choices are tracked and must be resolved through Phase 1/prototype iteration.
 - **Known bugs:** None; no executable project exists.
-- **Project health:** Documentation is current; Phase 0 awaits design decisions and approval.
-- **Next exact task:** Decide the prototype item-effect model and confirm the Phase 1 deferrals, then formally approve or amend the Phase 0 checkpoint.
+- **Project health:** Healthy; source material is repository-local and the Phase 0 handoff is complete.
+- **Next exact task:** Receive explicit authorization to begin Phase 1 and author the executable Game Design Document.
 
 ## Document Index
 
@@ -43,6 +46,7 @@ One island and one level; Hunger, Rest, and Fun parameters; touch and mouse supp
 | `GAME_DESIGN_DOCUMENT.md` | Executable design specification after Phase 0 approval |
 | `TECHNICAL_ARCHITECTURE.md` | Technical design after Phase 0 approval |
 | `PHASE_0_CONCEPT_ANALYSIS.md` | Evidence-based Phase 0 analysis and decision backlog |
+| `docs/source/README.md` | Source-document retention and verification record |
 | `ROADMAP.md` | Phase and milestone plan |
 | `TODO.md` | Actionable work list |
 | `DECISION_LOG.md` | Durable decisions and unresolved items |
@@ -58,3 +62,4 @@ One island and one level; Hunger, Rest, and Fun parameters; touch and mouse supp
 | 2026-08-09 | Created Phase 0 documentation baseline; recorded missing concept PDF. |
 | 2026-08-09 | Reviewed the original concept PDF and updated the Phase 0 analysis, decision log, scope, roadmap, and test evidence. |
 | 2026-08-09 | Recorded approved first-playable parameters, prototype controls, and time-limited survival direction; added contextual item-model investigation. |
+| 2026-08-09 | Added and verified the canonical source PDF; approved the hybrid item-effect direction; closed Phase 0. |

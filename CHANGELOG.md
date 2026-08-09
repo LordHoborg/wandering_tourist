@@ -14,3 +14,4 @@ All notable project changes are recorded here.
 - First-playable scope explicitly defers the original document's ads, coins, cosmetics, extra parameters, and extra islands.
 - Clarified the source layout as four sections with two confirmed active falling-item areas.
 - Recorded approved parameter, time-limited survival, and fixed-control directions; added the hybrid item-model investigation.
+- Added the canonical concept PDF and formally closed Phase 0.

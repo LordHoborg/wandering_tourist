@@ -28,4 +28,14 @@
 - **Expected result:** Source evidence, approved direction, proposals, and open questions are distinguishable.
 - **Actual result:** Pass.
 - **Regression check:** Confirmed no Phase 1 implementation authorization was introduced.
-- **Known issues:** The source PDF still needs to be committed at its canonical repository-relative path; `DEC-006` remains proposed.
+- **Known issues:** Superseded by TR-004 after the source copy was verified and `DEC-006` was approved.
+
+## TR-004 — Phase 0 Completion Check
+
+- **Date:** 2026-08-09
+- **Scope:** Canonical source retention, Phase 0 decision status, and completion checkpoint.
+- **Manual test:** Copied the source PDF to `docs/source/Wandering Tourist - Game Document.pdf` and compared SHA-256 hashes with the supplied file; reviewed the checkpoint, decision log, backlog, roadmap, and GDD for approved/deferred status.
+- **Expected result:** Source is repository-local, DEC-006 is approved with configurable 70/30 hybrid direction, and no Phase 0 blockers remain.
+- **Actual result:** Pass. The source hashes match; Phase 0 is closed; Phase 1 remains unstarted.
+- **Regression check:** Confirmed the deferred timer, scoring, boundary, balancing, lane mapping, item matrix, and feedback details did not become fixed implementation requirements.
+- **Known issues:** None. No executable project exists yet.

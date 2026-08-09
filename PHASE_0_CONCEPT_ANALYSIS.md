@@ -2,7 +2,11 @@
 
 ## Source Reviewed
 
-`docs/source/Wandering Tourist - Game Document.pdf`, 8 pages, dated 2023. The PDF needs to be added at this repository-relative path before Phase 1. The visual mock-up confirms a four-section portrait layout with two confirmed active falling-item areas, a parameter HUD, two bottom electric-line controls, pause, timer, and tropical-island placeholder art.
+`docs/source/Wandering Tourist - Game Document.pdf`, 8 pages, dated 2023. The canonical repository copy was SHA-256-verified against the supplied source on 2026-08-09. The visual mock-up confirms a four-section portrait layout with two confirmed active falling-item areas, a parameter HUD, two bottom electric-line controls, pause, timer, and tropical-island placeholder art.
+
+## Phase Status
+
+**COMPLETE.** Phase 0 is formally closed. Its remaining details are intentionally deferred to Phase 1 and prototype iteration; they are not blockers for entering Phase 1 when explicit authorization is received.
 
 ## 1. Concept Analysis
 
@@ -38,7 +42,7 @@
 | ID | Ambiguity | Why it matters | Options | Recommendation |
 | --- | --- | --- | --- | --- |
 | A-001 | The PDF says three starting parameters but does not name them; its mock-up shows Hunger, Social, Hygiene. | Determines item families and HUD. | Use current brief; use mock-up trio; choose another trio. | Use Hunger, Rest, Fun because the current first-playable brief explicitly names them. |
-| A-002 | Item-effect model is not defined; the PDF does not specify negative-item behavior. | The central decision loop cannot be specified or balanced. | Simple positive/negative; contextual multi-parameter; hybrid. | Investigate all three in Phase 1; test the recommended hybrid model in prototype. |
+| A-002 | Item-effect model is not defined; the PDF does not specify negative-item behavior. | The central decision loop cannot be specified or balanced. | Simple positive/negative; contextual multi-parameter; hybrid. | **Approved:** hybrid model, with approximately 70% simple single-parameter and 30% visually distinct contextual multi-parameter trade-off items. Exact ratios remain configurable. |
 | A-003 | It is unclear whether a tap cuts every item in a lane, the next item, or a single chosen item. | Changes precision, control feel, and difficulty. | Whole-lane pulse; front-most item; direct item tap. | **Approved for prototype:** a fixed lane control resolves the front-most eligible item in that lane. |
 | A-004 | Timer duration, score formula, and level-completion conditions are omitted. | Required for a testable run and best score. | Survival score; item-value score; hybrid. | **Partially approved:** time-limited survival; exact duration and score formula remain configurable and open. |
 | A-005 | “Four sections” conflicts with “two main sections” and the mock-up's four vertical columns. | Determines layout and interaction model. | Two active lanes plus HUD/utility zones; four active lanes. | Treat only two columns as active lanes and reserve other columns for non-interactive separation/HUD until approved. |
@@ -97,13 +101,13 @@ Do not assume items are universally positive or negative. Phase 1 must compare:
 | B. Contextual multi-parameter trade-off | One item changes multiple parameters, such as Coffee improving Rest and slightly Fun while reducing Hunger. | Creates the meaningful question “Is this item beneficial given my current parameter state?” | Can overload a real-time reaction game. |
 | C. Hybrid | Clear single-parameter baseline items plus a small, visibly distinct set of multi-parameter trade-off items. | Preserves readability while testing contextual decisions. | Requires clear visual communication. |
 
-**Recommendation for prototype testing:** Model C, hybrid. Begin with mostly clear baseline items and a deliberately small, documented trade-off set. Test whether players can understand an item's effects quickly enough to make state-dependent decisions; if not, reduce trade-off frequency or fall back to Model A.
+**Approved prototype direction:** Model C, hybrid. Use approximately 70% simple, single-parameter items and 30% contextual multi-parameter trade-off items. Trade-off items must be visually distinguishable, the first item pool must remain intentionally small and readable, and exact ratios remain configurable for testing. The design goal is for players to sometimes ask whether an item is good for their current state rather than only whether it is universally positive or negative. Do not add complexity beyond what the first prototype can communicate clearly.
 
 Treat the PDF's numeric values as unvalidated baselines, not final balance. Instrument test runs with parameter trajectories, item spawns, taps, hits, misses, and cause of loss. Establish the desired first-run duration in Phase 1, then tune spawn cadence and effects so a player who recognizes and reacts correctly can recover from warnings, while random tapping cannot reliably win. Every value belongs in central configuration data with a rationale and test result.
 
 ## 14. Roadmap
 
-Phase 0 ends after the repository-relative source record is restored, the hybrid-item recommendation is approved or amended, and remaining choices are formally deferred to Phase 1/prototype iteration. Phase 1 turns those choices into an executable GDD. Phase 2 defines the Godot architecture. Only then can the prototype begin.
+Phase 0 is complete: the repository-relative source record is restored, the hybrid-item direction is approved, and remaining choices are formally deferred to Phase 1/prototype iteration. Phase 1 turns those choices into an executable GDD. Phase 2 defines the Godot architecture. Only then can the prototype begin.
 
 ## 15. Architecture Proposal
 
@@ -111,4 +115,4 @@ For Phase 2, use a data-driven composition: a game-flow coordinator; independent
 
 ## Phase 0 Approval Request
 
-Approve or amend the hybrid item-effect recommendation (A-002), confirm the source PDF is placed at its canonical repository-relative path, and formally defer the remaining configurable values to Phase 1/prototype iteration. On approval, Phase 0 can be checkpointed as complete and Phase 1 can author the executable GDD.
+Phase 0 approval criteria are satisfied. Do not start Phase 1 until explicit authorization is received. The next task is to author the executable GDD only after that authorization.

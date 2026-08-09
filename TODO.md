@@ -6,10 +6,15 @@
 - [x] Identify gameplay loop, systems, scope, controls, conditions, parameters, balancing, risks, roadmap, and architecture options.
 - [x] Record ambiguities with alternatives and recommendations.
 - [x] Approve first-playable parameters, time-limited survival direction, and fixed lane controls.
-- [ ] Add the original PDF at `docs/source/Wandering Tourist - Game Document.pdf`.
-- [ ] Approve or amend hybrid item-effect model `DEC-006`.
-- [ ] Formally defer exact timer, score, boundary, balancing, lane-to-parameter, and item-effect values to Phase 1/prototype iteration.
-- [ ] Checkpoint Phase 0 and request approval to begin Phase 1.
+- [x] Add and verify the original PDF at `docs/source/Wandering Tourist - Game Document.pdf`.
+- [x] Approve hybrid item-effect model `DEC-006`.
+- [x] Formally defer exact timer, score, boundary, balancing, lane-to-parameter, item-effect, and feedback values to Phase 1/prototype iteration.
+- [x] Close the Phase 0 completion checkpoint.
+
+## Phase 1 — Executable Game Design Document
+
+- [ ] Receive explicit authorization to enter Phase 1.
+- [ ] Translate approved Phase 0 direction into an executable GDD without starting implementation.
 
 ## Future Phases
 

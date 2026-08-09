@@ -16,6 +16,12 @@ The project is in Phase 0 (Concept Analysis). No production code, Godot project,
 
 No production folders exist yet. Folder structure will be proposed after the concept analysis is approved; every created folder will be documented here and in the master document.
 
+| Path | Purpose |
+| --- | --- |
+| `docs/source/` | Immutable source materials retained for project continuity. |
+
+The original vision is retained at `docs/source/Wandering Tourist - Game Document.pdf`.
+
 ## Getting Started
 
 1. Provide the original concept PDF.

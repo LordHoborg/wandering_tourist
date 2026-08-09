@@ -20,4 +20,8 @@ The original source is to be retained at `docs/source/Wandering Tourist - Game D
 - Use Hunger, Rest, and Fun.
 - Use time-limited survival with configurable duration, score, safe boundaries, and balance values.
 - Use two fixed electric-line controls; retain an input boundary for future direct-tap and swipe experiments.
-- Investigate a hybrid item-effect model: clear baseline items plus a small, visibly distinct set of contextual multi-parameter trade-off items.
+- Use a hybrid item-effect model: approximately 70% simple, single-parameter items and 30% visually distinct contextual multi-parameter trade-off items. Keep the pool intentionally small and readable; ratios and exact effects remain configurable for testing.
+
+## Intentionally Deferred
+
+Exact timer duration, score formula, safe-boundary semantics, balancing values, lane-to-parameter mapping, exact item-effect matrix, and visual/audio feedback details are Phase 1/prototype-iteration decisions.
