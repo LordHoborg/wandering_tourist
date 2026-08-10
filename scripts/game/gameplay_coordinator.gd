@@ -15,6 +15,7 @@ const DeterministicRng = preload("res://scripts/game/deterministic_rng.gd")
 const ItemInstance = preload("res://scripts/state/item_instance.gd")
 
 signal snapshot_published(snapshot: Dictionary)
+signal presentation_event(kind: StringName, data: Dictionary)
 var state_machine: RunStateMachine = RunStateMachine.new()
 var parameters: ParameterService
 var timer: TimerService
@@ -30,6 +31,7 @@ var active_items: Array[ItemInstance] = []
 var spawn_elapsed: float = 0.0
 var lane_ready_at: Dictionary[int, float] = {0: 0.0, 1: 0.0}
 var level := LevelDefinition.new()
+var failure_parameter_id: StringName = &""
 
 func _init(definitions: Array[ParameterDefinition], duration: float, repository_path: String) -> void:
 	parameters = ParameterService.new(definitions)
@@ -54,13 +56,23 @@ func handle_lane_intent(lane_id: int) -> void:
 		return
 	lane_ready_at[lane_id] = timer.elapsed + level.lane_cooldown
 	var item: ItemDefinition = instance.definition
+	var score_before := score.score
 	var transaction = resolver.resolve(item, parameters, true)
 	if item.is_tradeoff:
 		score.add_tradeoff(transaction.before_distance, transaction.after_distance, not transaction.safe)
 	elif item.should_collect:
 		score.add_simple(item.score)
 	active_items.erase(instance)
+	var score_delta := score.score - score_before
+	var event_data := {"instance_id": instance.get_instance_id(), "item_id": item.id, "lane": lane_id, "score_delta": score_delta, "deltas": transaction.deltas, "safe": transaction.safe}
+	if not item.should_collect:
+		presentation_event.emit(&"harmful_cut", event_data)
+	elif transaction.safe:
+		presentation_event.emit(&"cut_success", event_data)
+	else:
+		presentation_event.emit(&"harmful_cut", event_data)
 	if not transaction.safe:
+		failure_parameter_id = parameters.unsafe_parameter_id()
 		_finish(RunStateMachine.State.FAILED)
 	publish_snapshot()
 
@@ -82,6 +94,7 @@ func tick(delta: float) -> void:
 	if state_machine.state != RunStateMachine.State.RUNNING: return
 	timer.tick(delta)
 	if not parameters.tick(delta):
+		failure_parameter_id = parameters.unsafe_parameter_id()
 		_finish(RunStateMachine.State.FAILED)
 		publish_snapshot()
 		return
@@ -93,9 +106,9 @@ func tick(delta: float) -> void:
 	publish_snapshot()
 
 func restart() -> void:
-	if state_machine.state == RunStateMachine.State.RUNNING:
-		return
-	state_machine.transition(RunStateMachine.State.IDLE)
+	# Restart abandons the current run.  It is not a result, so it must never
+	# submit the current score as a best-score candidate.
+	state_machine = RunStateMachine.new()
 	parameters.state.set_defaults(parameters.definitions)
 	timer = TimerService.new(level.duration_seconds)
 	score = ScoreService.new()
@@ -103,6 +116,7 @@ func restart() -> void:
 	scheduler = SpawnScheduler.new()
 	fairness = SpawnFairnessValidator.new(level.max_recovery_drought)
 	active_items.clear()
+	failure_parameter_id = &""
 	spawn_elapsed = 0.0
 	lane_ready_at = {0: 0.0, 1: 0.0}
 	start()
@@ -119,11 +133,18 @@ func _spawn_items(delta: float) -> void:
 		_fill_bag()
 	var item := scheduler.take_next(fairness)
 	if item == null:
-		return
+		# A malformed/remainder bag must not freeze spawning for the rest of the
+		# run. Replace it with a fresh valid bag and try once more.
+		_fill_bag()
+		item = scheduler.take_next(fairness)
+		if item == null:
+			return
 	var lane := scheduler.next_lane(rng)
 	if _lane_count(lane) >= 2:
 		lane = 1 - lane
-	active_items.append(ItemInstance.new(item, lane, timer.elapsed))
+	var instance := ItemInstance.new(item, lane, timer.elapsed)
+	active_items.append(instance)
+	presentation_event.emit(&"spawn", {"instance_id": instance.get_instance_id(), "item_id": item.id, "lane": lane})
 
 func _resolve_passed_items() -> void:
 	for instance in active_items.duplicate():
@@ -131,6 +152,7 @@ func _resolve_passed_items() -> void:
 			continue
 		if not instance.definition.should_collect:
 			score.add_simple(instance.definition.pass_score)
+			presentation_event.emit(&"hazard_passed", {"instance_id": instance.get_instance_id(), "item_id": instance.definition.id, "lane": instance.lane_id, "score_delta": instance.definition.pass_score})
 		active_items.erase(instance)
 
 func _front_eligible_item(lane_id: int) -> ItemInstance:
@@ -156,6 +178,10 @@ func _fill_bag() -> void:
 func _finish(next_state: RunStateMachine.State) -> void:
 	if state_machine.transition(next_state):
 		best_scores.submit(score.score)
+		if next_state == RunStateMachine.State.FAILED:
+			presentation_event.emit(&"failed", {"parameter": failure_parameter_id, "score": score.score})
+		elif next_state == RunStateMachine.State.COMPLETED:
+			presentation_event.emit(&"completed", {"score": score.score, "bonus": level.completion_bonus})
 
 func _create_prototype_items() -> void:
 	simple_items = [_item(&"fruit", {&"hunger": 7.0}, 100, true), _item(&"pillow", {&"rest": 7.0}, 100, true), _item(&"camera", {&"fun": 7.0}, 100, true), _item(&"stale_snack", {&"hunger": -7.0}, 0, false, 50), _item(&"alarm_clock", {&"rest": -7.0}, 0, false, 50), _item(&"rain_cloud", {&"fun": -7.0}, 0, false, 50)]
@@ -174,6 +200,6 @@ func _item(id: StringName, deltas: Dictionary[StringName, float], item_score: in
 func publish_snapshot() -> void:
 	var item_snapshots: Array[Dictionary] = []
 	for instance in active_items:
-		item_snapshots.append({"id": instance.definition.id, "lane": instance.lane_id, "progress": clampf(instance.age(timer.elapsed) / level.fall_duration, 0.0, 1.0), "collect": instance.definition.should_collect, "tradeoff": instance.definition.is_tradeoff})
-	var snapshot: Dictionary = {"state": state_machine.state, "score": score.score, "best_score": best_scores.best_score, "remaining": timer.remaining(), "parameters": parameters.state.values.duplicate(), "items": item_snapshots}
+		item_snapshots.append({"instance_id": instance.get_instance_id(), "id": instance.definition.id, "lane": instance.lane_id, "progress": clampf(instance.age(timer.elapsed) / level.fall_duration, 0.0, 1.0), "cut_ready": instance.age(timer.elapsed) >= level.fall_duration - level.cut_window, "collect": instance.definition.should_collect, "tradeoff": instance.definition.is_tradeoff})
+	var snapshot: Dictionary = {"state": state_machine.state, "score": score.score, "best_score": best_scores.best_score, "remaining": timer.remaining(), "parameters": parameters.state.values.duplicate(), "failure_parameter": failure_parameter_id, "items": item_snapshots}
 	snapshot_published.emit(snapshot)

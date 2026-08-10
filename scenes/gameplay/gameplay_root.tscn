@@ -1,25 +1,30 @@
-[gd_scene load_steps=2 format=3]
-[ext_resource path="res://scenes/gameplay/gameplay_root.gd" type="Script" id="1"]
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scenes/gameplay/gameplay_root.gd" id="1_root"]
+[ext_resource type="Script" path="res://scripts/ui/travel_playfield.gd" id="2_field"]
+[ext_resource type="Script" path="res://scripts/ui/travel_hud.gd" id="3_hud"]
+[ext_resource type="Script" path="res://scripts/ui/travel_feedback_layer.gd" id="4_feedback"]
+[ext_resource type="Script" path="res://scripts/ui/travel_overlay.gd" id="5_overlay"]
+
 [node name="GameplayRoot" type="Control"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-mouse_filter = 0
-script = ExtResource("1")
-[node name="Info" type="Label" parent="."]
-position = Vector2(20, 20)
-theme_override_font_sizes/font_size = 22
-[node name="LeftLane" type="ColorRect" parent="."]
-position = Vector2(30, 160)
-size = Vector2(300, 760)
-color = Color(0.2, 0.35, 0.5, 1)
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_root")
+
+[node name="Playfield" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
-[node name="RightLane" type="ColorRect" parent="."]
-position = Vector2(390, 160)
-size = Vector2(300, 760)
-color = Color(0.4, 0.25, 0.45, 1)
-mouse_filter = 2
+script = ExtResource("2_field")
+
 [node name="ItemLayer" type="Control" parent="."]
 layout_mode = 1
 anchors_preset = 15
@@ -28,6 +33,48 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-[node name="Result" type="Label" parent="."]
-position = Vector2(250, 980)
-theme_override_font_sizes/font_size = 42
+
+[node name="Hud" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("3_hud")
+
+[node name="Hint" type="Label" parent="."]
+layout_mode = 0
+offset_left = 128.0
+offset_top = 270.0
+offset_right = 592.0
+offset_bottom = 300.0
+theme_override_colors/font_color = Color(1, 0.94, 0.69, 1)
+theme_override_colors/font_shadow_color = Color(0.02, 0.06, 0.14, 1)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 18
+text = "Tap an item when it reaches the action line"
+horizontal_alignment = 1
+mouse_filter = 2
+
+[node name="Feedback" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("4_feedback")
+
+[node name="Overlay" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("5_overlay")

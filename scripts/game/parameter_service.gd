@@ -23,3 +23,10 @@ func is_safe() -> bool:
 		if value < definition.safe_min or value > definition.safe_max:
 			return false
 	return true
+
+func unsafe_parameter_id() -> StringName:
+	for definition: ParameterDefinition in definitions:
+		var value := state.values[definition.id]
+		if value < definition.safe_min or value > definition.safe_max:
+			return definition.id
+	return &""

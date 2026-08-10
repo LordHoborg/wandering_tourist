@@ -12,18 +12,18 @@ func set_bag(items: Array[ItemDefinition]) -> void:
 	bag = items.duplicate()
 
 func take_next(fairness: SpawnFairnessValidator) -> ItemDefinition:
-	if bag.is_empty():
-		return null
-	var candidate: ItemDefinition = bag[0]
-	if fairness.accept(candidate):
+	while not bag.is_empty():
+		var candidate: ItemDefinition = bag[0]
+		if fairness.accept(candidate):
+			bag.pop_front()
+			return candidate
+		var repaired: ItemDefinition = fairness.repair(candidate, bag)
+		if repaired != candidate and fairness.accept(repaired):
+			bag.erase(repaired)
+			return repaired
+		# This candidate cannot meet the existing drought constraint. Remove it
+		# so an invalid remainder can never permanently stall the spawn loop.
 		bag.pop_front()
-		return candidate
-	var repaired: ItemDefinition = fairness.repair(candidate, bag)
-	if fairness.accept(repaired):
-		bag.erase(repaired)
-		return repaired
-	# This should be unreachable for a valid bag, but never silently spawn an
-	# item that breaks the drought guarantee.
 	return null
 func next_lane(rng: DeterministicRng) -> int:
 	var lane: int = rng.next_index(2)
