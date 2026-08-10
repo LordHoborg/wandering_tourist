@@ -118,3 +118,9 @@ For AC-10 and AC-11, give each tester one short control/item reference explanati
 ## Phase Gate
 
 No open design question blocks Phase 1. Runtime validation and balance iteration belong to Phase 3. Do not begin Phase 2 until this GDD receives explicit approval.
+
+## Playable Progression Extension
+
+The tropical prototype now introduces its vocabulary over three sequential 120-second stages without changing the approved survival bounds, item effects, lane controls, cadence, cut window, or fairness rules. Stage 1 contains Fruit, Pillow, and Camera only. Stage 2 begins with that familiar pool, then adds Stale Snack, Alarm Clock, and Rain Cloud one at a time across controlled three-item teaching bags. Stage 3 restores the approved seven-simple/three-trade bag and adds Coffee, Local Meal, and Night Market with compact signed H/R/F effects.
+
+Item familiarity is profile-local for the active progression: first exposure is NEW, the next two are LEARNING, then the object is KNOWN. Simple-item action labels are not permanent; early exposure shows effects, while trade-offs always show their signed effects. Travel Spirit is a non-survival performance meter: correct simple cuts, hazard passes, and contextually beneficial trade-offs build it and grant a small score bonus; missed beneficial items and poor choices reduce it. It does not change parameter math or failure rules. Completion results show a lightweight traveler rating and allow progression with N; R retries the current stage.

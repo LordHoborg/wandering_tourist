@@ -18,11 +18,11 @@ var item_views: Dictionary = {}
 var event_kinds: Dictionary = {}
 var hint_seen := false
 
-@onready var playfield: TravelPlayfield = $Playfield
-@onready var hud: TravelHud = $Hud
+@onready var playfield = $Playfield
+@onready var hud = $Hud
 @onready var item_layer: Control = $ItemLayer
-@onready var feedback: TravelFeedbackLayer = $Feedback
-@onready var overlay: TravelOverlay = $Overlay
+@onready var feedback = $Feedback
+@onready var overlay = $Overlay
 @onready var hint: Label = $Hint
 
 func _ready() -> void:
@@ -67,6 +67,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			game.resume()
 	elif event is InputEventKey and event.pressed and event.keycode == KEY_R and not event.echo:
 		game.restart()
+	elif event is InputEventKey and event.pressed and event.keycode == KEY_N and not event.echo:
+		game.advance_stage()
 
 func _render_snapshot(next_snapshot: Dictionary) -> void:
 	snapshot = next_snapshot
@@ -79,7 +81,7 @@ func _render_snapshot(next_snapshot: Dictionary) -> void:
 		live_ids[instance_id] = true
 		if item["cut_ready"]:
 			ready[item["lane"]] = true
-		var view: TravelItemView
+		var view
 		if item_views.has(instance_id):
 			view = item_views[instance_id]
 		else:
@@ -93,7 +95,7 @@ func _render_snapshot(next_snapshot: Dictionary) -> void:
 		view.position = Vector2(117.0 if item["lane"] == 0 else 457.0, LANE_TOP + item["progress"] * LANE_HEIGHT - ITEM_SIZE.y * 0.5)
 	for instance_id in item_views.keys():
 		if not live_ids.has(instance_id):
-			var removed: TravelItemView = item_views[instance_id]
+			var removed = item_views[instance_id]
 			removed.play_departure(event_kinds.get(instance_id, "") == &"harmful_cut", AppSettings.reduced_motion)
 			item_views.erase(instance_id)
 			event_kinds.erase(instance_id)
@@ -111,9 +113,19 @@ func _on_presentation_event(kind: StringName, data: Dictionary) -> void:
 		_mark_item_event(data, kind)
 	elif kind == &"hazard_passed":
 		feedback.show_feedback("GOOD!  +%d" % data.get("score_delta", 50), Color("a7f1ca"), at)
+	elif kind == &"beneficial_missed":
+		feedback.show_feedback("MISSED %s" % String(data.get("item_id", "ITEM")).to_upper(), Color("ffd38a"), at)
 	elif kind == &"spawn" and not hint_seen:
 		hint_seen = true
 		hint.visible = true
+	elif kind == &"stage_started":
+		hint.text = "%s\n%s" % [data.get("title", ""), data.get("lesson", "")]
+		hint.visible = true
+		hint.modulate.a = 1.0
+		if not AppSettings.reduced_motion:
+			var tween := create_tween()
+			tween.tween_interval(4.0)
+			tween.tween_property(hint, "modulate:a", 0.0, 0.45)
 
 func _mark_item_event(data: Dictionary, kind: StringName) -> void:
 	# The corresponding presentation node is removed by the next snapshot.

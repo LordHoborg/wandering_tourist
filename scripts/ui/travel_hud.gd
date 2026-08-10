@@ -11,11 +11,11 @@ func _draw() -> void:
 	var panel := StyleBoxFlat.new(); panel.bg_color = Color(0.035, 0.08, 0.18, 0.88); panel.border_color = Color("f5cf72"); panel.set_border_width_all(2); panel.set_corner_radius_all(24)
 	draw_style_box(panel, Rect2(18, 18, 684, 244))
 	var font := ThemeDB.fallback_font
-	draw_string(font, Vector2(42, 58), "WANDERING TOURIST", HORIZONTAL_ALIGNMENT_LEFT, -1, 26, Color("fff0bd")); draw_string(font, Vector2(42, 82), "TROPICAL POSTCARD RUN", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color("8ce4d8"))
+	draw_string(font, Vector2(42, 58), "WANDERING TOURIST", HORIZONTAL_ALIGNMENT_LEFT, -1, 26, Color("fff0bd")); draw_string(font, Vector2(42, 82), "STAGE %d  |  TROPICAL POSTCARD RUN" % snapshot.get("stage", 1), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color("8ce4d8"))
 	var values: Dictionary = snapshot["parameters"]
 	_draw_meter(42, 112, "H", "HUNGER", values[&"hunger"], Color("ffb35c")); _draw_meter(42, 160, "Z", "REST", values[&"rest"], Color("91b9ff")); _draw_meter(42, 208, "*", "FUN", values[&"fun"], Color("f49ad6"))
 	draw_string(font, Vector2(506, 125), "TIME  %02d:%02d" % [int(snapshot["remaining"]) / 60, int(snapshot["remaining"]) % 60], HORIZONTAL_ALIGNMENT_LEFT, -1, 19, Color.WHITE)
-	draw_string(font, Vector2(506, 164), "SCORE  %d" % snapshot["score"], HORIZONTAL_ALIGNMENT_LEFT, -1, 19, Color("fff0bd")); draw_string(font, Vector2(506, 203), "BEST   %d" % snapshot["best_score"], HORIZONTAL_ALIGNMENT_LEFT, -1, 19, Color("8ce4d8"))
+	draw_string(font, Vector2(506, 164), "SCORE  %d" % snapshot["score"], HORIZONTAL_ALIGNMENT_LEFT, -1, 19, Color("fff0bd")); draw_string(font, Vector2(506, 203), "SPIRIT %d/9" % snapshot.get("momentum", 0), HORIZONTAL_ALIGNMENT_LEFT, -1, 17, Color("8ce4d8"))
 
 func _draw_meter(x: float, y: float, icon: String, label: String, value: float, tint: Color) -> void:
 	var warning := value <= 30.0 or value >= 70.0
