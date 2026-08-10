@@ -9,7 +9,11 @@ class Transaction:
 
 func resolve(item: ItemDefinition, parameters: ParameterService, collected: bool, neutral_target: float = 50.0) -> Transaction:
 	var result := Transaction.new()
-	result.deltas = item.deltas if collected else {}
+	var transaction_deltas: Dictionary[StringName, float] = {}
+	if collected:
+		for parameter_id: StringName in item.deltas:
+			transaction_deltas[parameter_id] = item.deltas[parameter_id]
+	result.deltas = transaction_deltas
 	result.before_distance = _distance(parameters.state.values, neutral_target)
 	result.safe = parameters.apply(result.deltas) if collected else parameters.is_safe()
 	result.after_distance = _distance(parameters.state.values, neutral_target)

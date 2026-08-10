@@ -6,13 +6,15 @@ var max_drought: int
 func _init(limit: int = 6) -> void:
 	max_drought = limit
 func accept(item: ItemDefinition) -> bool:
+	var next_drought: Dictionary[StringName, int] = {}
 	for id: StringName in drought:
 		if item.deltas.get(id, 0.0) > 0.0:
-			drought[id] = 0
+			next_drought[id] = 0
 		else:
-			drought[id] += 1
-		if drought[id] > max_drought:
+			next_drought[id] = drought[id] + 1
+		if next_drought[id] > max_drought:
 			return false
+	drought = next_drought
 	return true
 
 func has_recovery_for_all(items: Array[ItemDefinition]) -> bool:
