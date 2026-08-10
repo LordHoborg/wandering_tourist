@@ -15,7 +15,7 @@ func _draw() -> void:
 	var values: Dictionary = snapshot["parameters"]
 	_draw_meter(42, 112, "H", "HUNGER", values[&"hunger"], Color("ffb35c")); _draw_meter(42, 160, "Z", "REST", values[&"rest"], Color("91b9ff")); _draw_meter(42, 208, "*", "FUN", values[&"fun"], Color("f49ad6"))
 	draw_string(font, Vector2(506, 125), "TIME  %02d:%02d" % [int(snapshot["remaining"]) / 60, int(snapshot["remaining"]) % 60], HORIZONTAL_ALIGNMENT_LEFT, -1, 19, Color.WHITE)
-	draw_string(font, Vector2(506, 164), "SCORE  %d" % snapshot["score"], HORIZONTAL_ALIGNMENT_LEFT, -1, 19, Color("fff0bd")); draw_string(font, Vector2(506, 203), "SPIRIT %d/9" % snapshot.get("momentum", 0), HORIZONTAL_ALIGNMENT_LEFT, -1, 17, Color("8ce4d8"))
+	draw_string(font, Vector2(506, 164), "SCORE  %d" % snapshot["score"], HORIZONTAL_ALIGNMENT_LEFT, -1, 19, Color("fff0bd")); draw_string(font, Vector2(506, 203), "SPIRIT %d/9" % snapshot.get("momentum", 0), HORIZONTAL_ALIGNMENT_LEFT, -1, 17, Color("8ce4d8")); draw_string(font, Vector2(42, 286), snapshot.get("objective", ""), HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color("fff0bd"))
 
 func _draw_meter(x: float, y: float, icon: String, label: String, value: float, tint: Color) -> void:
 	var warning := value <= 30.0 or value >= 70.0

@@ -36,6 +36,14 @@ var familiarity: Dictionary[StringName, int] = {}
 var correct_decisions: int = 0
 var missed_beneficial: int = 0
 var harmful_cuts: int = 0
+var beneficial_collected: int = 0
+var hazards_passed: int = 0
+var hazards_cut: int = 0
+var tradeoffs_taken: int = 0
+var beneficial_tradeoffs: int = 0
+var failed_tradeoffs: int = 0
+var item_collections: Dictionary[StringName, int] = {}
+var item_hazard_passes: Dictionary[StringName, int] = {}
 var active_items: Array[ItemInstance] = []
 var spawn_elapsed: float = 0.0
 var lane_ready_at: Dictionary[int, float] = {0: 0.0, 1: 0.0}
@@ -72,8 +80,11 @@ func handle_lane_intent(lane_id: int) -> void:
 	var transaction = resolver.resolve(item, parameters, true)
 	if item.is_tradeoff:
 		score.add_tradeoff(transaction.before_distance, transaction.after_distance, not transaction.safe)
+		tradeoffs_taken += 1
 	elif item.should_collect:
 		score.reward_correct(item.score)
+		beneficial_collected += 1
+		item_collections[item.id] = item_collections.get(item.id, 0) + 1
 	else:
 		score.break_momentum()
 	active_items.erase(instance)
@@ -81,17 +92,24 @@ func handle_lane_intent(lane_id: int) -> void:
 	var event_data := {"instance_id": instance.get_instance_id(), "item_id": item.id, "lane": lane_id, "score_delta": score_delta, "deltas": transaction.deltas, "safe": transaction.safe}
 	if not item.should_collect:
 		harmful_cuts += 1
+		hazards_cut += 1
 		presentation_event.emit(&"harmful_cut", event_data)
 	elif transaction.safe:
 		if score_delta > 0:
 			correct_decisions += 1
+			if item.is_tradeoff:
+				beneficial_tradeoffs += 1
+		elif item.is_tradeoff:
+			failed_tradeoffs += 1
 		presentation_event.emit(&"cut_success", event_data)
 	else:
 		harmful_cuts += 1
 		presentation_event.emit(&"harmful_cut", event_data)
 	if not transaction.safe:
-		failure_parameter_id = parameters.unsafe_parameter_id()
+		failure_parameter_id = parameters.unsafe_parameter_id(_stage().active_parameters)
 		_finish(RunStateMachine.State.FAILED)
+	elif _stage_objective_complete():
+		_finish(RunStateMachine.State.COMPLETED)
 	publish_snapshot()
 
 func pause_intent() -> bool:
@@ -111,12 +129,15 @@ func resume() -> bool:
 func tick(delta: float) -> void:
 	if state_machine.state != RunStateMachine.State.RUNNING: return
 	timer.tick(delta)
-	if not parameters.tick(delta):
-		failure_parameter_id = parameters.unsafe_parameter_id()
+	if not parameters.tick(delta, _stage().active_parameters):
+		failure_parameter_id = parameters.unsafe_parameter_id(_stage().active_parameters)
 		_finish(RunStateMachine.State.FAILED)
 		publish_snapshot()
 		return
 	_resolve_passed_items()
+	if state_machine.state != RunStateMachine.State.RUNNING:
+		publish_snapshot()
+		return
 	_spawn_items(delta)
 	if timer.finished:
 		score.add_completion_bonus(level.completion_bonus)
@@ -171,12 +192,16 @@ func _resolve_passed_items() -> void:
 		if not instance.definition.should_collect:
 			var awarded := score.reward_correct(instance.definition.pass_score)
 			correct_decisions += 1
+			hazards_passed += 1
+			item_hazard_passes[instance.definition.id] = item_hazard_passes.get(instance.definition.id, 0) + 1
 			presentation_event.emit(&"hazard_passed", {"instance_id": instance.get_instance_id(), "item_id": instance.definition.id, "lane": instance.lane_id, "score_delta": awarded})
 		elif not instance.definition.is_tradeoff:
 			missed_beneficial += 1
 			score.break_momentum()
 			presentation_event.emit(&"beneficial_missed", {"instance_id": instance.get_instance_id(), "item_id": instance.definition.id, "lane": instance.lane_id})
 		active_items.erase(instance)
+	if state_machine.state == RunStateMachine.State.RUNNING and _stage_objective_complete():
+		_finish(RunStateMachine.State.COMPLETED)
 
 func _front_eligible_item(lane_id: int) -> ItemInstance:
 	var chosen: ItemInstance = null
@@ -215,24 +240,40 @@ func _create_prototype_items() -> void:
 
 func _create_stages() -> void:
 	var no_trade_items: Array[StringName] = []
-	stages = [_stage_definition(&"basic_needs", "STAGE 1 - BASIC NEEDS", "Learn the three travel essentials.", [&"fruit", &"pillow", &"camera"], no_trade_items, 3, 0), _stage_definition(&"learning_to_avoid", "STAGE 2 - LEARNING TO AVOID", "New sights are not always good for the journey.", [&"fruit", &"pillow", &"camera", &"stale_snack", &"alarm_clock", &"rain_cloud"], no_trade_items, 3, 0, {&"stale_snack": 3, &"alarm_clock": 6, &"rain_cloud": 9}), _stage_definition(&"mixed_decisions", "STAGE 3 - MIXED DECISIONS", "Check your needs before choosing mixed items.", [&"fruit", &"pillow", &"camera", &"stale_snack", &"alarm_clock", &"rain_cloud"], [&"coffee", &"local_meal", &"night_market"], 7, 3)]
+	stages = [_stage_definition(&"basic_needs", "STAGE 1 - BASIC NEEDS", "Learn your travel essentials: collect each twice.", [&"fruit", &"pillow", &"camera"], no_trade_items, 3, 0, 65.0, -0.49, 1.50, 3.45, {}, {&"fruit": 2, &"pillow": 2, &"camera": 2}), _stage_definition(&"learning_to_avoid", "STAGE 2 - WATCH OUT", "Collect essentials; let each new hazard pass once.", [&"fruit", &"pillow", &"camera", &"stale_snack", &"alarm_clock", &"rain_cloud"], no_trade_items, 3, 0, 85.0, -0.48, 1.35, 3.10, {&"stale_snack": 3, &"alarm_clock": 6, &"rain_cloud": 9}, {&"fruit": 2, &"pillow": 2, &"camera": 2}, [&"stale_snack", &"alarm_clock", &"rain_cloud"]), _stage_definition(&"mixed_decisions", "STAGE 3 - TOUGH CHOICES", "Check your needs before choosing mixed items.", [&"fruit", &"pillow", &"camera", &"stale_snack", &"alarm_clock", &"rain_cloud"], [&"coffee", &"local_meal", &"night_market"], 7, 3, 100.0, -0.40, 1.20, 2.90)]
 
-func _stage_definition(id: StringName, title: String, lesson: String, simple_ids: Array[StringName], trade_ids: Array[StringName], simple_count: int, trade_count: int, unlocks: Dictionary[StringName, int] = {}) -> StageDefinition:
+func _stage_definition(id: StringName, title: String, lesson: String, simple_ids: Array[StringName], trade_ids: Array[StringName], simple_count: int, trade_count: int, duration: float, decay: float, spawn_interval: float, fall_duration: float, unlocks: Dictionary[StringName, int] = {}, collections: Dictionary[StringName, int] = {}, hazard_passes: Array[StringName] = []) -> StageDefinition:
 	var stage := StageDefinition.new()
-	stage.id = id; stage.title = title; stage.lesson = lesson; stage.simple_item_ids = simple_ids; stage.trade_item_ids = trade_ids; stage.simple_count = simple_count; stage.trade_count = trade_count; stage.hazard_unlock_spawns = unlocks
+	stage.id = id; stage.title = title; stage.lesson = lesson; stage.simple_item_ids = simple_ids; stage.trade_item_ids = trade_ids; stage.simple_count = simple_count; stage.trade_count = trade_count; stage.duration_seconds = duration; stage.passive_decay_per_second = decay; stage.spawn_interval = spawn_interval; stage.fall_duration = fall_duration; stage.hazard_unlock_spawns = unlocks; stage.required_collections = collections; stage.required_hazard_passes = hazard_passes
 	return stage
 
 func _apply_stage(next_index: int) -> void:
 	stage_index = next_index
+	level.duration_seconds = _stage().duration_seconds
 	level.spawn_interval = _stage().spawn_interval
 	level.fall_duration = _stage().fall_duration
+	timer = TimerService.new(level.duration_seconds)
+	for definition: ParameterDefinition in parameters.definitions:
+		definition.decay_per_second = _stage().passive_decay_per_second
 
 func _reset_stage_run() -> void:
 	state_machine = RunStateMachine.new()
 	parameters.state.set_defaults(parameters.definitions)
-	timer = TimerService.new(level.duration_seconds)
+	timer = TimerService.new(_stage().duration_seconds)
 	score = ScoreService.new(); resolver = ItemResolver.new(); scheduler = SpawnScheduler.new(); fairness = SpawnFairnessValidator.new(level.max_recovery_drought)
-	active_items.clear(); failure_parameter_id = &""; spawn_elapsed = 0.0; lane_ready_at = {0: 0.0, 1: 0.0}; stage_spawn_count = 0; correct_decisions = 0; missed_beneficial = 0; harmful_cuts = 0
+	active_items.clear(); failure_parameter_id = &""; spawn_elapsed = 0.0; lane_ready_at = {0: 0.0, 1: 0.0}; stage_spawn_count = 0; correct_decisions = 0; missed_beneficial = 0; harmful_cuts = 0; beneficial_collected = 0; hazards_passed = 0; hazards_cut = 0; tradeoffs_taken = 0; beneficial_tradeoffs = 0; failed_tradeoffs = 0; item_collections.clear(); item_hazard_passes.clear()
+
+func _stage_objective_complete() -> bool:
+	var stage := _stage()
+	if stage.required_collections.is_empty() and stage.required_hazard_passes.is_empty():
+		return false
+	for item_id in stage.required_collections:
+		if item_collections.get(item_id, 0) < stage.required_collections[item_id]:
+			return false
+	for item_id in stage.required_hazard_passes:
+		if item_hazard_passes.get(item_id, 0) < 1:
+			return false
+	return true
 
 func _stage() -> StageDefinition:
 	return stages[stage_index]
@@ -264,6 +305,13 @@ func publish_snapshot() -> void:
 	var item_snapshots: Array[Dictionary] = []
 	for instance in active_items:
 		var seen: int = familiarity.get(instance.definition.id, 0)
-		item_snapshots.append({"instance_id": instance.get_instance_id(), "id": instance.definition.id, "lane": instance.lane_id, "progress": clampf(instance.age(timer.elapsed) / level.fall_duration, 0.0, 1.0), "cut_ready": instance.age(timer.elapsed) >= level.fall_duration - level.cut_window, "collect": instance.definition.should_collect, "tradeoff": instance.definition.is_tradeoff, "knowledge": "NEW" if seen <= 1 else ("LEARNING" if seen <= 3 else "KNOWN"), "show_effects": instance.definition.is_tradeoff or seen <= 2, "deltas": instance.definition.deltas})
-	var snapshot: Dictionary = {"state": state_machine.state, "score": score.score, "best_score": best_scores.best_score, "remaining": timer.remaining(), "parameters": parameters.state.values.duplicate(), "failure_parameter": failure_parameter_id, "stage": stage_index + 1, "stage_title": _stage().title, "stage_lesson": _stage().lesson, "momentum": score.momentum, "correct_decisions": correct_decisions, "missed_beneficial": missed_beneficial, "harmful_cuts": harmful_cuts, "items": item_snapshots}
+		item_snapshots.append({"instance_id": instance.get_instance_id(), "id": instance.definition.id, "lane": instance.lane_id, "progress": clampf(instance.age(timer.elapsed) / level.fall_duration, 0.0, 1.0), "cut_ready": instance.age(timer.elapsed) >= level.fall_duration - level.cut_window, "collect": instance.definition.should_collect, "tradeoff": instance.definition.is_tradeoff, "knowledge": "NEW" if seen <= 1 else ("LEARNING" if seen <= 5 else "KNOWN"), "familiarity_count": seen, "show_effects": instance.definition.is_tradeoff or seen <= 5, "deltas": instance.definition.deltas})
+	var snapshot: Dictionary = {"state": state_machine.state, "score": score.score, "best_score": best_scores.best_score, "remaining": timer.remaining(), "parameters": parameters.state.values.duplicate(), "failure_parameter": failure_parameter_id, "stage": stage_index + 1, "stage_title": _stage().title, "stage_lesson": _stage().lesson, "objective": _objective_text(), "momentum": score.momentum, "correct_decisions": correct_decisions, "missed_beneficial": missed_beneficial, "harmful_cuts": harmful_cuts, "beneficial_collected": beneficial_collected, "hazards_passed": hazards_passed, "hazards_cut": hazards_cut, "tradeoffs_taken": tradeoffs_taken, "beneficial_tradeoffs": beneficial_tradeoffs, "failed_tradeoffs": failed_tradeoffs, "items": item_snapshots}
 	snapshot_published.emit(snapshot)
+
+func _objective_text() -> String:
+	if stage_index == 0:
+		return "ESSENTIALS  F %d/2  P %d/2  C %d/2" % [item_collections.get(&"fruit", 0), item_collections.get(&"pillow", 0), item_collections.get(&"camera", 0)]
+	if stage_index == 1:
+		return "ESSENTIALS + PASS EACH HAZARD"
+	return "SURVIVE THE FULL JOURNEY"

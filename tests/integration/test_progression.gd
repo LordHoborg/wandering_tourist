@@ -1,0 +1,64 @@
+extends SceneTree
+
+const Definition = preload("res://scripts/data/parameter_definition.gd")
+const Coordinator = preload("res://scripts/game/gameplay_coordinator.gd")
+const RunState = preload("res://scripts/game/run_state_machine.gd")
+
+var passed := 0
+var failed := 0
+
+func _init() -> void:
+	var game = Coordinator.new(_definitions(), 120.0, "user://progression_test.dat")
+	_check(game.stages.size() == 3 and game.stages[0].simple_item_ids == [&"fruit", &"pillow", &"camera"] and game.stages[0].trade_count == 0, "stage 1 basic item pool")
+	_check(game.stages[1].simple_item_ids.has(&"stale_snack") and game.stages[1].trade_count == 0, "stage 2 hazard pool")
+	_check(game.stages[2].trade_item_ids.has(&"coffee") and game.stages[2].trade_count == 3, "stage 3 trade-off pool")
+	game.start()
+	_check(_survive_stage(game), "reasonable beneficial-collection bot survives stage 1")
+	_check(game.state_machine.state == RunState.State.COMPLETED and game.advance_stage(), "completion advances to stage 2")
+	_check(game.stage_index == 1 and not game.familiarity.has(&"coffee"), "unseen trade-off remains unknown")
+	game.familiarity[&"fruit"] = 5
+	game.restart()
+	_check(game.familiarity.get(&"fruit", 0) == 5 and not game.familiarity.has(&"night_market"), "per-item familiarity persists across retry")
+	game.timer.elapsed = game.timer.duration
+	game.tick(0.0)
+	game.advance_stage()
+	_check(game.stage_index == 2 and game.stages[2].destination_id == &"tropical", "stage 3 advances with destination data")
+	var idle_game = Coordinator.new(_definitions(), 120.0, "user://progression_idle_test.dat")
+	idle_game.start()
+	idle_game.timer.elapsed = idle_game.timer.duration
+	idle_game.tick(0.0)
+	idle_game.advance_stage()
+	for index in range(900):
+		idle_game.tick(0.1)
+		if idle_game.state_machine.state == RunState.State.FAILED:
+			break
+	_check(idle_game.state_machine.state == RunState.State.FAILED and idle_game.stage_index == 1 and not idle_game.advance_stage(), "stage 2 inactivity fails and cannot advance")
+	print("TESTS PASSED: %d" % passed)
+	print("TESTS FAILED: %d" % failed)
+	quit(0 if failed == 0 else 1)
+
+func _definitions() -> Array[ParameterDefinition]:
+	var result: Array[ParameterDefinition] = []
+	for id in [&"hunger", &"rest", &"fun"]:
+		var definition: ParameterDefinition = Definition.new()
+		definition.id = id
+		result.append(definition)
+	return result
+
+func _survive_stage(game) -> bool:
+	for index in range(700):
+		game.tick(0.1)
+		for item in game.active_items.duplicate():
+			if item.definition.should_collect and item.age(game.timer.elapsed) >= game.level.fall_duration - game.level.cut_window:
+				game.handle_lane_intent(item.lane_id)
+		if game.state_machine.state != RunState.State.RUNNING:
+			break
+	return game.state_machine.state == RunState.State.COMPLETED
+
+func _check(condition: bool, name: String) -> void:
+	if condition:
+		passed += 1
+		print("PASS: %s" % name)
+	else:
+		failed += 1
+		push_error("FAIL: %s" % name)

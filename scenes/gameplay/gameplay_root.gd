@@ -47,8 +47,14 @@ func _process(delta: float) -> void:
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed:
+		if snapshot.get("state") == RunStateMachine.State.COMPLETED and event.position.y >= 730.0:
+			game.advance_stage()
+			return
 		_forward_lane_pointer(event.position)
 	elif event is InputEventScreenTouch and event.pressed:
+		if snapshot.get("state") == RunStateMachine.State.COMPLETED and event.position.y >= 730.0:
+			game.advance_stage()
+			return
 		_forward_lane_pointer(event.position)
 
 func _forward_lane_pointer(pointer: Vector2) -> void:
@@ -65,6 +71,8 @@ func _unhandled_input(event: InputEvent) -> void:
 			game.pause_intent()
 		elif snapshot.get("state") == RunStateMachine.State.PAUSED:
 			game.resume()
+		elif snapshot.get("state") == RunStateMachine.State.COMPLETED:
+			game.advance_stage()
 	elif event is InputEventKey and event.pressed and event.keycode == KEY_R and not event.echo:
 		game.restart()
 	elif event is InputEventKey and event.pressed and event.keycode == KEY_N and not event.echo:

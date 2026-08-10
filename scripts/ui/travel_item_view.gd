@@ -9,9 +9,10 @@ var accent := Color.WHITE
 var knowledge := "NEW"
 var show_effects := true
 var deltas: Dictionary = {}
+var familiarity_count: int = 0
 
 func configure(data: Dictionary) -> void:
-	item_id = data["id"]; collect = data["collect"]; tradeoff = data["tradeoff"]; cut_ready = data["cut_ready"]; knowledge = data.get("knowledge", "KNOWN"); show_effects = data.get("show_effects", false); deltas = data.get("deltas", {})
+	item_id = data["id"]; collect = data["collect"]; tradeoff = data["tradeoff"]; cut_ready = data["cut_ready"]; knowledge = data.get("knowledge", "KNOWN"); familiarity_count = data.get("familiarity_count", 0); show_effects = data.get("show_effects", false); deltas = data.get("deltas", {})
 	accent = Color("c88cff") if tradeoff else (Color("8fe3a8") if collect else Color("ff917b"))
 	queue_redraw()
 
@@ -29,7 +30,7 @@ func play_departure(harmful: bool, reduced_motion: bool) -> void:
 func _draw() -> void:
 	var card := StyleBoxFlat.new(); card.bg_color = Color(0.05, 0.10, 0.20, 0.96); card.border_color = Color("ffe597") if cut_ready else accent; card.set_border_width_all(4 if cut_ready else 2); card.set_corner_radius_all(18)
 	draw_style_box(card, Rect2(Vector2.ZERO, size)); _draw_icon(Vector2(38, 42))
-	draw_string(ThemeDB.fallback_font, Vector2(77, 38), _title(), HORIZONTAL_ALIGNMENT_LEFT, 88, 15, Color.WHITE); draw_string(ThemeDB.fallback_font, Vector2(77, 61), "MIXED" if tradeoff else knowledge, HORIZONTAL_ALIGNMENT_LEFT, -1, 12, accent)
+	draw_string(ThemeDB.fallback_font, Vector2(77, 38), _title(), HORIZONTAL_ALIGNMENT_LEFT, 88, 15, Color.WHITE); draw_string(ThemeDB.fallback_font, Vector2(77, 61), "MIXED" if tradeoff else _knowledge_label(), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, accent)
 	if show_effects: draw_string(ThemeDB.fallback_font, Vector2(77, 80), _effect_text(), HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("fff0bd"))
 	if cut_ready: draw_string(ThemeDB.fallback_font, Vector2(18, 83), "ACTION!", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color("fff1b0"))
 
@@ -42,6 +43,11 @@ func _effect_text() -> String:
 	for parameter_id in deltas:
 		chunks.append("%s%+d" % [names.get(parameter_id, "?"), int(deltas[parameter_id])])
 	return " ".join(chunks)
+
+func _knowledge_label() -> String:
+	if knowledge == "KNOWN":
+		return "KNOWN"
+	return "%s %d/6" % [knowledge, familiarity_count]
 
 func _draw_icon(c: Vector2) -> void:
 	if item_id == &"fruit": draw_circle(c, 20, Color("ff885e")); draw_circle(c + Vector2(9, -12), 7, Color("9ee276"))
