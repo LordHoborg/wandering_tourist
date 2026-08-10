@@ -1,11 +1,23 @@
 class_name GameplayCoordinator
 extends RefCounted
 
+const ParameterDefinition = preload("res://scripts/data/parameter_definition.gd")
+const ParameterService = preload("res://scripts/game/parameter_service.gd")
+const TimerService = preload("res://scripts/game/timer_service.gd")
+const ScoreService = preload("res://scripts/game/score_service.gd")
+const BestScoreRepository = preload("res://scripts/game/best_score_repository.gd")
+const RunStateMachine = preload("res://scripts/game/run_state_machine.gd")
+const ItemResolver = preload("res://scripts/game/item_resolver.gd")
+const SpawnScheduler = preload("res://scripts/game/spawn_scheduler.gd")
+const SpawnFairnessValidator = preload("res://scripts/game/spawn_fairness_validator.gd")
+const SpawnBagGenerator = preload("res://scripts/game/spawn_bag_generator.gd")
+const DeterministicRng = preload("res://scripts/game/deterministic_rng.gd")
+
 signal snapshot_published(snapshot: Dictionary)
-var state_machine := RunStateMachine.new()
+var state_machine: RunStateMachine = RunStateMachine.new()
 var parameters: ParameterService
 var timer: TimerService
-var score := ScoreService.new()
+var score: ScoreService = ScoreService.new()
 var best_scores: BestScoreRepository
 
 func _init(definitions: Array[ParameterDefinition], duration: float, repository_path: String) -> void:
