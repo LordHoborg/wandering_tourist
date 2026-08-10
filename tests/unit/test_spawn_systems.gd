@@ -14,10 +14,10 @@ func _init() -> void:
 	for index in range(40):
 		var lane = scheduler.next_lane(rng); both[lane] = true; streak = streak + 1 if lane == previous else 1; _check(streak <= 2, "lane fairness %d" % index); previous = lane
 	_check(both.size() == 2, "both lanes usable non-parameter-locked")
-	var simple: Array = []; var trade: Array = []
+	var simple: Array[ItemDefinition] = []; var trade: Array[ItemDefinition] = []
 	for id in [&"hunger", &"rest", &"fun"]:
-		var boost = Item.new(); boost.deltas = {id: 7.0}; simple.append(boost)
-		var contextual = Item.new(); contextual.is_tradeoff = true; contextual.deltas = {id: 8.0}; trade.append(contextual)
+		var boost: ItemDefinition = Item.new(); boost.deltas = {id: 7.0}; simple.append(boost)
+		var contextual: ItemDefinition = Item.new(); contextual.is_tradeoff = true; contextual.deltas = {id: 8.0}; trade.append(contextual)
 	var bag = Generator.new().generate(simple, trade, Rng.new(99))
 	var trade_count := 0
 	for item in bag: if item.is_tradeoff: trade_count += 1

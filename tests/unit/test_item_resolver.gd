@@ -7,9 +7,9 @@ var passed := 0
 var failed := 0
 func _init() -> void:
 	print("TEST START")
-	var defs = []
+	var defs: Array[ParameterDefinition] = []
 	for id in [&"hunger", &"rest", &"fun"]:
-		var definition = Definition.new(); definition.id = id; defs.append(definition)
+		var definition: ParameterDefinition = Definition.new(); definition.id = id; defs.append(definition)
 	var service = Parameters.new(defs)
 	var fruit = Item.new(); fruit.deltas = {&"hunger": 7.0}
 	var resolver = Resolver.new()

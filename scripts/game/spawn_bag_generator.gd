@@ -1,6 +1,9 @@
 class_name SpawnBagGenerator
 extends RefCounted
 
+const ItemDefinitionScript = preload("res://scripts/data/item_definition.gd")
+const DeterministicRngScript = preload("res://scripts/game/deterministic_rng.gd")
+
 func generate(simple_items: Array[ItemDefinition], trade_items: Array[ItemDefinition], rng: DeterministicRng) -> Array[ItemDefinition]:
 	assert(simple_items.size() > 0 and trade_items.size() > 0)
 	var bag: Array[ItemDefinition] = []

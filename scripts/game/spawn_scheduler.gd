@@ -1,6 +1,9 @@
 class_name SpawnScheduler
 extends RefCounted
 
+const DeterministicRngScript = preload("res://scripts/game/deterministic_rng.gd")
+const ItemDefinitionScript = preload("res://scripts/data/item_definition.gd")
+
 var bag: Array[ItemDefinition] = []
 var last_lane: int = -1
 var consecutive_lane: int = 0
