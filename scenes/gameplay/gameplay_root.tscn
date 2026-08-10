@@ -14,18 +14,20 @@ theme_override_font_sizes/font_size = 22
 position = Vector2(30, 160)
 size = Vector2(300, 760)
 color = Color(0.2, 0.35, 0.5, 1)
+mouse_filter = 2
 [node name="RightLane" type="ColorRect" parent="."]
 position = Vector2(390, 160)
 size = Vector2(300, 760)
 color = Color(0.4, 0.25, 0.45, 1)
-[node name="LeftItem" type="ColorRect" parent="."]
-position = Vector2(130, 170)
-size = Vector2(100, 70)
-color = Color(0.2, 0.9, 0.3, 1)
-[node name="RightItem" type="ColorRect" parent="."]
-position = Vector2(490, 290)
-size = Vector2(100, 70)
-color = Color(1, 0.7, 0.2, 1)
+mouse_filter = 2
+[node name="ItemLayer" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 [node name="Result" type="Label" parent="."]
 position = Vector2(250, 980)
 theme_override_font_sizes/font_size = 42

@@ -12,6 +12,7 @@ const SpawnScheduler = preload("res://scripts/game/spawn_scheduler.gd")
 const SpawnFairnessValidator = preload("res://scripts/game/spawn_fairness_validator.gd")
 const SpawnBagGenerator = preload("res://scripts/game/spawn_bag_generator.gd")
 const DeterministicRng = preload("res://scripts/game/deterministic_rng.gd")
+const ItemInstance = preload("res://scripts/state/item_instance.gd")
 
 signal snapshot_published(snapshot: Dictionary)
 var state_machine: RunStateMachine = RunStateMachine.new()
@@ -19,32 +20,160 @@ var parameters: ParameterService
 var timer: TimerService
 var score: ScoreService = ScoreService.new()
 var best_scores: BestScoreRepository
+var resolver: ItemResolver = ItemResolver.new()
+var scheduler: SpawnScheduler = SpawnScheduler.new()
+var fairness: SpawnFairnessValidator
+var rng: DeterministicRng = DeterministicRng.new(20260810)
+var simple_items: Array[ItemDefinition] = []
+var trade_items: Array[ItemDefinition] = []
+var active_items: Array[ItemInstance] = []
+var spawn_elapsed: float = 0.0
+var lane_ready_at: Dictionary[int, float] = {0: 0.0, 1: 0.0}
+var level := LevelDefinition.new()
 
 func _init(definitions: Array[ParameterDefinition], duration: float, repository_path: String) -> void:
 	parameters = ParameterService.new(definitions)
 	timer = TimerService.new(duration)
 	best_scores = BestScoreRepository.new(repository_path)
+	level.duration_seconds = duration
+	fairness = SpawnFairnessValidator.new(level.max_recovery_drought)
+	_create_prototype_items()
 
 func start() -> bool:
-	return state_machine.transition(RunStateMachine.State.RUNNING)
+	if not state_machine.transition(RunStateMachine.State.RUNNING):
+		return false
+	_fill_bag()
+	publish_snapshot()
+	return true
+
+func handle_lane_intent(lane_id: int) -> void:
+	if state_machine.state != RunStateMachine.State.RUNNING or timer.elapsed < lane_ready_at.get(lane_id, 0.0):
+		return
+	var instance := _front_eligible_item(lane_id)
+	if instance == null:
+		return
+	lane_ready_at[lane_id] = timer.elapsed + level.lane_cooldown
+	var item: ItemDefinition = instance.definition
+	var transaction = resolver.resolve(item, parameters, true)
+	if item.is_tradeoff:
+		score.add_tradeoff(transaction.before_distance, transaction.after_distance, not transaction.safe)
+	elif item.should_collect:
+		score.add_simple(item.score)
+	active_items.erase(instance)
+	if not transaction.safe:
+		_finish(RunStateMachine.State.FAILED)
+	publish_snapshot()
 
 func pause_intent() -> bool:
 	if state_machine.state != RunStateMachine.State.RUNNING: return false
 	timer.paused = true
-	return state_machine.transition(RunStateMachine.State.PAUSED)
+	var changed := state_machine.transition(RunStateMachine.State.PAUSED)
+	publish_snapshot()
+	return changed
 
 func resume() -> bool:
 	if state_machine.state != RunStateMachine.State.PAUSED: return false
 	timer.paused = false
-	return state_machine.transition(RunStateMachine.State.RUNNING)
+	var changed := state_machine.transition(RunStateMachine.State.RUNNING)
+	publish_snapshot()
+	return changed
 
 func tick(delta: float) -> void:
 	if state_machine.state != RunStateMachine.State.RUNNING: return
 	timer.tick(delta)
-	if not parameters.tick(delta): state_machine.transition(RunStateMachine.State.FAILED)
-	elif timer.finished: state_machine.transition(RunStateMachine.State.COMPLETED); score.add_completion_bonus(500); best_scores.submit(score.score)
+	if not parameters.tick(delta):
+		_finish(RunStateMachine.State.FAILED)
+		publish_snapshot()
+		return
+	_resolve_passed_items()
+	_spawn_items(delta)
+	if timer.finished:
+		score.add_completion_bonus(level.completion_bonus)
+		_finish(RunStateMachine.State.COMPLETED)
 	publish_snapshot()
 
+func restart() -> void:
+	if state_machine.state == RunStateMachine.State.RUNNING:
+		return
+	state_machine.transition(RunStateMachine.State.IDLE)
+	parameters.state.set_defaults(parameters.definitions)
+	timer = TimerService.new(level.duration_seconds)
+	score = ScoreService.new()
+	resolver = ItemResolver.new()
+	scheduler = SpawnScheduler.new()
+	fairness = SpawnFairnessValidator.new(level.max_recovery_drought)
+	active_items.clear()
+	spawn_elapsed = 0.0
+	lane_ready_at = {0: 0.0, 1: 0.0}
+	start()
+
+func _spawn_items(delta: float) -> void:
+	spawn_elapsed += delta
+	if spawn_elapsed < level.spawn_interval:
+		return
+	if _lane_count(0) >= 2 and _lane_count(1) >= 2:
+		spawn_elapsed = level.spawn_interval - 0.2
+		return
+	spawn_elapsed = 0.0
+	if scheduler.bag.is_empty():
+		_fill_bag()
+	var item := scheduler.take_next(fairness)
+	if item == null:
+		return
+	var lane := scheduler.next_lane(rng)
+	if _lane_count(lane) >= 2:
+		lane = 1 - lane
+	active_items.append(ItemInstance.new(item, lane, timer.elapsed))
+
+func _resolve_passed_items() -> void:
+	for instance in active_items.duplicate():
+		if instance.age(timer.elapsed) < level.fall_duration:
+			continue
+		if not instance.definition.should_collect:
+			score.add_simple(instance.definition.pass_score)
+		active_items.erase(instance)
+
+func _front_eligible_item(lane_id: int) -> ItemInstance:
+	var chosen: ItemInstance = null
+	for instance in active_items:
+		var age := instance.age(timer.elapsed)
+		if instance.lane_id != lane_id or age < level.fall_duration - level.cut_window or age >= level.fall_duration:
+			continue
+		if chosen == null or age > chosen.age(timer.elapsed):
+			chosen = instance
+	return chosen
+
+func _lane_count(lane_id: int) -> int:
+	var count := 0
+	for instance in active_items:
+		if instance.lane_id == lane_id:
+			count += 1
+	return count
+
+func _fill_bag() -> void:
+	scheduler.set_bag(SpawnBagGenerator.new().generate(simple_items, trade_items, rng))
+
+func _finish(next_state: RunStateMachine.State) -> void:
+	if state_machine.transition(next_state):
+		best_scores.submit(score.score)
+
+func _create_prototype_items() -> void:
+	simple_items = [_item(&"fruit", {&"hunger": 7.0}, 100, true), _item(&"pillow", {&"rest": 7.0}, 100, true), _item(&"camera", {&"fun": 7.0}, 100, true), _item(&"stale_snack", {&"hunger": -7.0}, 0, false, 50), _item(&"alarm_clock", {&"rest": -7.0}, 0, false, 50), _item(&"rain_cloud", {&"fun": -7.0}, 0, false, 50)]
+	trade_items = [_item(&"coffee", {&"hunger": -6.0, &"rest": 8.0, &"fun": 2.0}, 150, true, 0, true), _item(&"local_meal", {&"hunger": 8.0, &"rest": -4.0, &"fun": 2.0}, 150, true, 0, true), _item(&"night_market", {&"hunger": -3.0, &"rest": -5.0, &"fun": 9.0}, 150, true, 0, true)]
+
+func _item(id: StringName, deltas: Dictionary[StringName, float], item_score: int, collect: bool, pass_points: int = 0, tradeoff: bool = false) -> ItemDefinition:
+	var item := ItemDefinition.new()
+	item.id = id
+	item.deltas = deltas
+	item.score = item_score
+	item.should_collect = collect
+	item.pass_score = pass_points
+	item.is_tradeoff = tradeoff
+	return item
+
 func publish_snapshot() -> void:
-	var snapshot: Dictionary = {"state": state_machine.state, "score": score.score, "remaining": timer.remaining(), "parameters": parameters.state.values.duplicate()}
+	var item_snapshots: Array[Dictionary] = []
+	for instance in active_items:
+		item_snapshots.append({"id": instance.definition.id, "lane": instance.lane_id, "progress": clampf(instance.age(timer.elapsed) / level.fall_duration, 0.0, 1.0), "collect": instance.definition.should_collect, "tradeoff": instance.definition.is_tradeoff})
+	var snapshot: Dictionary = {"state": state_machine.state, "score": score.score, "best_score": best_scores.best_score, "remaining": timer.remaining(), "parameters": parameters.state.values.duplicate(), "items": item_snapshots}
 	snapshot_published.emit(snapshot)
