@@ -1,5 +1,15 @@
 # Test Report
 
+## TR-012 - Phase 4 Automated Balance Validation Gate
+
+- **Date:** 2026-08-30
+- **Godot:** 4.7.1.stable.official.a13da4feb (headless, `tools/godot`)
+- **Scope:** New `tests/integration/test_balance_validation.gd` harness plus a full-suite regression run.
+- **Method:** Deterministic simulated players verify the mechanical acceptance criteria: every stage fails under total neglect (decay pressure is real), a state-aware bot clears the full three-stage campaign, invalid taps are inert (AC-04), stage 3 keeps the approved 7-simple/3-trade bag with no runaway lane streaks (AC-03), best score submits and persists across sessions (AC-09), and identical bot campaigns produce identical outcomes.
+- **Results:** Balance harness 13 passed / 0 failed. Full suite including the new harness: 114 passed, 0 failed.
+- **Regression check:** All prior suites re-ran green; no balance value required tuning.
+- **Known limitation:** Human acceptance criteria (AC-05 through AC-08, AC-10, AC-11) require live testers and remain open; they are the only outstanding Phase 4 evidence.
+
 ## TR-011 - Phase 3 Full Suite Re-Verification
 
 - **Date:** 2026-08-30

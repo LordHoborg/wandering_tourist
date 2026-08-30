@@ -30,11 +30,16 @@
 - [x] Implement core services, coordinator, spawn/fairness systems, and UI presenters.
 - [x] Implement 3-stage tutorial progression with objectives and destinations.
 - [x] Update the coordinator integration test for the stage model; full suite 101/101 green (2026-08-30).
-- [ ] Manual playtest validation of fun, controls, and balance (Phase 4 entry gate).
-- [ ] Record the Prototype v0.1 checkpoint.
+- [x] Record the Prototype v0.1 checkpoint (2026-08-30, see master document).
+
+## Phase 4 - Gameplay Iteration
+
+- [x] Build the automated balance-validation harness (`tests/integration/test_balance_validation.gd`).
+- [x] Verify decay pressure, winnability, inert invalid taps, 7/3 bag, lane fairness, best-score persistence, and determinism (TR-012; suite 114/114).
+- [ ] Run the five-person live playtest for AC-05..AC-08, AC-10, AC-11 and record results.
+- [ ] Apply any balance changes the playtest demands, with documented hypothesis and re-test.
 
 ## Future Phases
 
-- [ ] Phase 4: Gameplay Iteration.
 - [ ] Phase 5: Vertical Slice.
 - [ ] Phase 6: Android Build (export templates, presets, first APK).

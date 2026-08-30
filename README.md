@@ -4,7 +4,7 @@ Android portrait 2D game project built with Godot 4 and typed GDScript.
 
 ## Current State
 
-The project is in Phase 3 (Prototype). A playable desktop prototype exists with three tutorial-progression stages, deterministic spawning, scoring with momentum, best-score persistence, and pause/restart. The full automated suite passes 101/101 (2026-08-30). No Android APK exists yet.
+The project is in Phase 4 (Gameplay Iteration). The Prototype v0.1 checkpoint is recorded: a playable desktop prototype with three tutorial-progression stages, deterministic spawning, scoring with momentum, best-score persistence, and pause/restart. The full automated suite passes 114/114 including the balance-validation gate (2026-08-30). Remaining Phase 4 work is live human playtesting. No Android APK exists yet.
 
 Run the game: `tools\godot\Godot_v4.7.1-stable_win64.exe --path .`
 

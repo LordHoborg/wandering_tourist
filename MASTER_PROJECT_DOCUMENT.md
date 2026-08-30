@@ -2,14 +2,14 @@
 
 ## Project Identity
 
-- **Current project status:** Phases 0-2 are complete and approved. Phase 3 (Prototype) is implemented and running: Godot 4.7.1 is installed at `tools/godot`, the playable prototype boots from `scenes/app/app_root.tscn`, three tutorial-progression stages exist, and the automated suite passes 101/101 tests (2026-08-30). Next: gameplay-iteration validation and the Prototype v0.1 checkpoint/APK.
+- **Current project status:** Phases 0-3 are complete: the Prototype v0.1 checkpoint is recorded (2026-08-30) with a playable three-stage desktop prototype and a 114/114 green automated suite. Phase 4 (Gameplay Iteration) is in progress: the automated balance-validation gate passed with no tuning required; the remaining Phase 4 evidence is live human playtesting for AC-05 through AC-08, AC-10, and AC-11.
 
 - **Platform:** Android, portrait orientation
 - **Engine:** Godot 4.7.1 stable (bundled at `tools/godot`)
 - **Language:** Typed GDScript
 - **Rendering:** 2D
-- **Current phase:** Phase 3 — Prototype (implementation complete, iteration/validation pending)
-- **Current version/build:** Desktop prototype build (no Android APK yet)
+- **Current phase:** Phase 4 — Gameplay Iteration (automated gate passed; human playtest pending)
+- **Current version/build:** Prototype v0.1 (desktop checkpoint, no Android APK yet)
 
 ## Source Material Status
 
@@ -38,7 +38,14 @@ One island and one level; Hunger, Rest, and Fun parameters; touch and mouse supp
 - **Open questions:** None block Phase 0. Deferred choices are tracked and must be resolved through Phase 1/prototype iteration.
 - **Known bugs:** See `KNOWN_BUGS.md`.
 - **Project health:** Healthy; source material is repository-local and the Phase 0 handoff is complete.
-- **Next exact task (project-level):** Complete Phase 3 gameplay validation, record the Prototype v0.1 checkpoint, and begin Android export setup.
+- **Next exact task (project-level):** Run the five-person live playtest for AC-05 through AC-08, AC-10, and AC-11, record results in `TEST_REPORT.md`, then proceed toward the Vertical Slice and Android export.
+
+## Prototype v0.1 Checkpoint (2026-08-30)
+
+- **Playable content:** Three sequential tropical stages — Basic Needs (65s), Watch Out (85s), Tough Choices (100s) — with staged hazard unlocks, per-item familiarity (NEW/LEARNING/KNOWN), objectives, and destination data.
+- **Systems:** Deterministic spawn bags with recovery-fairness repair, lane fairness, contextual trade-off scoring with momentum, pause/resume/restart/advance, best-score persistence, reduced-motion and mute settings.
+- **Verification:** 114 automated checks across 8 suites, all passing, including the Phase 4 balance-validation harness (`tests/integration/test_balance_validation.gd`): every stage is losable under neglect and winnable by a state-aware bot, invalid taps are inert, the 7/3 bag and lane-streak rules hold, and bot campaigns are deterministic.
+- **Out of checkpoint scope:** Android export/APK, audio assets, final art, and human acceptance criteria AC-05 through AC-08, AC-10, AC-11.
 
 ## Document Index
 
@@ -66,3 +73,4 @@ One island and one level; Hunger, Rest, and Fun parameters; touch and mouse supp
 | 2026-08-09 | Recorded approved first-playable parameters, prototype controls, and time-limited survival direction; added contextual item-model investigation. |
 | 2026-08-09 | Added and verified the canonical source PDF; approved the hybrid item-effect direction; closed Phase 0. |
 | 2026-08-30 | Synced status with reality: Godot 4.7.1 installed, prototype implemented with 3-stage progression, coordinator integration test updated for the stage model, full suite 101 passed / 0 failed. |
+| 2026-08-30 | Recorded the Prototype v0.1 checkpoint; added the Phase 4 automated balance-validation harness (13 checks); suite now 114 passed / 0 failed; entered Phase 4 with only human playtest evidence outstanding. |
