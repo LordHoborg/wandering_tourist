@@ -2,14 +2,14 @@
 
 ## Project Identity
 
-- **Current project status:** Phase 2 is complete and approved. Phase 3 is in progress but blocked before project creation because no Godot 4 executable is available; production code has not started.
+- **Current project status:** Phases 0-2 are complete and approved. Phase 3 (Prototype) is implemented and running: Godot 4.7.1 is installed at `tools/godot`, the playable prototype boots from `scenes/app/app_root.tscn`, three tutorial-progression stages exist, and the automated suite passes 101/101 tests (2026-08-30). Next: gameplay-iteration validation and the Prototype v0.1 checkpoint/APK.
 
 - **Platform:** Android, portrait orientation
-- **Engine:** Godot 4 latest stable/LTS
+- **Engine:** Godot 4.7.1 stable (bundled at `tools/godot`)
 - **Language:** Typed GDScript
 - **Rendering:** 2D
-- **Current phase:** Phase 0 — Concept Analysis
-- **Current version/build:** Not started / no build
+- **Current phase:** Phase 3 — Prototype (implementation complete, iteration/validation pending)
+- **Current version/build:** Desktop prototype build (no Android APK yet)
 
 ## Source Material Status
 
@@ -36,9 +36,9 @@ One island and one level; Hunger, Rest, and Fun parameters; touch and mouse supp
 - **Intentionally deferred:** Exact timer duration, score formula, safe-boundary semantics, balancing values, lane-to-parameter mapping, exact item-effect matrix, and visual/audio feedback details. These are Phase 1/prototype-iteration decisions.
 - **Incomplete features:** No Godot project, production code, scene, asset pipeline, automated test, Android export configuration, or APK exists; all are outside completed Phase 0 scope.
 - **Open questions:** None block Phase 0. Deferred choices are tracked and must be resolved through Phase 1/prototype iteration.
-- **Known bugs:** None; no executable project exists.
+- **Known bugs:** See `KNOWN_BUGS.md`.
 - **Project health:** Healthy; source material is repository-local and the Phase 0 handoff is complete.
-- **Next exact task:** Receive explicit authorization to begin Phase 1 and author the executable Game Design Document.
+- **Next exact task (project-level):** Complete Phase 3 gameplay validation, record the Prototype v0.1 checkpoint, and begin Android export setup.
 
 ## Document Index
 
@@ -65,3 +65,4 @@ One island and one level; Hunger, Rest, and Fun parameters; touch and mouse supp
 | 2026-08-09 | Reviewed the original concept PDF and updated the Phase 0 analysis, decision log, scope, roadmap, and test evidence. |
 | 2026-08-09 | Recorded approved first-playable parameters, prototype controls, and time-limited survival direction; added contextual item-model investigation. |
 | 2026-08-09 | Added and verified the canonical source PDF; approved the hybrid item-effect direction; closed Phase 0. |
+| 2026-08-30 | Synced status with reality: Godot 4.7.1 installed, prototype implemented with 3-stage progression, coordinator integration test updated for the stage model, full suite 101 passed / 0 failed. |

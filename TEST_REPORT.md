@@ -1,5 +1,16 @@
 # Test Report
 
+## TR-011 - Phase 3 Full Suite Re-Verification
+
+- **Date:** 2026-08-30
+- **Godot:** 4.7.1.stable.official.a13da4feb (headless, `tools/godot`)
+- **Scope:** All unit and integration suites plus a headless boot smoke check of `scenes/app/app_root.tscn`.
+- **Change under test:** `tests/integration/test_gameplay_coordinator.gd` was updated for the stage-progression model: it now clears the persisted best-score file up front, neutralizes passive decay to isolate the timer-completion path, uses `level.completion_bonus` instead of a hardcoded 500, and drives deterministic runs with repeated 0.1-second ticks instead of one 120-second tick.
+- **Results:** `test_item_resolver` 7/0, `test_lane_input_adapter` 4/0, `test_parameter_service` 9/0, `test_services` 14/0, `test_spawn_systems` 47/0, `test_gameplay_coordinator` 11/0, `test_progression` 9/0.
+- **Total verified:** 101 passed, 0 failed.
+- **Regression check:** Headless project boot exits cleanly with no script errors.
+- **Known issues:** None open; see `KNOWN_BUGS.md` LIM-003 for the missing Android export.
+
 ## TR-010 - Phase 3 Service Gate
 
 - **Date:** 2026-08-10

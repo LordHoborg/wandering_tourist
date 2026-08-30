@@ -13,14 +13,9 @@
 
 ## Phase 1 — Executable Game Design Document
 
-- [ ] Receive explicit authorization to enter Phase 1.
-- [ ] Translate approved Phase 0 direction into an executable GDD without starting implementation.
-
-## Phase 1 - Executable Game Design Document
-
 - [x] Receive authorization and complete executable Prototype v0.1 GDD.
 - [x] Record configurable rules, balancing, item matrix, and acceptance criteria.
-- [ ] Receive explicit approval to begin Phase 2.
+- [x] Receive explicit approval to begin Phase 2.
 - [x] Add recovery fairness, contextual trade-off scoring, and core-fun validation to the Phase 1 GDD.
 
 ## Phase 2 - Technical Architecture
@@ -28,10 +23,18 @@
 - [x] Define modular Godot architecture, scene tree, data resources, signals, ownership, and test strategy.
 - [x] Record autoload, state-machine, event, and input-abstraction decisions.
 - [x] Receive explicit approval to begin Phase 3 prototype implementation.
-- [ ] Install or provide current stable Godot 4, then create and test Prototype v0.1.
+- [x] Install or provide current stable Godot 4, then create and test Prototype v0.1.
+
+## Phase 3 - Prototype
+
+- [x] Implement core services, coordinator, spawn/fairness systems, and UI presenters.
+- [x] Implement 3-stage tutorial progression with objectives and destinations.
+- [x] Update the coordinator integration test for the stage model; full suite 101/101 green (2026-08-30).
+- [ ] Manual playtest validation of fun, controls, and balance (Phase 4 entry gate).
+- [ ] Record the Prototype v0.1 checkpoint.
 
 ## Future Phases
 
-- [ ] Phase 1: Executable Game Design Document.
-- [ ] Phase 2: Technical Architecture.
-- [ ] Phase 3: Prototype.
+- [ ] Phase 4: Gameplay Iteration.
+- [ ] Phase 5: Vertical Slice.
+- [ ] Phase 6: Android Build (export templates, presets, first APK).
