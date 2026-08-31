@@ -4,19 +4,24 @@ const Definition = preload("res://scripts/data/parameter_definition.gd")
 const Coordinator = preload("res://scripts/game/gameplay_coordinator.gd")
 const InputAdapter = preload("res://scripts/game/lane_input_adapter.gd")
 const ItemView = preload("res://scripts/ui/travel_item_view.gd")
+const AudioDirector = preload("res://scripts/ui/audio_director.gd")
 
 const LANE_TOP := 300.0
 const LANE_HEIGHT := 680.0
 const ITEM_SIZE := Vector2(146, 94)
+const RESTART_CONFIRM_SECONDS := 3.0
 
 signal audio_cue_requested(cue: StringName)
 
 var game: GameplayCoordinator
 var input_adapter: LaneInputAdapter
+var audio: AudioDirector
 var snapshot: Dictionary = {}
 var item_views: Dictionary = {}
 var event_kinds: Dictionary = {}
 var hint_seen := false
+var run_started := false
+var restart_armed_at := -1.0
 
 @onready var playfield = $Playfield
 @onready var hud = $Hud
@@ -24,6 +29,7 @@ var hint_seen := false
 @onready var feedback = $Feedback
 @onready var overlay = $Overlay
 @onready var hint: Label = $Hint
+@onready var title_screen = $TitleScreen
 
 func _ready() -> void:
 	var definitions: Array[ParameterDefinition] = []
@@ -36,6 +42,20 @@ func _ready() -> void:
 	game.presentation_event.connect(_on_presentation_event)
 	input_adapter = InputAdapter.new()
 	input_adapter.lane_activated.connect(game.handle_lane_intent)
+	audio = AudioDirector.new()
+	audio.settings = AppSettings
+	add_child(audio)
+	audio_cue_requested.connect(audio.play_cue)
+	hud.warning_cue_requested.connect(audio.play_cue)
+	title_screen.set_best_score(game.best_scores.best_score)
+	title_screen.start_requested.connect(_start_run)
+
+func _start_run() -> void:
+	if run_started:
+		return
+	run_started = true
+	title_screen.hide()
+	audio.play_cue(&"ui_start")
 	game.start()
 	if not AppSettings.reduced_motion:
 		var tween := create_tween()
@@ -46,6 +66,8 @@ func _process(delta: float) -> void:
 	game.tick(delta)
 
 func _input(event: InputEvent) -> void:
+	if not run_started:
+		return
 	if event is InputEventMouseButton and event.pressed:
 		if snapshot.get("state") == RunStateMachine.State.COMPLETED and event.position.y >= 730.0:
 			game.advance_stage()
@@ -66,6 +88,10 @@ func _forward_lane_pointer(pointer: Vector2) -> void:
 		input_adapter.activate_from_pointer(1)
 
 func _unhandled_input(event: InputEvent) -> void:
+	if not run_started:
+		if event.is_action_pressed("ui_accept"):
+			_start_run()
+		return
 	if event.is_action_pressed("ui_accept"):
 		if snapshot.get("state") == RunStateMachine.State.RUNNING:
 			game.pause_intent()
@@ -74,9 +100,25 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif snapshot.get("state") == RunStateMachine.State.COMPLETED:
 			game.advance_stage()
 	elif event is InputEventKey and event.pressed and event.keycode == KEY_R and not event.echo:
-		game.restart()
+		_handle_restart_key()
 	elif event is InputEventKey and event.pressed and event.keycode == KEY_N and not event.echo:
 		game.advance_stage()
+
+func _handle_restart_key() -> void:
+	var state: int = snapshot.get("state", RunStateMachine.State.IDLE)
+	if state == RunStateMachine.State.FAILED or state == RunStateMachine.State.COMPLETED:
+		# Restarting from a result starts a fresh run immediately.
+		restart_armed_at = -1.0
+		game.restart()
+	elif state == RunStateMachine.State.PAUSED:
+		# Restarting from pause requires confirmation: R twice within the window.
+		var now := Time.get_ticks_msec() / 1000.0
+		if restart_armed_at >= 0.0 and now - restart_armed_at <= RESTART_CONFIRM_SECONDS:
+			restart_armed_at = -1.0
+			game.restart()
+		else:
+			restart_armed_at = now
+			feedback.show_feedback("PRESS R AGAIN TO CONFIRM RESTART", Color("ffe08a"), Vector2(160.0, 640.0))
 
 func _render_snapshot(next_snapshot: Dictionary) -> void:
 	snapshot = next_snapshot

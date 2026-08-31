@@ -1,5 +1,15 @@
 # Test Report
 
+## TR-014 - Phase 5 Vertical Slice Polish Verification
+
+- **Date:** 2026-08-31
+- **Godot:** 4.7.1.stable.official.a13da4feb (headless, `tools/godot`)
+- **Scope:** New Phase 5 presentation layer: `AppSettings` persistence (`user://app_settings.cfg`), procedural `AudioDirector` (runtime-synthesized WAV cues, settings-injected, mute/volume gating), `WarningMonitor` band-entry/reminder timing, title screen, HUD warning pulse and stage dots, overlay best-score/journey-complete polish, and pause restart confirmation.
+- **Method:** Three new unit suites — `test_app_settings.gd` (defaults, clamping, persistence round-trip, missing file), `test_audio_director.gd` (cue coverage for every coordinator presentation event, WAV validity, synthesis determinism/silence, mute/zero-volume inertness, unknown-cue no-op, volume-to-decibel mapping), `test_warning_monitor.gd` (band entry, 5s reminder, exit reset, re-entry, upper band, simultaneous bands) — plus full-suite regression and a 90-frame headless boot of `scenes/app/app_root.tscn`.
+- **Results:** New suites 26 passed / 0 failed. Full suite: 140 passed, 0 failed across 11 suites. Boot smoke: exit 0, no script errors.
+- **Regression check:** TR-012 balance harness still 13/13; no gameplay rule or balance value changed.
+- **Known limitation:** Title-screen layout, audio mix, and reduced-motion behavior are verified headless only; on-device look/feel is covered by the Phase 4 human playtest (`PLAYTEST_PROTOCOL.md`) and Phase 6 device testing.
+
 ## TR-012 - Phase 4 Automated Balance Validation Gate
 
 - **Date:** 2026-08-30

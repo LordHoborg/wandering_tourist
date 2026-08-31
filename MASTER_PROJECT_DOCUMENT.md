@@ -2,14 +2,14 @@
 
 ## Project Identity
 
-- **Current project status:** Phases 0-3 are complete: the Prototype v0.1 checkpoint is recorded (2026-08-30) with a playable three-stage desktop prototype and a 114/114 green automated suite. Phase 4 (Gameplay Iteration) is in progress: the automated balance-validation gate passed with no tuning required; the remaining Phase 4 evidence is live human playtesting for AC-05 through AC-08, AC-10, and AC-11.
+- **Current project status:** Phases 0-3 are complete: the Prototype v0.1 checkpoint is recorded (2026-08-30) with a playable three-stage desktop prototype. Phase 4 (Gameplay Iteration) passed its automated balance gate with no tuning required; the live human playtest for AC-05 through AC-08, AC-10, and AC-11 remains open. Phase 5 (Vertical Slice) is complete: the v0.5 checkpoint (2026-08-31) adds the title screen, settings UI with persistence, procedural audio, and warning polish; suite 140/140 green.
 
 - **Platform:** Android, portrait orientation
 - **Engine:** Godot 4.7.1 stable (bundled at `tools/godot`)
 - **Language:** Typed GDScript
 - **Rendering:** 2D
-- **Current phase:** Phase 4 — Gameplay Iteration (automated gate passed; human playtest pending)
-- **Current version/build:** Prototype v0.1 (desktop checkpoint, no Android APK yet)
+- **Current phase:** Phase 4 human playtest evidence is the only open gate item; Phase 5 Vertical Slice v0.5 checkpoint recorded
+- **Current version/build:** Vertical Slice v0.5 (desktop checkpoint, no Android APK yet)
 
 ## Source Material Status
 
@@ -38,7 +38,14 @@ One island and one level; Hunger, Rest, and Fun parameters; touch and mouse supp
 - **Open questions:** None block Phase 0. Deferred choices are tracked and must be resolved through Phase 1/prototype iteration.
 - **Known bugs:** See `KNOWN_BUGS.md`.
 - **Project health:** Healthy; source material is repository-local and the Phase 0 handoff is complete.
-- **Next exact task (project-level):** Run the five-person live playtest for AC-05 through AC-08, AC-10, and AC-11, record results in `TEST_REPORT.md`, then proceed toward the Vertical Slice and Android export.
+- **Next exact task (project-level):** Run the five-person live playtest for AC-05 through AC-08, AC-10, and AC-11 per `PLAYTEST_PROTOCOL.md`, record results as TR-013 in `TEST_REPORT.md`, then proceed to Phase 6 (Android export).
+
+## Vertical Slice v0.5 Checkpoint (2026-08-31)
+
+- **Polish added over Prototype v0.1:** Title screen with best score and a settings UI (sound on/off, stepped SFX volume, reduced motion) backed by persisted `AppSettings`; a procedural `AudioDirector` synthesizing all cue WAVs at runtime (no binary audio assets) for every presentation event, warning reminders, and UI start; warning-band meter pulses with reduced-motion static fallback; five-second warning reminder cues; stage progress dots; journey-complete result variant with best score on the result overlay; pause restart now requires R-twice confirmation per the GDD while result-screen restart stays immediate.
+- **Architecture notes:** `AudioDirector` takes its settings node by injection (composition root wires the `AppSettings` autoload) so it compiles and runs in headless test rigs; warning timing logic lives in the pure `WarningMonitor` class, cue emission in the HUD view layer; gameplay rules and balance values are unchanged.
+- **Verification:** 140 automated checks across 11 suites, all passing (new: `test_app_settings.gd` 5, `test_audio_director.gd` 10, `test_warning_monitor.gd` 11), plus a clean 90-frame headless boot of `app_root.tscn`; the TR-012 balance harness still passes 13/13 untouched.
+- **Out of checkpoint scope:** Android export/APK (Phase 6), final art and music, and human acceptance criteria AC-05 through AC-08, AC-10, AC-11 (playtest protocol ready in `PLAYTEST_PROTOCOL.md`).
 
 ## Prototype v0.1 Checkpoint (2026-08-30)
 

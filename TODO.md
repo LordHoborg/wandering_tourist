@@ -36,10 +36,20 @@
 
 - [x] Build the automated balance-validation harness (`tests/integration/test_balance_validation.gd`).
 - [x] Verify decay pressure, winnability, inert invalid taps, 7/3 bag, lane fairness, best-score persistence, and determinism (TR-012; suite 114/114).
-- [ ] Run the five-person live playtest for AC-05..AC-08, AC-10, AC-11 and record results.
+- [ ] Run the five-person live playtest for AC-05..AC-08, AC-10, AC-11 per `PLAYTEST_PROTOCOL.md` and record results as TR-013 in `TEST_REPORT.md`.
 - [ ] Apply any balance changes the playtest demands, with documented hypothesis and re-test.
+
+## Phase 5 - Vertical Slice
+
+- [x] Add title screen with best score and settings UI (sound, SFX volume, reduced motion).
+- [x] Persist `AppSettings` to `user://app_settings.cfg` with clamped setters.
+- [x] Add procedural `AudioDirector`: runtime-synthesized cues for all presentation events, mute/volume gating, settings injection.
+- [x] Add warning-band pulse with reduced-motion fallback and 5-second reminder cues (`WarningMonitor`).
+- [x] Add stage progress dots, result-overlay best score, journey-complete variant, and pause restart confirmation (R twice).
+- [x] Add unit suites for settings, audio, and warning timing; full suite 140/140 green plus clean headless boot (TR-014, 2026-08-31).
+- [x] Record the Vertical Slice v0.5 checkpoint (2026-08-31, see master document).
 
 ## Future Phases
 
-- [ ] Phase 5: Vertical Slice.
 - [ ] Phase 6: Android Build (export templates, presets, first APK).
+- [ ] Phase 7: Content Expansion.

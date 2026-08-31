@@ -1,10 +1,11 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scenes/gameplay/gameplay_root.gd" id="1_root"]
 [ext_resource type="Script" path="res://scripts/ui/travel_playfield.gd" id="2_field"]
 [ext_resource type="Script" path="res://scripts/ui/travel_hud.gd" id="3_hud"]
 [ext_resource type="Script" path="res://scripts/ui/travel_feedback_layer.gd" id="4_feedback"]
 [ext_resource type="Script" path="res://scripts/ui/travel_overlay.gd" id="5_overlay"]
+[ext_resource type="Script" path="res://scenes/ui/title_screen.gd" id="6_title"]
 
 [node name="GameplayRoot" type="Control"]
 layout_mode = 3
@@ -78,3 +79,54 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("5_overlay")
+
+[node name="TitleScreen" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("6_title")
+
+[node name="Buttons" type="Control" parent="TitleScreen"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+
+[node name="StartButton" type="Button" parent="TitleScreen/Buttons"]
+layout_mode = 0
+offset_left = 210.0
+offset_top = 740.0
+offset_right = 510.0
+offset_bottom = 812.0
+theme_override_font_sizes/font_size = 24
+text = "START THE TRIP"
+
+[node name="MuteButton" type="Button" parent="TitleScreen/Buttons"]
+layout_mode = 0
+offset_left = 60.0
+offset_top = 860.0
+offset_right = 250.0
+offset_bottom = 924.0
+theme_override_font_sizes/font_size = 15
+
+[node name="VolumeButton" type="Button" parent="TitleScreen/Buttons"]
+layout_mode = 0
+offset_left = 265.0
+offset_top = 860.0
+offset_right = 455.0
+offset_bottom = 924.0
+theme_override_font_sizes/font_size = 15
+
+[node name="MotionButton" type="Button" parent="TitleScreen/Buttons"]
+layout_mode = 0
+offset_left = 470.0
+offset_top = 860.0
+offset_right = 660.0
+offset_bottom = 924.0
+theme_override_font_sizes/font_size = 13

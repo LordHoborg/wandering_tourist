@@ -2,6 +2,8 @@
 
 All notable project changes are recorded here.
 
+- Phase 5 Vertical Slice v0.5: title screen with settings UI, persisted `AppSettings`, procedural `AudioDirector` cues for all events, warning pulse with reminder cues, stage dots, result-overlay best score and journey-complete variant, and pause restart confirmation; suite 140/140 (TR-014).
+- Added `PLAYTEST_PROTOCOL.md`: session script, recording sheets, pass/fail tally, and TR-013 report template for the remaining Phase 4 human criteria (AC-05..AC-08, AC-10, AC-11).
 - Recorded the Prototype v0.1 checkpoint and entered Phase 4 (Gameplay Iteration).
 - Added the automated balance-validation harness (13 checks: neglect pressure, campaign winnability, inert taps, 7/3 bag, lane fairness, best-score persistence, determinism); suite now 114 passed, 0 failed.
 - Rewrote the coordinator integration test for the stage-progression model (removed the legacy fixed-120-second assumptions); full suite now 101 passed, 0 failed.

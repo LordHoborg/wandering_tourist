@@ -1,6 +1,6 @@
 # Known Bugs
 
-No known open bugs as of 2026-08-30. The prototype boots headless without script errors and the full automated suite passes 101/101.
+No known open bugs as of 2026-08-31. The prototype boots headless without script errors and the full automated suite passes 140/140.
 
 ## Limitations
 

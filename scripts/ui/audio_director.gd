@@ -1,0 +1,90 @@
+class_name AudioDirector
+extends Node
+
+## Procedural sound-effects director. All cues are synthesized at startup as
+## 8-bit AudioStreamWAV tones, so the project needs no binary audio assets.
+## Honors AppSettings.muted and AppSettings.sfx_volume at play time.
+
+const MIX_RATE := 22050
+const POOL_SIZE := 4
+
+## Each cue is a list of [frequency_hz, duration_seconds] notes played in
+## sequence; zero frequency inserts silence.
+const CUES: Dictionary = {
+	&"cut_success": [[660.0, 0.07], [880.0, 0.10]],
+	&"harmful_cut": [[220.0, 0.14], [160.0, 0.20]],
+	&"hazard_passed": [[520.0, 0.09]],
+	&"beneficial_missed": [[440.0, 0.09], [330.0, 0.14]],
+	&"warning": [[880.0, 0.08], [0.0, 0.05], [880.0, 0.08]],
+	&"stage_started": [[523.0, 0.10], [659.0, 0.10], [784.0, 0.16]],
+	&"completed": [[523.0, 0.10], [659.0, 0.10], [784.0, 0.10], [1047.0, 0.24]],
+	&"failed": [[392.0, 0.16], [311.0, 0.16], [233.0, 0.28]],
+	&"spawn": [[980.0, 0.04]],
+	&"ui_start": [[587.0, 0.08], [880.0, 0.12]],
+}
+
+var streams: Dictionary = {}
+var settings: Node = null ## Injected by the composition root; falls back to the AppSettings autoload.
+var _players: Array[AudioStreamPlayer] = []
+var _next_player: int = 0
+
+func _ready() -> void:
+	_ensure_ready()
+
+func _ensure_ready() -> void:
+	# Lazy so the director also works when a host adds children at unusual
+	# times (headless test rigs) where _ready ordering is not guaranteed.
+	if streams.is_empty():
+		for cue_id in CUES:
+			streams[cue_id] = synthesize(CUES[cue_id])
+	if _players.is_empty():
+		# Safe outside the tree too: children enter the tree with this node.
+		for i in POOL_SIZE:
+			var player := AudioStreamPlayer.new()
+			player.bus = &"Master"
+			add_child(player)
+			_players.append(player)
+
+func has_cue(cue: StringName) -> bool:
+	_ensure_ready()
+	return streams.has(cue)
+
+## Plays the cue if one exists and audio is enabled. Returns true when a cue
+## actually started; unknown kinds and muted/zero-volume requests are inert.
+func play_cue(cue: StringName) -> bool:
+	_ensure_ready()
+	if not streams.has(cue) or _players.is_empty():
+		return false
+	# Resolve settings at play time so this node also works in headless script
+	# contexts where autoload globals are not registered.
+	var source: Node = settings if settings != null else get_node_or_null("/root/AppSettings")
+	var muted: bool = source != null and bool(source.get("muted"))
+	var volume: float = 1.0 if source == null else float(source.get("sfx_volume"))
+	if muted or volume <= 0.0:
+		return false
+	var player := _players[_next_player]
+	_next_player = (_next_player + 1) % POOL_SIZE
+	player.stream = streams[cue]
+	player.volume_db = linear_to_db(maxf(volume, 0.001))
+	player.play()
+	return true
+
+## Builds a mono 8-bit WAV stream from a note sequence with a short linear
+## attack and exponential release so cues do not click.
+static func synthesize(notes: Array) -> AudioStreamWAV:
+	var data := PackedByteArray()
+	for note in notes:
+		var frequency: float = note[0]
+		var count := int(MIX_RATE * note[1])
+		for i in count:
+			var sample := 128
+			if frequency > 0.0:
+				var t := float(i) / MIX_RATE
+				var envelope := minf(float(i) / (MIX_RATE * 0.01), 1.0) * exp(-3.0 * t / maxf(note[1], 0.01))
+				sample = 128 + int(110.0 * envelope * sin(TAU * frequency * t))
+			data.append(clampi(sample, 0, 255))
+	var stream := AudioStreamWAV.new()
+	stream.format = AudioStreamWAV.FORMAT_8_BITS
+	stream.mix_rate = MIX_RATE
+	stream.data = data
+	return stream

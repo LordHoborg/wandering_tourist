@@ -1,0 +1,71 @@
+extends SceneTree
+
+const AudioDirectorClass = preload("res://scripts/ui/audio_director.gd")
+const SettingsClass = preload("res://autoload/app_settings.gd")
+var passed := 0
+var failed := 0
+
+func _initialize() -> void:
+	print("TEST START")
+	# Headless script runs do not register the autoload; provide one by name.
+	var settings = root.get_node_or_null("AppSettings")
+	if settings == null:
+		settings = SettingsClass.new()
+		settings.name = "AppSettings"
+		root.add_child(settings)
+	var director = AudioDirectorClass.new()
+	director.settings = settings
+	root.add_child(director)
+	var emitted_kinds: Array[StringName] = [&"stage_started", &"spawn", &"cut_success", &"harmful_cut", &"hazard_passed", &"beneficial_missed", &"failed", &"completed", &"warning", &"ui_start"]
+	var all_covered := true
+	for kind in emitted_kinds:
+		if not director.has_cue(kind):
+			all_covered = false
+	_check(all_covered, "every presentation event kind has a cue")
+	var streams_valid := true
+	for kind in emitted_kinds:
+		var stream: AudioStreamWAV = director.streams[kind]
+		if stream.mix_rate != AudioDirectorClass.MIX_RATE or stream.data.size() == 0:
+			streams_valid = false
+	_check(streams_valid, "generated cue streams are valid non-empty WAVs")
+	var synthesized := AudioDirectorClass.synthesize([[440.0, 0.1]])
+	var synthesized_again := AudioDirectorClass.synthesize([[440.0, 0.1]])
+	_check(synthesized.data == synthesized_again.data, "synthesis is deterministic")
+	var silent := AudioDirectorClass.synthesize([[0.0, 0.1]])
+	var silent_centered := true
+	for byte in silent.data:
+		if byte != 128:
+			silent_centered = false
+	_check(silent_centered, "zero frequency produces silence")
+	var loud := false
+	for byte in synthesized.data:
+		if byte != 128:
+			loud = true
+	_check(loud, "tone produces audible samples")
+	var saved_muted: bool = settings.muted
+	var saved_volume: float = settings.sfx_volume
+	settings.muted = true
+	_check(not director.play_cue(&"cut_success"), "muted blocks playback")
+	settings.muted = false
+	settings.sfx_volume = 0.0
+	_check(not director.play_cue(&"cut_success"), "zero volume blocks playback")
+	settings.sfx_volume = 1.0
+	_check(director.play_cue(&"cut_success"), "cue plays when audio enabled")
+	_check(not director.play_cue(&"does_not_exist"), "unknown cue is an inert no-op")
+	settings.sfx_volume = 0.5
+	director.play_cue(&"warning")
+	var last_index: int = (director._next_player + AudioDirectorClass.POOL_SIZE - 1) % AudioDirectorClass.POOL_SIZE
+	_check(absf(director._players[last_index].volume_db - linear_to_db(0.5)) < 0.01, "volume maps to player decibels")
+	settings.muted = saved_muted
+	settings.sfx_volume = saved_volume
+	print("TESTS PASSED: %d" % passed)
+	print("TESTS FAILED: %d" % failed)
+	quit(0 if failed == 0 else 1)
+
+func _check(condition: bool, name: String) -> void:
+	if condition:
+		passed += 1
+		print("PASS: %s" % name)
+	else:
+		failed += 1
+		push_error("FAIL: %s" % name)

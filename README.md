@@ -4,7 +4,7 @@ Android portrait 2D game project built with Godot 4 and typed GDScript.
 
 ## Current State
 
-The project is in Phase 4 (Gameplay Iteration). The Prototype v0.1 checkpoint is recorded: a playable desktop prototype with three tutorial-progression stages, deterministic spawning, scoring with momentum, best-score persistence, and pause/restart. The full automated suite passes 114/114 including the balance-validation gate (2026-08-30). Remaining Phase 4 work is live human playtesting. No Android APK exists yet.
+The Vertical Slice v0.5 checkpoint is recorded (2026-08-31): a playable desktop vertical slice with three tutorial-progression stages, deterministic spawning, scoring with momentum, best-score persistence, pause/restart with confirmation, a title screen with persisted settings (sound, volume, reduced motion), and procedural sound effects. The full automated suite passes 140/140 including the balance-validation gate. The only open gate item is the Phase 4 live human playtest (see `PLAYTEST_PROTOCOL.md`). No Android APK exists yet.
 
 Run the game: `tools\godot\Godot_v4.7.1-stable_win64.exe --path .`
 
@@ -36,5 +36,5 @@ The original vision is retained at `docs/source/Wandering Tourist - Game Documen
 ## Getting Started
 
 1. Launch the prototype with the bundled Godot binary (command above).
-2. Play: tap/click the left or right lane area to cut the front item; Space pauses/resumes, R restarts, N advances after completion.
-3. See `TODO.md` for the remaining Phase 3 validation work.
+2. On the title screen, adjust sound/volume/reduced-motion if desired, then start the trip.
+3. Play: tap/click the left or right lane area to cut the front item; Space pauses/resumes, R twice while paused restarts, R once on a result screen starts a fresh trip, N advances after completion.
