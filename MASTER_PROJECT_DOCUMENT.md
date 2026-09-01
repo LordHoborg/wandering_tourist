@@ -9,7 +9,7 @@
 - **Language:** Typed GDScript
 - **Rendering:** 2D
 - **Current phase:** Phase 4 human playtest evidence is the only open gate item; Phase 5 Vertical Slice v0.5 checkpoint recorded
-- **Current version/build:** Vertical Slice v0.5.1 (2026-09-01: campaign score carry-over fix + procedural visual overhaul; desktop checkpoint, no Android APK yet)
+- **Current version/build:** Vertical Slice v0.5.2 (2026-09-02: touch-complete controls, electric-cut/game-feel juice, ambient audio; desktop checkpoint, no Android APK yet)
 
 ## Source Material Status
 

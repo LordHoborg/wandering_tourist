@@ -50,6 +50,8 @@
 - [x] Record the Vertical Slice v0.5 checkpoint (2026-08-31, see master document).
 - [x] Fix campaign score carry-over across stages with retry rollback (v0.5.1, TR-015).
 - [x] Overhaul procedural visuals: shared animated tropical backdrop, lane/action-line polish, item cards, HUD meters, overlay stars (v0.5.1, TR-015); suite 143/143.
+- [x] Close GDD touch gaps: visible pause button, tap-to-act overlays with dismissal grace, campaign restart (v0.5.2, TR-016).
+- [x] Add game feel and ambient audio: electric-bolt cuts, item sway, lerped meters, spirit pips, looping ambience (v0.5.2, TR-016); suite 148/148.
 
 ## Future Phases
 

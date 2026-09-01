@@ -44,6 +44,8 @@ func _init() -> void:
 		if idle_game.state_machine.state == RunState.State.FAILED:
 			break
 	_check(idle_game.state_machine.state == RunState.State.FAILED and idle_game.stage_index == 1 and not idle_game.advance_stage(), "stage 2 inactivity fails and cannot advance")
+	idle_game.restart_campaign()
+	_check(idle_game.stage_index == 0 and idle_game.score.score == 0 and idle_game.familiarity.is_empty() and idle_game.state_machine.state == RunState.State.RUNNING, "new journey resets campaign state")
 	print("TESTS PASSED: %d" % passed)
 	print("TESTS FAILED: %d" % failed)
 	quit(0 if failed == 0 else 1)

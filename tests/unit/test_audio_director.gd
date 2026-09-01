@@ -42,6 +42,11 @@ func _initialize() -> void:
 		if byte != 128:
 			loud = true
 	_check(loud, "tone produces audible samples")
+	var ambience_stream: AudioStreamWAV = AudioDirectorClass.synthesize_ambience()
+	_check(ambience_stream.loop_mode == AudioStreamWAV.LOOP_FORWARD and ambience_stream.loop_end == ambience_stream.data.size(), "ambience stream loops")
+	_check(ambience_stream.data.size() == AudioDirectorClass.MIX_RATE * int(AudioDirectorClass.AMBIENCE_SECONDS), "ambience length matches loop seconds")
+	_check(ambience_stream.data == AudioDirectorClass.synthesize_ambience().data, "ambience synthesis is deterministic")
+	_check(director.ambience != null and director.ambience.stream.loop_mode == AudioStreamWAV.LOOP_FORWARD, "ambience player exists and loops")
 	var saved_muted: bool = settings.muted
 	var saved_volume: float = settings.sfx_volume
 	settings.muted = true

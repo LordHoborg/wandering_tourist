@@ -2,6 +2,7 @@
 
 All notable project changes are recorded here.
 
+- v0.5.2: GDD compliance and game feel — visible touch pause button, tap-to-act overlays with dismissal grace, campaign restart after the final stage, electric-bolt cut effect, item sway, lerped HUD meters, spirit pips, looping procedural ambience, pause/resume cues; suite 148/148 (TR-016).
 - v0.5.1: fixed campaign score not carrying across stages (carries forward on advance; retry rolls back to the stage-entry total); full procedural visual overhaul — shared animated tropical backdrop (sky, sun, clouds, waves, island, beach, palms), glassy lane panels with glowing action lines and cut-flash rings, item cards with category bands and effect chips, rounded HUD meters with safe-zone ticks, drawn star ratings on the result overlay, and a screenshot capture dev tool; suite 143/143 (TR-015).
 - Phase 5 Vertical Slice v0.5: title screen with settings UI, persisted `AppSettings`, procedural `AudioDirector` cues for all events, warning pulse with reminder cues, stage dots, result-overlay best score and journey-complete variant, and pause restart confirmation; suite 140/140 (TR-014).
 - Added `PLAYTEST_PROTOCOL.md`: session script, recording sheets, pass/fail tally, and TR-013 report template for the remaining Phase 4 human criteria (AC-05..AC-08, AC-10, AC-11).

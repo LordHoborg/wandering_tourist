@@ -29,6 +29,9 @@ var rng: DeterministicRng = DeterministicRng.new(20260810)
 var simple_items: Array[ItemDefinition] = []
 var trade_items: Array[ItemDefinition] = []
 var item_catalog: Dictionary[StringName, ItemDefinition] = {}
+var golden_item: ItemDefinition
+## Chance that a simple collect spawn in stages 2+ becomes the golden coconut.
+var golden_chance := 0.06
 var stages: Array[StageDefinition] = []
 var stage_index: int = 0
 var stage_spawn_count: int = 0
@@ -44,6 +47,7 @@ var beneficial_tradeoffs: int = 0
 var failed_tradeoffs: int = 0
 var item_collections: Dictionary[StringName, int] = {}
 var item_hazard_passes: Dictionary[StringName, int] = {}
+var _last_momentum: int = 0
 var active_items: Array[ItemInstance] = []
 var spawn_elapsed: float = 0.0
 var lane_ready_at: Dictionary[int, float] = {0: 0.0, 1: 0.0}
@@ -114,6 +118,7 @@ func handle_lane_intent(lane_id: int) -> void:
 		_finish(RunStateMachine.State.FAILED)
 	elif _stage_objective_complete():
 		_finish(RunStateMachine.State.COMPLETED)
+	_check_spirit_milestone()
 	publish_snapshot()
 
 func pause_intent() -> bool:
@@ -133,6 +138,7 @@ func resume() -> bool:
 func tick(delta: float) -> void:
 	if state_machine.state != RunStateMachine.State.RUNNING: return
 	timer.tick(delta)
+	_apply_difficulty_ramp()
 	if not parameters.tick(delta, _stage().active_parameters):
 		failure_parameter_id = parameters.unsafe_parameter_id(_stage().active_parameters)
 		_finish(RunStateMachine.State.FAILED)
@@ -154,6 +160,15 @@ func restart() -> void:
 	_reset_stage_run()
 	start()
 
+## Starts a fresh campaign from stage 1: total score, stage-entry baseline,
+## and per-item familiarity all reset.
+func restart_campaign() -> void:
+	stage_entry_score = 0
+	familiarity.clear()
+	_apply_stage(0)
+	_reset_stage_run()
+	start()
+
 func advance_stage() -> bool:
 	if state_machine.state != RunStateMachine.State.COMPLETED or stage_index >= stages.size() - 1:
 		return false
@@ -162,6 +177,21 @@ func advance_stage() -> bool:
 	_reset_stage_run()
 	start()
 	return true
+
+## Difficulty ramp: spawn cadence and fall duration lerp from the stage's
+## start values to its end values as the stage timer progresses. Equal start
+## and end values mean no ramp.
+func _apply_difficulty_ramp() -> void:
+	var stage := _stage()
+	var progress := clampf(timer.elapsed / stage.duration_seconds, 0.0, 1.0)
+	level.spawn_interval = lerpf(stage.spawn_interval, stage.spawn_interval_end, progress)
+	level.fall_duration = lerpf(stage.fall_duration, stage.fall_duration_end, progress)
+
+## Emits a spirit_milestone event whenever momentum crosses 3/6/9 upward.
+func _check_spirit_milestone() -> void:
+	if score.momentum > _last_momentum and score.momentum in [3, 6, 9]:
+		presentation_event.emit(&"spirit_milestone", {"tier": score.momentum / 3, "momentum": score.momentum})
+	_last_momentum = score.momentum
 
 func _spawn_items(delta: float) -> void:
 	spawn_elapsed += delta
@@ -181,6 +211,8 @@ func _spawn_items(delta: float) -> void:
 		item = scheduler.take_next(fairness)
 		if item == null:
 			return
+	if stage_index >= 1 and item.should_collect and not item.is_tradeoff and rng.next_float() < golden_chance:
+		item = golden_item
 	var lane := scheduler.next_lane(rng)
 	if _lane_count(lane) >= 2:
 		lane = 1 - lane
@@ -207,6 +239,7 @@ func _resolve_passed_items() -> void:
 		active_items.erase(instance)
 	if state_machine.state == RunStateMachine.State.RUNNING and _stage_objective_complete():
 		_finish(RunStateMachine.State.COMPLETED)
+	_check_spirit_milestone()
 
 func _front_eligible_item(lane_id: int) -> ItemInstance:
 	var chosen: ItemInstance = null
@@ -240,16 +273,18 @@ func _finish(next_state: RunStateMachine.State) -> void:
 func _create_prototype_items() -> void:
 	simple_items = [_item(&"fruit", {&"hunger": 7.0}, 100, true), _item(&"pillow", {&"rest": 7.0}, 100, true), _item(&"camera", {&"fun": 7.0}, 100, true), _item(&"stale_snack", {&"hunger": -7.0}, 0, false, 50), _item(&"alarm_clock", {&"rest": -7.0}, 0, false, 50), _item(&"rain_cloud", {&"fun": -7.0}, 0, false, 50)]
 	trade_items = [_item(&"coffee", {&"hunger": -6.0, &"rest": 8.0, &"fun": 2.0}, 150, true, 0, true), _item(&"local_meal", {&"hunger": 8.0, &"rest": -4.0, &"fun": 2.0}, 150, true, 0, true), _item(&"night_market", {&"hunger": -3.0, &"rest": -5.0, &"fun": 9.0}, 150, true, 0, true)]
+	golden_item = _item(&"golden_coconut", {&"hunger": 4.0, &"rest": 4.0, &"fun": 4.0}, 300, true)
 	for item in simple_items + trade_items:
 		item_catalog[item.id] = item
+	item_catalog[golden_item.id] = golden_item
 
 func _create_stages() -> void:
 	var no_trade_items: Array[StringName] = []
-	stages = [_stage_definition(&"basic_needs", "STAGE 1 - BASIC NEEDS", "Learn your travel essentials: collect each twice.", [&"fruit", &"pillow", &"camera"], no_trade_items, 3, 0, 65.0, -0.49, 1.50, 3.45, {}, {&"fruit": 2, &"pillow": 2, &"camera": 2}), _stage_definition(&"learning_to_avoid", "STAGE 2 - WATCH OUT", "Collect essentials; let each new hazard pass once.", [&"fruit", &"pillow", &"camera", &"stale_snack", &"alarm_clock", &"rain_cloud"], no_trade_items, 3, 0, 85.0, -0.48, 1.35, 3.10, {&"stale_snack": 3, &"alarm_clock": 6, &"rain_cloud": 9}, {&"fruit": 2, &"pillow": 2, &"camera": 2}, [&"stale_snack", &"alarm_clock", &"rain_cloud"]), _stage_definition(&"mixed_decisions", "STAGE 3 - TOUGH CHOICES", "Check your needs before choosing mixed items.", [&"fruit", &"pillow", &"camera", &"stale_snack", &"alarm_clock", &"rain_cloud"], [&"coffee", &"local_meal", &"night_market"], 7, 3, 100.0, -0.40, 1.20, 2.90)]
+	stages = [_stage_definition(&"basic_needs", "STAGE 1 - BASIC NEEDS", "Learn your travel essentials: collect each twice.", [&"fruit", &"pillow", &"camera"], no_trade_items, 3, 0, 65.0, -0.49, 1.50, 3.45, {}, {&"fruit": 2, &"pillow": 2, &"camera": 2}, [], 1.30, 3.15), _stage_definition(&"learning_to_avoid", "STAGE 2 - WATCH OUT", "Collect essentials; let each new hazard pass once.", [&"fruit", &"pillow", &"camera", &"stale_snack", &"alarm_clock", &"rain_cloud"], no_trade_items, 3, 0, 85.0, -0.48, 1.35, 3.10, {&"stale_snack": 3, &"alarm_clock": 6, &"rain_cloud": 9}, {&"fruit": 2, &"pillow": 2, &"camera": 2}, [&"stale_snack", &"alarm_clock", &"rain_cloud"], 1.10, 2.75), _stage_definition(&"mixed_decisions", "STAGE 3 - TOUGH CHOICES", "Check your needs before choosing mixed items.", [&"fruit", &"pillow", &"camera", &"stale_snack", &"alarm_clock", &"rain_cloud"], [&"coffee", &"local_meal", &"night_market"], 7, 3, 100.0, -0.40, 1.20, 2.90, {}, {}, [], 0.95, 2.50)]
 
-func _stage_definition(id: StringName, title: String, lesson: String, simple_ids: Array[StringName], trade_ids: Array[StringName], simple_count: int, trade_count: int, duration: float, decay: float, spawn_interval: float, fall_duration: float, unlocks: Dictionary[StringName, int] = {}, collections: Dictionary[StringName, int] = {}, hazard_passes: Array[StringName] = []) -> StageDefinition:
+func _stage_definition(id: StringName, title: String, lesson: String, simple_ids: Array[StringName], trade_ids: Array[StringName], simple_count: int, trade_count: int, duration: float, decay: float, spawn_interval: float, fall_duration: float, unlocks: Dictionary[StringName, int] = {}, collections: Dictionary[StringName, int] = {}, hazard_passes: Array[StringName] = [], spawn_interval_end: float = -1.0, fall_duration_end: float = -1.0) -> StageDefinition:
 	var stage := StageDefinition.new()
-	stage.id = id; stage.title = title; stage.lesson = lesson; stage.simple_item_ids = simple_ids; stage.trade_item_ids = trade_ids; stage.simple_count = simple_count; stage.trade_count = trade_count; stage.duration_seconds = duration; stage.passive_decay_per_second = decay; stage.spawn_interval = spawn_interval; stage.fall_duration = fall_duration; stage.hazard_unlock_spawns = unlocks; stage.required_collections = collections; stage.required_hazard_passes = hazard_passes
+	stage.id = id; stage.title = title; stage.lesson = lesson; stage.simple_item_ids = simple_ids; stage.trade_item_ids = trade_ids; stage.simple_count = simple_count; stage.trade_count = trade_count; stage.duration_seconds = duration; stage.passive_decay_per_second = decay; stage.spawn_interval = spawn_interval; stage.fall_duration = fall_duration; stage.spawn_interval_end = spawn_interval if spawn_interval_end < 0.0 else spawn_interval_end; stage.fall_duration_end = fall_duration if fall_duration_end < 0.0 else fall_duration_end; stage.hazard_unlock_spawns = unlocks; stage.required_collections = collections; stage.required_hazard_passes = hazard_passes
 	return stage
 
 func _apply_stage(next_index: int) -> void:
@@ -266,7 +301,7 @@ func _reset_stage_run() -> void:
 	parameters.state.set_defaults(parameters.definitions)
 	timer = TimerService.new(_stage().duration_seconds)
 	score = ScoreService.new(); score.restore(stage_entry_score); resolver = ItemResolver.new(); scheduler = SpawnScheduler.new(); fairness = SpawnFairnessValidator.new(level.max_recovery_drought)
-	active_items.clear(); failure_parameter_id = &""; spawn_elapsed = 0.0; lane_ready_at = {0: 0.0, 1: 0.0}; stage_spawn_count = 0; correct_decisions = 0; missed_beneficial = 0; harmful_cuts = 0; beneficial_collected = 0; hazards_passed = 0; hazards_cut = 0; tradeoffs_taken = 0; beneficial_tradeoffs = 0; failed_tradeoffs = 0; item_collections.clear(); item_hazard_passes.clear()
+	active_items.clear(); failure_parameter_id = &""; spawn_elapsed = 0.0; lane_ready_at = {0: 0.0, 1: 0.0}; stage_spawn_count = 0; correct_decisions = 0; missed_beneficial = 0; harmful_cuts = 0; beneficial_collected = 0; hazards_passed = 0; hazards_cut = 0; tradeoffs_taken = 0; beneficial_tradeoffs = 0; failed_tradeoffs = 0; item_collections.clear(); item_hazard_passes.clear(); _last_momentum = 0
 
 func _stage_objective_complete() -> bool:
 	var stage := _stage()

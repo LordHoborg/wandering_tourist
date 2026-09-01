@@ -1,5 +1,16 @@
 # Test Report
 
+## TR-016 - v0.5.2 Touch Controls, Game Feel, and Ambient Audio
+
+- **Date:** 2026-09-02
+- **Godot:** 4.7.1.stable.official.a13da4feb (headless, `tools/godot`)
+- **Scope:** GDD compliance gap — pause was keyboard-only although the GDD requires an always-visible touch/mouse pause, and result/pause overlays were not touch-operable. Also game-feel and audio upgrades.
+- **Changes:** Visible touch pause button during runs; overlay tap-to-resume/restart/advance with a 0.4s dismissal grace so the tap producing a result cannot skip its screen; `restart_campaign()` for a fresh journey after the final stage (resets stage, score baseline, familiarity); electric-bolt zap on cuts per the PDF's electric-line concept (straight flash under reduced motion); falling-item sway/rotation; lerped HUD meters; spirit momentum pips; looping procedural ambience (ocean surf + pentatonic plucks) with settings-driven volume; pause/resume cues.
+- **Method:** New assertions — ambience loop/length/determinism/player checks in `test_audio_director.gd`, campaign-reset check in `test_progression.gd`; full-suite regression; headless boot smoke; windowed screenshot capture of title and gameplay.
+- **Results:** Audio suite 14/14, progression suite 13/13. Full suite: 148 passed, 0 failed across 11 suites. Boot smoke: exit 0, no script errors.
+- **Regression check:** TR-012 balance harness still 13/13; no gameplay rule, timing, or balance value changed.
+- **Known limitation:** Zap/sway/ambience feel are verified by screenshots and headless checks; human feel assessment rides on the ongoing manual playtests and Phase 6 device testing.
+
 ## TR-015 - v0.5.1 Campaign Score Fix + Visual Overhaul
 
 - **Date:** 2026-09-01

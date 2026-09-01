@@ -14,6 +14,10 @@ extends Resource
 @export var trade_count: int = 3
 @export var spawn_interval: float = 1.4
 @export var fall_duration: float = 3.2
+## End-of-stage values for the difficulty ramp; equal to the start values
+## means no ramp. The coordinator lerps between start and end over the stage.
+@export var spawn_interval_end: float = 1.4
+@export var fall_duration_end: float = 3.2
 @export var hazard_unlock_spawns: Dictionary[StringName, int] = {}
 @export var required_collections: Dictionary[StringName, int] = {}
 @export var required_hazard_passes: Array[StringName] = []

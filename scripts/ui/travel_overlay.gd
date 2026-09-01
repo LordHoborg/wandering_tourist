@@ -1,9 +1,32 @@
 class_name TravelOverlay
 extends Control
 
+## Modal run-state overlay (pause/result). Emits `tapped` for touch/mouse so
+## the composition root can resume/restart/advance without a keyboard.
+
+signal tapped
+
 var snapshot: Dictionary = {}
+var _shown_at := -1.0
+const TAP_GRACE_SECONDS := 0.4
+
+func _ready() -> void:
+	mouse_filter = Control.MOUSE_FILTER_STOP
+
 func set_snapshot(next_snapshot: Dictionary) -> void:
+	var was_visible := visible
 	snapshot = next_snapshot; visible = not snapshot.is_empty() and snapshot["state"] != RunStateMachine.State.RUNNING; queue_redraw()
+	if visible and not was_visible:
+		_shown_at = Time.get_ticks_msec() / 1000.0
+
+func _gui_input(event: InputEvent) -> void:
+	if (event is InputEventMouseButton or event is InputEventScreenTouch) and event.pressed:
+		accept_event()
+		# Ignore the tap that just produced this result; a result screen must
+		# never be dismissed by the same touch that triggered it.
+		if Time.get_ticks_msec() / 1000.0 - _shown_at < TAP_GRACE_SECONDS:
+			return
+		tapped.emit()
 
 func _draw() -> void:
 	if snapshot.is_empty(): return
@@ -19,8 +42,10 @@ func _draw() -> void:
 		if final_stage: title = "JOURNEY COMPLETE"; subtitle = "Every stage cleared. The tourist wanders on."
 		else: title = "DESTINATION REACHED"; subtitle = "A postcard-perfect journey. +%d bonus!" % snapshot.get("bonus", 500)
 	var stars: int = mini(3, 1 + int(snapshot.get("correct_decisions", 0) >= 8) + int(snapshot.get("missed_beneficial", 0) == 0))
-	var continue_text := "TAP HERE OR SPACE / ENTER / N TO CONTINUE"
-	var action_text: String = "SPACE TO RESUME    R TWICE TO RESTART" if state == RunStateMachine.State.PAUSED else (continue_text if state == RunStateMachine.State.COMPLETED and not final_stage else "PRESS R TO START A NEW TRIP")
+	var continue_text := "TAP OR SPACE / ENTER / N TO CONTINUE"
+	var action_text := "TAP OR PRESS R TO TRY AGAIN"
+	if state == RunStateMachine.State.PAUSED: action_text = "TAP OR SPACE TO RESUME    R TWICE TO RESTART"
+	elif state == RunStateMachine.State.COMPLETED: action_text = continue_text if not final_stage else "TAP OR PRESS R FOR A NEW JOURNEY"
 	var font := ThemeDB.fallback_font
 	draw_string(font, Vector2(120, 470), title, HORIZONTAL_ALIGNMENT_CENTER, 480, 30, Color("fff0bd"))
 	draw_string(font, Vector2(120, 508), subtitle, HORIZONTAL_ALIGNMENT_CENTER, 480, 18, Color("a8e5dc"))

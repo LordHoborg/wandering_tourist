@@ -81,6 +81,16 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("5_overlay")
 
+[node name="PauseButton" type="Button" parent="."]
+visible = false
+layout_mode = 0
+offset_left = 642.0
+offset_top = 30.0
+offset_right = 698.0
+offset_bottom = 86.0
+theme_override_font_sizes/font_size = 20
+text = "❚❚"
+
 [node name="TitleScreen" type="Control" parent="."]
 layout_mode = 1
 anchors_preset = 15

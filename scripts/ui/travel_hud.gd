@@ -8,6 +8,7 @@ signal warning_cue_requested(cue: StringName)
 
 var snapshot: Dictionary = {}
 var _warnings := WarningMonitor.new()
+var _display: Dictionary = {}
 
 func set_snapshot(next_snapshot: Dictionary) -> void:
 	snapshot = next_snapshot
@@ -16,6 +17,17 @@ func set_snapshot(next_snapshot: Dictionary) -> void:
 			warning_cue_requested.emit(cue)
 	else:
 		_warnings.reset()
+	queue_redraw()
+
+func _process(delta: float) -> void:
+	if snapshot.is_empty():
+		return
+	# Meters ease toward their true value instead of jumping per decay tick.
+	for parameter_id in snapshot["parameters"]:
+		var target: float = snapshot["parameters"][parameter_id]
+		var current: float = _display.get(parameter_id, target)
+		_display[parameter_id] = lerpf(current, target, minf(1.0, delta * 7.0))
+	# Continuous redraw drives meter easing and the warning pulse.
 	queue_redraw()
 
 func _draw() -> void:
@@ -30,9 +42,18 @@ func _draw() -> void:
 	draw_string(font, Vector2(42, 58), "WANDERING TOURIST", HORIZONTAL_ALIGNMENT_LEFT, -1, 26, Color("fff0bd")); draw_string(font, Vector2(42, 82), "STAGE %d  |  TROPICAL POSTCARD RUN" % snapshot.get("stage", 1), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color("8ce4d8"))
 	_draw_stage_dots(330, 76)
 	var values: Dictionary = snapshot["parameters"]
-	_draw_meter(42, 112, "H", "HUNGER", values[&"hunger"], Color("ffb35c")); _draw_meter(42, 160, "Z", "REST", values[&"rest"], Color("91b9ff")); _draw_meter(42, 208, "*", "FUN", values[&"fun"], Color("f49ad6"))
+	_draw_meter(42, 112, "H", "HUNGER", values[&"hunger"], _display.get(&"hunger", values[&"hunger"]), Color("ffb35c")); _draw_meter(42, 160, "Z", "REST", values[&"rest"], _display.get(&"rest", values[&"rest"]), Color("91b9ff")); _draw_meter(42, 208, "*", "FUN", values[&"fun"], _display.get(&"fun", values[&"fun"]), Color("f49ad6"))
 	draw_string(font, Vector2(506, 125), "TIME  %02d:%02d" % [int(snapshot["remaining"]) / 60, int(snapshot["remaining"]) % 60], HORIZONTAL_ALIGNMENT_LEFT, -1, 19, Color.WHITE)
-	draw_string(font, Vector2(506, 164), "SCORE  %d" % snapshot["score"], HORIZONTAL_ALIGNMENT_LEFT, -1, 19, Color("fff0bd")); draw_string(font, Vector2(506, 203), "SPIRIT %d/9" % snapshot.get("momentum", 0), HORIZONTAL_ALIGNMENT_LEFT, -1, 17, Color("8ce4d8")); draw_string(font, Vector2(42, 286), snapshot.get("objective", ""), HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color("fff0bd"))
+	draw_string(font, Vector2(506, 164), "SCORE  %d" % snapshot["score"], HORIZONTAL_ALIGNMENT_LEFT, -1, 19, Color("fff0bd")); draw_string(font, Vector2(506, 196), "SPIRIT", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color("8ce4d8")); _draw_spirit_pips(506, 206, snapshot.get("momentum", 0)); draw_string(font, Vector2(42, 286), snapshot.get("objective", ""), HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color("fff0bd"))
+
+func _draw_spirit_pips(x: float, y: float, momentum: int) -> void:
+	for index in 9:
+		var center := Vector2(x + index * 20, y)
+		if index < momentum:
+			draw_circle(center, 6, Color("ffcf5c"))
+			draw_circle(center + Vector2(-1.5, -1.5), 2.5, Color("fff3c4"))
+		else:
+			draw_arc(center, 6, 0, TAU, 12, Color(0.55, 0.75, 0.72, 0.5), 1.5)
 
 func _draw_stage_dots(x: float, y: float) -> void:
 	for index in TOTAL_STAGES:
@@ -42,7 +63,7 @@ func _draw_stage_dots(x: float, y: float) -> void:
 		else:
 			draw_arc(center, 6, 0, TAU, 16, Color("8ce4d8"), 2.0)
 
-func _draw_meter(x: float, y: float, icon: String, label: String, value: float, tint: Color) -> void:
+func _draw_meter(x: float, y: float, icon: String, label: String, value: float, shown: float, tint: Color) -> void:
 	var warning := value <= WarningMonitor.LOW_BAND or value >= WarningMonitor.HIGH_BAND
 	var alert := Color("ffdf80")
 	if warning and not AppSettings.reduced_motion:
@@ -56,7 +77,7 @@ func _draw_meter(x: float, y: float, icon: String, label: String, value: float, 
 	var bar_rect := Rect2(x + 122, y - 14, 290, 15)
 	var bar_bg := StyleBoxFlat.new(); bar_bg.bg_color = Color("142b49"); bar_bg.set_corner_radius_all(7)
 	draw_style_box(bar_bg, bar_rect)
-	var fill_fraction := clampf(value / 100.0, 0.0, 1.0)
+	var fill_fraction := clampf(shown / 100.0, 0.0, 1.0)
 	if fill_fraction > 0.02:
 		var bar_fill := StyleBoxFlat.new(); bar_fill.bg_color = tint if not warning else alert; bar_fill.set_corner_radius_all(7)
 		draw_style_box(bar_fill, Rect2(bar_rect.position, Vector2(bar_rect.size.x * fill_fraction, bar_rect.size.y)))

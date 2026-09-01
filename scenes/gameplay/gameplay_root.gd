@@ -30,6 +30,7 @@ var restart_armed_at := -1.0
 @onready var overlay = $Overlay
 @onready var hint: Label = $Hint
 @onready var title_screen = $TitleScreen
+@onready var pause_button: Button = $PauseButton
 
 func _ready() -> void:
 	var definitions: Array[ParameterDefinition] = []
@@ -49,6 +50,8 @@ func _ready() -> void:
 	hud.warning_cue_requested.connect(audio.play_cue)
 	title_screen.set_best_score(game.best_scores.best_score)
 	title_screen.start_requested.connect(_start_run)
+	overlay.tapped.connect(_on_overlay_tapped)
+	pause_button.pressed.connect(_on_pause_pressed)
 
 func _start_run() -> void:
 	if run_started:
@@ -69,14 +72,8 @@ func _input(event: InputEvent) -> void:
 	if not run_started:
 		return
 	if event is InputEventMouseButton and event.pressed:
-		if snapshot.get("state") == RunStateMachine.State.COMPLETED and event.position.y >= 730.0:
-			game.advance_stage()
-			return
 		_forward_lane_pointer(event.position)
 	elif event is InputEventScreenTouch and event.pressed:
-		if snapshot.get("state") == RunStateMachine.State.COMPLETED and event.position.y >= 730.0:
-			game.advance_stage()
-			return
 		_forward_lane_pointer(event.position)
 
 func _forward_lane_pointer(pointer: Vector2) -> void:
@@ -94,8 +91,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if event.is_action_pressed("ui_accept"):
 		if snapshot.get("state") == RunStateMachine.State.RUNNING:
+			audio.play_cue(&"ui_pause")
 			game.pause_intent()
 		elif snapshot.get("state") == RunStateMachine.State.PAUSED:
+			audio.play_cue(&"ui_start")
 			game.resume()
 		elif snapshot.get("state") == RunStateMachine.State.COMPLETED:
 			game.advance_stage()
@@ -104,12 +103,35 @@ func _unhandled_input(event: InputEvent) -> void:
 	elif event is InputEventKey and event.pressed and event.keycode == KEY_N and not event.echo:
 		game.advance_stage()
 
+func _on_overlay_tapped() -> void:
+	var state: int = snapshot.get("state", RunStateMachine.State.IDLE)
+	if state == RunStateMachine.State.PAUSED:
+		audio.play_cue(&"ui_start")
+		game.resume()
+	elif state == RunStateMachine.State.FAILED:
+		game.restart()
+	elif state == RunStateMachine.State.COMPLETED:
+		# Non-final stages advance; a completed journey starts a new campaign.
+		if not game.advance_stage():
+			game.restart_campaign()
+
+func _on_pause_pressed() -> void:
+	if snapshot.get("state") == RunStateMachine.State.RUNNING:
+		audio.play_cue(&"ui_pause")
+		game.pause_intent()
+
 func _handle_restart_key() -> void:
 	var state: int = snapshot.get("state", RunStateMachine.State.IDLE)
-	if state == RunStateMachine.State.FAILED or state == RunStateMachine.State.COMPLETED:
-		# Restarting from a result starts a fresh run immediately.
+	if state == RunStateMachine.State.FAILED:
+		# Restarting from a result starts a fresh attempt immediately.
 		restart_armed_at = -1.0
 		game.restart()
+	elif state == RunStateMachine.State.COMPLETED:
+		restart_armed_at = -1.0
+		if snapshot.get("stage", 1) >= 3:
+			game.restart_campaign()
+		else:
+			game.restart()
 	elif state == RunStateMachine.State.PAUSED:
 		# Restarting from pause requires confirmation: R twice within the window.
 		var now := Time.get_ticks_msec() / 1000.0
@@ -124,8 +146,10 @@ func _render_snapshot(next_snapshot: Dictionary) -> void:
 	snapshot = next_snapshot
 	hud.set_snapshot(snapshot)
 	overlay.set_snapshot(snapshot)
+	pause_button.visible = run_started and snapshot.get("state") == RunStateMachine.State.RUNNING
 	var ready := [false, false]
 	var live_ids: Dictionary = {}
+	var sway_time := 0.0 if AppSettings.reduced_motion else Time.get_ticks_msec() / 1000.0
 	for item: Dictionary in snapshot["items"]:
 		var instance_id: int = item["instance_id"]
 		live_ids[instance_id] = true
@@ -137,12 +161,15 @@ func _render_snapshot(next_snapshot: Dictionary) -> void:
 		else:
 			view = ItemView.new()
 			view.size = ITEM_SIZE
+			view.pivot_offset = ITEM_SIZE * 0.5
 			view.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			item_layer.add_child(view)
 			item_views[instance_id] = view
 			view.play_spawn(AppSettings.reduced_motion)
 		view.configure(item)
-		view.position = Vector2(117.0 if item["lane"] == 0 else 457.0, LANE_TOP + item["progress"] * LANE_HEIGHT - ITEM_SIZE.y * 0.5)
+		var sway := sin(sway_time * 2.2 + float(instance_id % 64) * 1.7) * 7.0
+		view.position = Vector2((117.0 if item["lane"] == 0 else 457.0) + sway, LANE_TOP + item["progress"] * LANE_HEIGHT - ITEM_SIZE.y * 0.5)
+		view.rotation = sway * 0.008
 	for instance_id in item_views.keys():
 		if not live_ids.has(instance_id):
 			var removed = item_views[instance_id]
@@ -157,10 +184,12 @@ func _on_presentation_event(kind: StringName, data: Dictionary) -> void:
 	var at := Vector2(110.0 if lane == 0 else 450.0, 840.0)
 	if kind == &"cut_success":
 		playfield.flash_lane(lane, true)
+		playfield.zap_lane(lane)
 		feedback.show_feedback("NICE!  +%d  %s" % [data.get("score_delta", 0), _delta_text(data)], Color("fff0a6"), at)
 		_mark_item_event(data, kind)
 	elif kind == &"harmful_cut":
 		playfield.flash_lane(lane, false)
+		playfield.zap_lane(lane)
 		feedback.show_feedback("OOPS!  %s" % _delta_text(data), Color("ff9b89"), at)
 		_mark_item_event(data, kind)
 	elif kind == &"hazard_passed":

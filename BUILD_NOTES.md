@@ -2,10 +2,10 @@
 
 ## Current Build
 
-- **Version:** Vertical Slice v0.5.1 (2026-09-01), desktop/headless only
+- **Version:** Vertical Slice v0.5.2 (2026-09-02), desktop/headless only
 - **Build number:** None (runs from source via `tools/godot/Godot_v4.7.1-stable_win64.exe --path .`)
 - **Build date:** Not applicable (no exported artifact)
-- **Build status:** Playable in-editor/desktop; suite 143/143 green; no Android APK yet
+- **Build status:** Playable in-editor/desktop; suite 148/148 green; no Android APK yet
 - **Changelog:** See `CHANGELOG.md` (Unreleased)
 - **Known bugs:** See `KNOWN_BUGS.md`
 

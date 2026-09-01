@@ -7,8 +7,10 @@ const LANE_TOP := 300.0
 const LANE_HEIGHT := 680.0
 const CUT_START := 850.0
 const FLASH_DURATION := 0.35
+const ZAP_DURATION := 0.18
 var cut_ready: Array[bool] = [false, false]
 var _flashes: Array[Dictionary] = []
+var _zaps: Array[Dictionary] = []
 
 func set_cut_ready(left_ready: bool, right_ready: bool) -> void:
 	cut_ready = [left_ready, right_ready]
@@ -17,6 +19,12 @@ func set_cut_ready(left_ready: bool, right_ready: bool) -> void:
 ## Brief expanding ring on a lane's action line after a resolution.
 func flash_lane(lane: int, good: bool) -> void:
 	_flashes.append({"lane": lane, "good": good, "at": Time.get_ticks_msec() / 1000.0})
+	queue_redraw()
+
+## Jagged electric bolt up the lane, matching the document's electric-line
+## concept. Reduced motion draws a single straight flash instead.
+func zap_lane(lane: int) -> void:
+	_zaps.append({"lane": lane, "at": Time.get_ticks_msec() / 1000.0})
 	queue_redraw()
 
 func _process(_delta: float) -> void:
@@ -28,6 +36,7 @@ func _draw() -> void:
 	Backdrop.draw(self, size, now, AppSettings.reduced_motion)
 	for lane in range(2):
 		_draw_lane(lane, now)
+	_draw_zaps(now)
 	_draw_flashes(now)
 
 func _draw_lane(lane: int, now: float) -> void:
@@ -73,6 +82,30 @@ func _draw_chevrons(center_x: float, now: float) -> void:
 		var c := Vector2(center_x + 16, y)
 		draw_line(a, b, Color(1.0, 0.90, 0.60, fade), 3.5)
 		draw_line(b, c, Color(1.0, 0.90, 0.60, fade), 3.5)
+
+func _draw_zaps(now: float) -> void:
+	var alive: Array[Dictionary] = []
+	for zap in _zaps:
+		var age: float = now - zap["at"]
+		if age >= ZAP_DURATION:
+			continue
+		alive.append(zap)
+		var progress: float = age / ZAP_DURATION
+		var center_x := 190.0 if zap["lane"] == 0 else 530.0
+		var fade := 1.0 - progress
+		if AppSettings.reduced_motion:
+			draw_line(Vector2(center_x, 922), Vector2(center_x, CUT_START - 60), Color(0.85, 0.97, 1.0, 0.7 * fade), 5.0)
+			continue
+		var bolt := PackedVector2Array([Vector2(center_x, 922)])
+		for segment in range(1, 7):
+			var y := 922.0 - segment * 26.0
+			# Deterministic jitter keeps the bolt stable for its short life.
+			var jitter := sin((zap["at"] * 1000.0 + segment * 37.0) * 12.9898) * 24.0
+			bolt.append(Vector2(center_x + jitter, y))
+		bolt.append(Vector2(center_x, CUT_START - 70))
+		draw_polyline(bolt, Color(0.62, 0.92, 1.0, 0.35 * fade), 8.0)
+		draw_polyline(bolt, Color(0.92, 0.99, 1.0, 0.95 * fade), 2.5)
+	_zaps = alive
 
 func _draw_flashes(now: float) -> void:
 	var alive: Array[Dictionary] = []
