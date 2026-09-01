@@ -1,5 +1,16 @@
 # Test Report
 
+## TR-015 - v0.5.1 Campaign Score Fix + Visual Overhaul
+
+- **Date:** 2026-09-01
+- **Godot:** 4.7.1.stable.official.a13da4feb (headless, `tools/godot`)
+- **Scope:** Player-reported defect: the score reset to zero on stage advance instead of carrying through the campaign. Also a full procedural visual overhaul (shared `TropicalBackdrop`, playfield lanes, item cards, HUD meters, overlay stars, title screen) plus a screenshot capture dev tool.
+- **Hypothesis (score fix):** `advance_stage()` discarded the accumulated `ScoreService`, so the campaign total never grew across stages. Fix: carry the total into the next stage via `stage_entry_score`; retrying a stage rolls back to that baseline so failed attempts cannot be farmed.
+- **Method:** New progression assertions (carry into stage 2, growth during stage 2, rollback on retry) in `tests/integration/test_progression.gd`; full-suite regression; headless boot smoke; windowed screenshot capture of title and gameplay reviewed for overlap/readability defects (hint/HUD overlap and title subtitle/island overlap found and fixed).
+- **Results:** Progression suite 12/12 (3 new checks). Full suite: 143 passed, 0 failed across 11 suites. Boot smoke: exit 0, no script errors.
+- **Regression check:** TR-012 balance harness still 13/13; item values, timings, and decay unchanged — only score persistence semantics across stages changed.
+- **Known limitation:** Visual quality is verified by captured screenshots at 360x640; small/large device verification remains with the Phase 4 human playtest and Phase 6 device testing.
+
 ## TR-014 - Phase 5 Vertical Slice Polish Verification
 
 - **Date:** 2026-08-31

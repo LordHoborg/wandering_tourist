@@ -48,6 +48,8 @@
 - [x] Add stage progress dots, result-overlay best score, journey-complete variant, and pause restart confirmation (R twice).
 - [x] Add unit suites for settings, audio, and warning timing; full suite 140/140 green plus clean headless boot (TR-014, 2026-08-31).
 - [x] Record the Vertical Slice v0.5 checkpoint (2026-08-31, see master document).
+- [x] Fix campaign score carry-over across stages with retry rollback (v0.5.1, TR-015).
+- [x] Overhaul procedural visuals: shared animated tropical backdrop, lane/action-line polish, item cards, HUD meters, overlay stars (v0.5.1, TR-015); suite 143/143.
 
 ## Future Phases
 

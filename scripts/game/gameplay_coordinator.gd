@@ -49,6 +49,10 @@ var spawn_elapsed: float = 0.0
 var lane_ready_at: Dictionary[int, float] = {0: 0.0, 1: 0.0}
 var level := LevelDefinition.new()
 var failure_parameter_id: StringName = &""
+## Campaign score accumulated before the current stage started. Advancing
+## carries the total forward; retrying a stage rolls back to this baseline so
+## a failed attempt cannot be farmed for points.
+var stage_entry_score: int = 0
 
 func _init(definitions: Array[ParameterDefinition], duration: float, repository_path: String) -> void:
 	parameters = ParameterService.new(definitions)
@@ -153,6 +157,7 @@ func restart() -> void:
 func advance_stage() -> bool:
 	if state_machine.state != RunStateMachine.State.COMPLETED or stage_index >= stages.size() - 1:
 		return false
+	stage_entry_score = score.score
 	_apply_stage(stage_index + 1)
 	_reset_stage_run()
 	start()
@@ -260,7 +265,7 @@ func _reset_stage_run() -> void:
 	state_machine = RunStateMachine.new()
 	parameters.state.set_defaults(parameters.definitions)
 	timer = TimerService.new(_stage().duration_seconds)
-	score = ScoreService.new(); resolver = ItemResolver.new(); scheduler = SpawnScheduler.new(); fairness = SpawnFairnessValidator.new(level.max_recovery_drought)
+	score = ScoreService.new(); score.restore(stage_entry_score); resolver = ItemResolver.new(); scheduler = SpawnScheduler.new(); fairness = SpawnFairnessValidator.new(level.max_recovery_drought)
 	active_items.clear(); failure_parameter_id = &""; spawn_elapsed = 0.0; lane_ready_at = {0: 0.0, 1: 0.0}; stage_spawn_count = 0; correct_decisions = 0; missed_beneficial = 0; harmful_cuts = 0; beneficial_collected = 0; hazards_passed = 0; hazards_cut = 0; tradeoffs_taken = 0; beneficial_tradeoffs = 0; failed_tradeoffs = 0; item_collections.clear(); item_hazard_passes.clear()
 
 func _stage_objective_complete() -> bool:

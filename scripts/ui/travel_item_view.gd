@@ -28,26 +28,49 @@ func play_departure(harmful: bool, reduced_motion: bool) -> void:
 	tween.parallel().tween_property(self, "modulate:a", 0.0, 0.22); tween.tween_callback(queue_free)
 
 func _draw() -> void:
-	var card := StyleBoxFlat.new(); card.bg_color = Color(0.05, 0.10, 0.20, 0.96); card.border_color = Color("ffe597") if cut_ready else accent; card.set_border_width_all(4 if cut_ready else 2); card.set_corner_radius_all(18)
-	draw_style_box(card, Rect2(Vector2.ZERO, size)); _draw_icon(Vector2(38, 42))
-	draw_string(ThemeDB.fallback_font, Vector2(77, 38), _title(), HORIZONTAL_ALIGNMENT_LEFT, 88, 15, Color.WHITE); draw_string(ThemeDB.fallback_font, Vector2(77, 61), "MIXED" if tradeoff else _knowledge_label(), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, accent)
-	if show_effects: draw_string(ThemeDB.fallback_font, Vector2(77, 80), _effect_text(), HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("fff0bd"))
-	if cut_ready: draw_string(ThemeDB.fallback_font, Vector2(18, 83), "ACTION!", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color("fff1b0"))
+	var card_rect := Rect2(Vector2.ZERO, size)
+	# Drop shadow.
+	var shadow := StyleBoxFlat.new(); shadow.bg_color = Color(0.0, 0.02, 0.06, 0.38); shadow.set_corner_radius_all(18)
+	draw_style_box(shadow, Rect2(Vector2(3, 5), card_rect.size))
+	if cut_ready:
+		var glow := StyleBoxFlat.new(); glow.bg_color = Color(0, 0, 0, 0); glow.border_color = Color(1.0, 0.88, 0.55, 0.45); glow.set_border_width_all(3); glow.set_corner_radius_all(22)
+		draw_style_box(glow, card_rect.grow(5))
+	var card := StyleBoxFlat.new(); card.bg_color = Color(0.07, 0.13, 0.25, 0.97); card.border_color = Color("ffe597") if cut_ready else accent; card.set_border_width_all(4 if cut_ready else 2); card.set_corner_radius_all(18)
+	draw_style_box(card, card_rect)
+	# Category header band.
+	var band := StyleBoxFlat.new(); band.bg_color = accent; band.corner_radius_top_left = 16; band.corner_radius_top_right = 16
+	draw_style_box(band, Rect2(2, 2, card_rect.size.x - 4, 24))
+	draw_string(ThemeDB.fallback_font, Vector2(12, 19), _title(), HORIZONTAL_ALIGNMENT_LEFT, 92, 13, Color(0.05, 0.10, 0.20))
+	draw_string(ThemeDB.fallback_font, Vector2(96, 19), "MIXED" if tradeoff else _knowledge_label(), HORIZONTAL_ALIGNMENT_LEFT, 46, 9, Color(0.05, 0.10, 0.20, 0.75))
+	# Icon on a soft backdrop.
+	draw_circle(Vector2(37, 60), 24, Color(1, 1, 1, 0.10)); draw_circle(Vector2(37, 60), 24, Color(1, 1, 1, 0.14), false, 1.5)
+	_draw_icon(Vector2(37, 60))
+	if show_effects:
+		_draw_effect_chips(Vector2(70, 44))
+	if cut_ready:
+		draw_string(ThemeDB.fallback_font, Vector2(70, 84), "ACTION!", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color("fff1b0"))
+
+func _draw_effect_chips(origin: Vector2) -> void:
+	var names := {&"hunger": "H", &"rest": "R", &"fun": "F"}
+	var index := 0
+	for parameter_id in deltas:
+		var amount: float = deltas[parameter_id]
+		var chip_color := Color(0.30, 0.75, 0.45) if amount > 0 else Color(0.85, 0.38, 0.34)
+		var pos := origin + Vector2(0, index * 17)
+		var chip := StyleBoxFlat.new(); chip.bg_color = chip_color; chip.set_corner_radius_all(8)
+		draw_style_box(chip, Rect2(pos, Vector2(52, 15)))
+		draw_string(ThemeDB.fallback_font, pos + Vector2(5, 12), "%s%+d" % [names.get(parameter_id, "?"), int(amount)], HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(0.04, 0.08, 0.16))
+		index += 1
 
 func _title() -> String:
 	return {&"fruit": "FRUIT", &"pillow": "PILLOW", &"camera": "CAMERA", &"stale_snack": "STALE SNACK", &"alarm_clock": "ALARM", &"rain_cloud": "RAIN CLOUD", &"coffee": "COFFEE", &"local_meal": "LOCAL MEAL", &"night_market": "NIGHT MARKET"}.get(item_id, "ITEM")
 
-func _effect_text() -> String:
-	var names := {&"hunger": "H", &"rest": "R", &"fun": "F"}
-	var chunks: Array[String] = []
-	for parameter_id in deltas:
-		chunks.append("%s%+d" % [names.get(parameter_id, "?"), int(deltas[parameter_id])])
-	return " ".join(chunks)
-
 func _knowledge_label() -> String:
 	if knowledge == "KNOWN":
 		return "KNOWN"
-	return "%s %d/6" % [knowledge, familiarity_count]
+	if knowledge == "LEARNING":
+		return "LRN %d/6" % familiarity_count
+	return "NEW"
 
 func _draw_icon(c: Vector2) -> void:
 	if item_id == &"fruit": draw_circle(c, 20, Color("ff885e")); draw_circle(c + Vector2(9, -12), 7, Color("9ee276"))

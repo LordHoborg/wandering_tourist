@@ -47,17 +47,18 @@ script = ExtResource("3_hud")
 
 [node name="Hint" type="Label" parent="."]
 layout_mode = 0
-offset_left = 128.0
-offset_top = 270.0
-offset_right = 592.0
-offset_bottom = 300.0
-theme_override_colors/font_color = Color(1, 0.94, 0.69, 1)
-theme_override_colors/font_shadow_color = Color(0.02, 0.06, 0.14, 1)
-theme_override_constants/shadow_offset_x = 2
+offset_left = 60.0
+offset_top = 1000.0
+offset_right = 660.0
+offset_bottom = 1060.0
+theme_override_colors/font_color = Color(1, 0.94, 0.75, 1)
+theme_override_colors/font_shadow_color = Color(0.02, 0.10, 0.16, 1)
+theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = 2
 theme_override_font_sizes/font_size = 18
 text = "Tap an item when it reaches the action line"
 horizontal_alignment = 1
+autowrap_mode = 2
 mouse_filter = 2
 
 [node name="Feedback" type="Control" parent="."]

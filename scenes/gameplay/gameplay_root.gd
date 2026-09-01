@@ -156,12 +156,15 @@ func _on_presentation_event(kind: StringName, data: Dictionary) -> void:
 	var lane: int = data.get("lane", 0)
 	var at := Vector2(110.0 if lane == 0 else 450.0, 840.0)
 	if kind == &"cut_success":
+		playfield.flash_lane(lane, true)
 		feedback.show_feedback("NICE!  +%d  %s" % [data.get("score_delta", 0), _delta_text(data)], Color("fff0a6"), at)
 		_mark_item_event(data, kind)
 	elif kind == &"harmful_cut":
+		playfield.flash_lane(lane, false)
 		feedback.show_feedback("OOPS!  %s" % _delta_text(data), Color("ff9b89"), at)
 		_mark_item_event(data, kind)
 	elif kind == &"hazard_passed":
+		playfield.flash_lane(lane, true)
 		feedback.show_feedback("GOOD!  +%d" % data.get("score_delta", 50), Color("a7f1ca"), at)
 	elif kind == &"beneficial_missed":
 		feedback.show_feedback("MISSED %s" % String(data.get("item_id", "ITEM")).to_upper(), Color("ffd38a"), at)

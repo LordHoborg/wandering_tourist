@@ -14,10 +14,21 @@ func _init() -> void:
 	_check(game.stages[2].trade_item_ids.has(&"coffee") and game.stages[2].trade_count == 3, "stage 3 trade-off pool")
 	game.start()
 	_check(_survive_stage(game), "reasonable beneficial-collection bot survives stage 1")
+	var stage1_total: int = game.score.score
 	_check(game.state_machine.state == RunState.State.COMPLETED and game.advance_stage(), "completion advances to stage 2")
+	_check(stage1_total > 0 and game.score.score == stage1_total, "campaign score carries into the next stage")
 	_check(game.stage_index == 1 and not game.familiarity.has(&"coffee"), "unseen trade-off remains unknown")
+	for index in range(120):
+		game.tick(0.1)
+		for item in game.active_items.duplicate():
+			if item.definition.should_collect and item.age(game.timer.elapsed) >= game.level.fall_duration - game.level.cut_window:
+				game.handle_lane_intent(item.lane_id)
+		if game.score.score > stage1_total:
+			break
+	_check(game.score.score > stage1_total, "stage 2 play increases the carried campaign score")
 	game.familiarity[&"fruit"] = 5
 	game.restart()
+	_check(game.score.score == stage1_total and game.score.momentum == 0, "retry rolls back to the stage-entry score")
 	_check(game.familiarity.get(&"fruit", 0) == 5 and not game.familiarity.has(&"night_market"), "per-item familiarity persists across retry")
 	game.timer.elapsed = game.timer.duration
 	game.tick(0.0)

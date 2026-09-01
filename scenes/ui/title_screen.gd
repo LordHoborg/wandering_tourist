@@ -7,6 +7,8 @@ extends Control
 
 signal start_requested
 
+const Backdrop = preload("res://scripts/ui/tropical_backdrop.gd")
+
 var best_score: int = 0
 
 @onready var _mute_button: Button = $Buttons/MuteButton
@@ -20,23 +22,22 @@ func _ready() -> void:
 	_motion_button.pressed.connect(_on_motion_pressed)
 	_refresh_settings_labels()
 
+func _process(_delta: float) -> void:
+	queue_redraw()
+
 func set_best_score(value: int) -> void:
 	best_score = value
 	queue_redraw()
 
 func _draw() -> void:
-	draw_rect(Rect2(Vector2.ZERO, size), Color("172a4d"))
-	for band in range(12):
-		var t := float(band) / 11.0
-		draw_rect(Rect2(0, band * 110, size.x, 112), Color(0.12 + t * 0.58, 0.20 + t * 0.22, 0.42 + t * 0.08))
-	draw_circle(Vector2(560, 330), 96, Color("ffd475")); draw_circle(Vector2(560, 330), 70, Color("ffe6a4"))
-	var island := PackedVector2Array([Vector2(0, 700), Vector2(160, 610), Vector2(330, 690), Vector2(480, 600), Vector2(650, 690), Vector2(720, 640), Vector2(720, 1280), Vector2(0, 1280)])
-	draw_colored_polygon(island, Color("17494c"))
+	Backdrop.draw(self, size, Time.get_ticks_msec() / 1000.0, AppSettings.reduced_motion)
 	var font := ThemeDB.fallback_font
-	draw_string(font, Vector2(90, 420), "WANDERING", HORIZONTAL_ALIGNMENT_CENTER, 540, 58, Color("fff0bd"))
-	draw_string(font, Vector2(90, 490), "TOURIST", HORIZONTAL_ALIGNMENT_CENTER, 540, 58, Color("fff0bd"))
-	draw_string(font, Vector2(90, 545), "Keep Hunger, Rest and Fun in the safe zone.", HORIZONTAL_ALIGNMENT_CENTER, 540, 18, Color("a8e5dc"))
-	draw_string(font, Vector2(90, 640), "BEST SCORE  %d" % best_score, HORIZONTAL_ALIGNMENT_CENTER, 540, 22, Color("ffe08a"))
+	draw_string(font, Vector2(92, 373), "WANDERING", HORIZONTAL_ALIGNMENT_CENTER, 540, 58, Color(0.10, 0.16, 0.30, 0.55))
+	draw_string(font, Vector2(92, 443), "TOURIST", HORIZONTAL_ALIGNMENT_CENTER, 540, 58, Color(0.10, 0.16, 0.30, 0.55))
+	draw_string(font, Vector2(90, 370), "WANDERING", HORIZONTAL_ALIGNMENT_CENTER, 540, 58, Color("fff0bd"))
+	draw_string(font, Vector2(90, 440), "TOURIST", HORIZONTAL_ALIGNMENT_CENTER, 540, 58, Color("fff0bd"))
+	draw_string(font, Vector2(90, 500), "Keep Hunger, Rest and Fun in the safe zone.", HORIZONTAL_ALIGNMENT_CENTER, 540, 18, Color(0.08, 0.20, 0.32))
+	draw_string(font, Vector2(90, 640), "BEST SCORE  %d" % best_score, HORIZONTAL_ALIGNMENT_CENTER, 540, 22, Color("6b4a1f"))
 
 func _on_mute_pressed() -> void:
 	AppSettings.set_muted(not AppSettings.muted)

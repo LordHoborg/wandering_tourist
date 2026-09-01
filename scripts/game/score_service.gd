@@ -27,3 +27,9 @@ func reward_correct(points: int) -> int:
 
 func break_momentum() -> void:
 	momentum = maxi(0, momentum - 2)
+
+## Restores a previously accumulated campaign score (e.g. rolling back to the
+## stage-entry total on retry) and clears momentum.
+func restore(points: int) -> void:
+	score = points
+	momentum = 0
