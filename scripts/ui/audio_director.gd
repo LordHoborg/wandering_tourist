@@ -24,6 +24,7 @@ const CUES: Dictionary = {
 	&"spawn": [[980.0, 0.04]],
 	&"ui_start": [[587.0, 0.08], [880.0, 0.12]],
 	&"ui_pause": [[440.0, 0.06], [330.0, 0.08]],
+	&"spirit_milestone": [[784.0, 0.07], [988.0, 0.07], [1175.0, 0.14]],
 }
 
 var streams: Dictionary = {}

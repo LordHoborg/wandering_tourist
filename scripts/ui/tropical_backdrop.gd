@@ -6,32 +6,38 @@ extends RefCounted
 ## Pure static drawing helpers so the playfield and the title screen render
 ## the same world; reduced motion freezes every animated element.
 
-static func draw(canvas: CanvasItem, area: Vector2, time: float, reduced_motion: bool) -> void:
+static func draw(canvas: CanvasItem, area: Vector2, time: float, reduced_motion: bool, theme_id: StringName = &"tropical") -> void:
 	var t := 0.0 if reduced_motion else time
 	var horizon := area.y * 0.46
-	_sky(canvas, area, horizon)
-	_sun(canvas, Vector2(area.x * 0.78, horizon * 0.60), t)
+	var palette := _palette(theme_id)
+	_sky(canvas, area, horizon, palette)
+	_sun(canvas, Vector2(area.x * 0.78, horizon * 0.60), t, palette)
 	_clouds(canvas, area, t)
-	_sea(canvas, area, horizon, t)
-	_island(canvas, area, horizon)
-	_beach(canvas, area)
-	_palm(canvas, Vector2(area.x * 0.085, area.y * 0.90), 1.0)
-	_palm(canvas, Vector2(area.x * 0.925, area.y * 0.915), 0.85)
+	_sea(canvas, area, horizon, t, palette)
+	if theme_id == &"sunset_city":
+		_city(canvas, area, horizon, palette)
+	elif theme_id == &"ancient_ruins":
+		_ruins(canvas, area, horizon, palette)
+	else:
+		_island(canvas, area, horizon)
+		_beach(canvas, area)
+		_palm(canvas, Vector2(area.x * 0.085, area.y * 0.90), 1.0)
+		_palm(canvas, Vector2(area.x * 0.925, area.y * 0.915), 0.85)
 
-static func _sky(canvas: CanvasItem, area: Vector2, horizon: float) -> void:
-	var top := Color(0.13, 0.38, 0.82)
-	var bottom := Color(0.99, 0.83, 0.64)
+static func _sky(canvas: CanvasItem, area: Vector2, horizon: float, palette: Dictionary) -> void:
+	var top: Color = palette["sky_top"]
+	var bottom: Color = palette["sky_bottom"]
 	var bands := 26
 	for band in bands:
 		var f := float(band) / bands
 		canvas.draw_rect(Rect2(0, f * horizon, area.x, horizon / bands + 1.5), top.lerp(bottom, pow(f, 1.35)))
 
-static func _sun(canvas: CanvasItem, center: Vector2, t: float) -> void:
+static func _sun(canvas: CanvasItem, center: Vector2, t: float, palette: Dictionary) -> void:
 	var shimmer := 0.10 + 0.04 * sin(t * 0.9)
-	canvas.draw_circle(center, 128, Color(1.0, 0.85, 0.55, shimmer * 0.6))
-	canvas.draw_circle(center, 92, Color(1.0, 0.87, 0.60, shimmer))
-	canvas.draw_circle(center, 58, Color("ffd97a"))
-	canvas.draw_circle(center, 42, Color("fff3c4"))
+	canvas.draw_circle(center, 128, Color(palette["sun"], shimmer * 0.6))
+	canvas.draw_circle(center, 92, Color(palette["sun"], shimmer))
+	canvas.draw_circle(center, 58, palette["sun"])
+	canvas.draw_circle(center, 42, palette["sun_core"])
 
 static func _clouds(canvas: CanvasItem, area: Vector2, t: float) -> void:
 	for index in 3:
@@ -44,9 +50,9 @@ static func _clouds(canvas: CanvasItem, area: Vector2, t: float) -> void:
 		canvas.draw_circle(Vector2(x + 34, y + 8), 21, tint)
 		canvas.draw_rect(Rect2(x - 30, y + 2, 76, 20), tint)
 
-static func _sea(canvas: CanvasItem, area: Vector2, horizon: float, t: float) -> void:
-	var near := Color(0.11, 0.63, 0.71)
-	var deep := Color(0.03, 0.29, 0.45)
+static func _sea(canvas: CanvasItem, area: Vector2, horizon: float, t: float, palette: Dictionary) -> void:
+	var near: Color = palette["sea_near"]
+	var deep: Color = palette["sea_deep"]
 	var bands := 14
 	for band in bands:
 		var f := float(band) / bands
@@ -61,6 +67,42 @@ static func _sea(canvas: CanvasItem, area: Vector2, horizon: float, t: float) ->
 		for x in range(0, int(area.x) + 24, 24):
 			points.append(Vector2(x, y + sin(x * 0.022 + phase) * amplitude))
 		canvas.draw_polyline(points, Color(0.78, 0.96, 0.95, 0.16 + wave * 0.05), 2.5)
+
+static func _city(canvas: CanvasItem, area: Vector2, horizon: float, palette: Dictionary) -> void:
+	var base := horizon + 18.0
+	for index in 9:
+		var width := 44.0 + float((index * 17) % 35)
+		var height := 75.0 + float((index * 41) % 140)
+		var x := float(index) * area.x / 8.0 - 26.0
+		canvas.draw_rect(Rect2(x, base - height, width, height), palette["city_shadow"])
+		for row in range(3, int(height / 24.0)):
+			for column in range(1, int(width / 19.0)):
+				if (row + column + index) % 3 != 0:
+					canvas.draw_rect(Rect2(x + column * 18.0, base - row * 24.0, 7, 9), Color(palette["window"], 0.72))
+	canvas.draw_rect(Rect2(0, base, area.x, area.y - base), palette["street"])
+	for lane in 5:
+		canvas.draw_line(Vector2(lane * area.x / 4.0, base + 30), Vector2(lane * area.x / 4.0 + 80, area.y), Color(1, 0.78, 0.42, 0.18), 3.0)
+
+static func _ruins(canvas: CanvasItem, area: Vector2, horizon: float, palette: Dictionary) -> void:
+	var base := horizon + 10.0
+	var temple := PackedVector2Array([Vector2(area.x * 0.26, base), Vector2(area.x * 0.33, base - 130), Vector2(area.x * 0.67, base - 130), Vector2(area.x * 0.74, base)])
+	canvas.draw_colored_polygon(temple, palette["ruin"])
+	canvas.draw_rect(Rect2(area.x * 0.30, base - 116, area.x * 0.40, 18), palette["stone_light"])
+	for column in 4:
+		var x := area.x * 0.33 + column * area.x * 0.11
+		canvas.draw_rect(Rect2(x, base - 105, 24, 105), palette["stone_light"])
+		canvas.draw_line(Vector2(x + 6, base - 92), Vector2(x + 6, base - 10), palette["stone_shadow"], 3.0)
+	canvas.draw_colored_polygon(PackedVector2Array([Vector2(0, base), Vector2(area.x * 0.18, base - 58), Vector2(area.x * 0.34, base), Vector2(area.x * 0.48, base - 36), Vector2(area.x * 0.65, base), Vector2(area.x * 0.84, base - 48), Vector2(area.x, base)]), palette["sand"])
+	for index in 7:
+		var x := 40.0 + index * 104.0
+		canvas.draw_circle(Vector2(x, base + 34.0 + (index % 2) * 26.0), 5.0, palette["relic"])
+
+static func _palette(theme_id: StringName) -> Dictionary:
+	if theme_id == &"sunset_city":
+		return {"sky_top": Color("3c286e"), "sky_bottom": Color("f29b72"), "sun": Color("ffd17b"), "sun_core": Color("fff0b0"), "sea_near": Color("5e5ca7"), "sea_deep": Color("171c4d"), "city_shadow": Color("20214b"), "window": Color("ffd878"), "street": Color("252448")}
+	if theme_id == &"ancient_ruins":
+		return {"sky_top": Color("243b73"), "sky_bottom": Color("d88f74"), "sun": Color("f6bd73"), "sun_core": Color("ffe8ac"), "sea_near": Color("586a93"), "sea_deep": Color("1c294e"), "ruin": Color("73545a"), "stone_light": Color("b48a6c"), "stone_shadow": Color("513e4c"), "sand": Color("9d7559"), "relic": Color("f2c06c")}
+	return {"sky_top": Color("0d3f78"), "sky_bottom": Color("f7c87b"), "sun": Color("ffd97a"), "sun_core": Color("fff3c4"), "sea_near": Color("1c9fb5"), "sea_deep": Color("07456a")}
 
 static func _island(canvas: CanvasItem, area: Vector2, horizon: float) -> void:
 	var base := horizon + 6.0

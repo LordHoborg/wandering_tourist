@@ -10,9 +10,10 @@ var knowledge := "NEW"
 var show_effects := true
 var deltas: Dictionary = {}
 var familiarity_count: int = 0
+var decision := "COLLECT"
 
 func configure(data: Dictionary) -> void:
-	item_id = data["id"]; collect = data["collect"]; tradeoff = data["tradeoff"]; cut_ready = data["cut_ready"]; knowledge = data.get("knowledge", "KNOWN"); familiarity_count = data.get("familiarity_count", 0); show_effects = data.get("show_effects", false); deltas = data.get("deltas", {})
+	item_id = data["id"]; collect = data["collect"]; tradeoff = data["tradeoff"]; cut_ready = data["cut_ready"]; knowledge = data.get("knowledge", "KNOWN"); familiarity_count = data.get("familiarity_count", 0); show_effects = data.get("show_effects", false); deltas = data.get("deltas", {}); decision = data.get("decision", "COLLECT")
 	accent = Color("c88cff") if tradeoff else (Color("8fe3a8") if collect else Color("ff917b"))
 	queue_redraw()
 
@@ -49,6 +50,17 @@ func _draw() -> void:
 		_draw_effect_chips(Vector2(70, 44))
 	if cut_ready:
 		draw_string(ThemeDB.fallback_font, Vector2(70, 84), "ACTION!", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color("fff1b0"))
+	_draw_decision_badge()
+
+func _draw_decision_badge() -> void:
+	var good := decision == "COLLECT" or decision == "GOOD CHOICE"
+	var neutral := decision == "LET PASS" or decision == "SAVE IT"
+	var tint := Color("92e7b0") if good else (Color("ffcf76") if neutral else Color("ff958b"))
+	var badge := StyleBoxFlat.new()
+	badge.bg_color = Color(tint, 0.88)
+	badge.set_corner_radius_all(7)
+	draw_style_box(badge, Rect2(8, 94, size.x - 16, 14))
+	draw_string(ThemeDB.fallback_font, Vector2(14, 105), decision, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color("101c34"))
 
 func _draw_effect_chips(origin: Vector2) -> void:
 	var names := {&"hunger": "H", &"rest": "R", &"fun": "F"}

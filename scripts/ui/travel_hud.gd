@@ -39,12 +39,28 @@ func _draw() -> void:
 	var sheen := StyleBoxFlat.new(); sheen.bg_color = Color(1, 1, 1, 0.06); sheen.corner_radius_top_left = 22; sheen.corner_radius_top_right = 22
 	draw_style_box(sheen, Rect2(panel_rect.position + Vector2(3, 3), Vector2(panel_rect.size.x - 6, 62)))
 	var font := ThemeDB.fallback_font
-	draw_string(font, Vector2(42, 58), "WANDERING TOURIST", HORIZONTAL_ALIGNMENT_LEFT, -1, 26, Color("fff0bd")); draw_string(font, Vector2(42, 82), "STAGE %d  |  TROPICAL POSTCARD RUN" % snapshot.get("stage", 1), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color("8ce4d8"))
+	draw_string(font, Vector2(42, 58), "WANDERING TOURIST", HORIZONTAL_ALIGNMENT_LEFT, -1, 26, Color("fff0bd")); draw_string(font, Vector2(42, 82), "STAGE %d  |  %s" % [snapshot.get("stage", 1), _theme_label()], HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color("8ce4d8"))
 	_draw_stage_dots(330, 76)
 	var values: Dictionary = snapshot["parameters"]
 	_draw_meter(42, 112, "H", "HUNGER", values[&"hunger"], _display.get(&"hunger", values[&"hunger"]), Color("ffb35c")); _draw_meter(42, 160, "Z", "REST", values[&"rest"], _display.get(&"rest", values[&"rest"]), Color("91b9ff")); _draw_meter(42, 208, "*", "FUN", values[&"fun"], _display.get(&"fun", values[&"fun"]), Color("f49ad6"))
 	draw_string(font, Vector2(506, 125), "TIME  %02d:%02d" % [int(snapshot["remaining"]) / 60, int(snapshot["remaining"]) % 60], HORIZONTAL_ALIGNMENT_LEFT, -1, 19, Color.WHITE)
 	draw_string(font, Vector2(506, 164), "SCORE  %d" % snapshot["score"], HORIZONTAL_ALIGNMENT_LEFT, -1, 19, Color("fff0bd")); draw_string(font, Vector2(506, 196), "SPIRIT", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color("8ce4d8")); _draw_spirit_pips(506, 206, snapshot.get("momentum", 0)); draw_string(font, Vector2(42, 286), snapshot.get("objective", ""), HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color("fff0bd"))
+	_draw_priority(font)
+
+func _draw_priority(font: Font) -> void:
+	var parameter_id: StringName = snapshot.get("priority_parameter", &"hunger")
+	var label: String = {"hunger": "HUNGER", "rest": "REST", "fun": "FUN"}.get(parameter_id, "NEEDS")
+	var value: int = int(round(snapshot.get("priority_value", 50.0)))
+	var chip := StyleBoxFlat.new()
+	chip.bg_color = Color("102b4a")
+	chip.border_color = Color("ffcf76") if value <= 35 else Color("8ce4d8")
+	chip.set_border_width_all(2)
+	chip.set_corner_radius_all(11)
+	draw_style_box(chip, Rect2(470, 264, 220, 30))
+	draw_string(font, Vector2(484, 285), "PRIORITY  %s  %02d" % [label, value], HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color("fff0bd"))
+
+func _theme_label() -> String:
+	return {"tropical": "SUNLIT COVE", "sunset_city": "NEON HARBOR", "ancient_ruins": "RUINED TEMPLE"}.get(snapshot.get("theme_id", &"tropical"), "ISLAND JOURNEY")
 
 func _draw_spirit_pips(x: float, y: float, momentum: int) -> void:
 	for index in 9:

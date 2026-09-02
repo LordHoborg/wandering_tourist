@@ -4,7 +4,7 @@ Android portrait 2D game project built with Godot 4 and typed GDScript.
 
 ## Current State
 
-The Vertical Slice v0.5 checkpoint is recorded (2026-08-31): a playable desktop vertical slice with three tutorial-progression stages, deterministic spawning, scoring with momentum, best-score persistence, pause/restart with confirmation, a title screen with persisted settings (sound, volume, reduced motion), and procedural sound effects. The full automated suite passes 140/140 including the balance-validation gate. The only open gate item is the Phase 4 live human playtest (see `PLAYTEST_PROTOCOL.md`). No Android APK exists yet.
+The Vertical Slice v0.5.3 checkpoint is recorded (2026-09-02): the playable desktop slice now adds decision-aware item labels, weakest-need priority guidance, distinct tropical/sunset-city/ancient-ruins stage themes, milestone audio, and richer destination presentation. The full automated suite passes 152/152 including the balance-validation gate. The only open gate item is the Phase 4 live human playtest (see `PLAYTEST_PROTOCOL.md`). No Android APK exists yet.
 
 Run the game: `tools\godot\Godot_v4.7.1-stable_win64.exe --path .`
 

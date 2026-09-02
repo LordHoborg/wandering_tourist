@@ -1,5 +1,15 @@
 # Test Report
 
+## TR-017 - v0.5.3 Decision Guidance and Destination Themes
+
+- **Date:** 2026-09-02
+- **Godot:** 4.7.1.stable.official.a13da4feb (headless, `tools/godot`)
+- **Scope:** Source-aligned gameplay and presentation pass after a complete re-read and visual inspection of the 8-page concept PDF.
+- **Changes:** Active items now publish decision labels from current parameter state; the HUD shows the weakest need and destination identity; stages use distinct procedural tropical, sunset-city, and ancient-ruins palettes; spirit milestones add a dedicated procedural cue and visual callout.
+- **Method:** Added progression assertions for stage themes and decision labels; full-suite regression; clean headless boot. Windowed presentation remains covered by the manual playtest/device gate.
+- **Results:** 152 passed, 0 failed across 11 suites. New progression suite: 17/17.
+- **Known limitation:** The PDF's additional parameters, multiple islands, monetization, and social systems remain intentionally out of first-playable scope. Human acceptance criteria and Android device verification remain open.
+
 ## TR-016 - v0.5.2 Touch Controls, Game Feel, and Ambient Audio
 
 - **Date:** 2026-09-02

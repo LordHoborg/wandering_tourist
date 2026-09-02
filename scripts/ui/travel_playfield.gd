@@ -9,11 +9,18 @@ const CUT_START := 850.0
 const FLASH_DURATION := 0.35
 const ZAP_DURATION := 0.18
 var cut_ready: Array[bool] = [false, false]
+var theme_id: StringName = &"tropical"
 var _flashes: Array[Dictionary] = []
 var _zaps: Array[Dictionary] = []
 
 func set_cut_ready(left_ready: bool, right_ready: bool) -> void:
 	cut_ready = [left_ready, right_ready]
+	queue_redraw()
+
+func apply_stage_theme(next_theme: StringName) -> void:
+	if theme_id == next_theme:
+		return
+	theme_id = next_theme
 	queue_redraw()
 
 ## Brief expanding ring on a lane's action line after a resolution.
@@ -33,7 +40,7 @@ func _process(_delta: float) -> void:
 
 func _draw() -> void:
 	var now := Time.get_ticks_msec() / 1000.0
-	Backdrop.draw(self, size, now, AppSettings.reduced_motion)
+	Backdrop.draw(self, size, now, AppSettings.reduced_motion, theme_id)
 	for lane in range(2):
 		_draw_lane(lane, now)
 	_draw_zaps(now)

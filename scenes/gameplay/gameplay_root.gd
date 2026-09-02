@@ -8,7 +8,7 @@ const AudioDirector = preload("res://scripts/ui/audio_director.gd")
 
 const LANE_TOP := 300.0
 const LANE_HEIGHT := 680.0
-const ITEM_SIZE := Vector2(146, 94)
+const ITEM_SIZE := Vector2(160, 112)
 const RESTART_CONFIRM_SECONDS := 3.0
 
 signal audio_cue_requested(cue: StringName)
@@ -146,6 +146,7 @@ func _render_snapshot(next_snapshot: Dictionary) -> void:
 	snapshot = next_snapshot
 	hud.set_snapshot(snapshot)
 	overlay.set_snapshot(snapshot)
+	playfield.apply_stage_theme(snapshot.get("theme_id", &"tropical"))
 	pause_button.visible = run_started and snapshot.get("state") == RunStateMachine.State.RUNNING
 	var ready := [false, false]
 	var live_ids: Dictionary = {}
@@ -168,7 +169,7 @@ func _render_snapshot(next_snapshot: Dictionary) -> void:
 			view.play_spawn(AppSettings.reduced_motion)
 		view.configure(item)
 		var sway := sin(sway_time * 2.2 + float(instance_id % 64) * 1.7) * 7.0
-		view.position = Vector2((117.0 if item["lane"] == 0 else 457.0) + sway, LANE_TOP + item["progress"] * LANE_HEIGHT - ITEM_SIZE.y * 0.5)
+		view.position = Vector2((110.0 if item["lane"] == 0 else 450.0) + sway, LANE_TOP + item["progress"] * LANE_HEIGHT - ITEM_SIZE.y * 0.5)
 		view.rotation = sway * 0.008
 	for instance_id in item_views.keys():
 		if not live_ids.has(instance_id):
@@ -208,6 +209,8 @@ func _on_presentation_event(kind: StringName, data: Dictionary) -> void:
 			var tween := create_tween()
 			tween.tween_interval(4.0)
 			tween.tween_property(hint, "modulate:a", 0.0, 0.45)
+	elif kind == &"spirit_milestone":
+		feedback.show_feedback("SPIRIT TIER %d!" % data.get("tier", 1), Color("ffe08a"), Vector2(225.0, 350.0))
 
 func _mark_item_event(data: Dictionary, kind: StringName) -> void:
 	# The corresponding presentation node is removed by the next snapshot.

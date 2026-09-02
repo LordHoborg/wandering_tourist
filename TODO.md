@@ -52,6 +52,7 @@
 - [x] Overhaul procedural visuals: shared animated tropical backdrop, lane/action-line polish, item cards, HUD meters, overlay stars (v0.5.1, TR-015); suite 143/143.
 - [x] Close GDD touch gaps: visible pause button, tap-to-act overlays with dismissal grace, campaign restart (v0.5.2, TR-016).
 - [x] Add game feel and ambient audio: electric-bolt cuts, item sway, lerped meters, spirit pips, looping ambience (v0.5.2, TR-016); suite 148/148.
+- [x] Re-read the complete source PDF and add decision-aware item guidance, weakest-need HUD priority, three procedural destination themes, and spirit milestone audio (v0.5.3, TR-017); suite 152/152.
 
 ## Future Phases
 

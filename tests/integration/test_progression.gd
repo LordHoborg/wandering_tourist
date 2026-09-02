@@ -12,12 +12,16 @@ func _init() -> void:
 	_check(game.stages.size() == 3 and game.stages[0].simple_item_ids == [&"fruit", &"pillow", &"camera"] and game.stages[0].trade_count == 0, "stage 1 basic item pool")
 	_check(game.stages[1].simple_item_ids.has(&"stale_snack") and game.stages[1].trade_count == 0, "stage 2 hazard pool")
 	_check(game.stages[2].trade_item_ids.has(&"coffee") and game.stages[2].trade_count == 3, "stage 3 trade-off pool")
+	_check(game.stages[0].theme_id == &"tropical" and game.stages[1].theme_id == &"sunset_city" and game.stages[2].theme_id == &"ancient_ruins", "stages carry distinct destination themes")
 	game.start()
+	_check(game._decision_label(game.item_catalog[&"fruit"]) == "COLLECT", "simple item publishes a collect decision")
+	_check(game._decision_label(game.item_catalog[&"stale_snack"]) == "LET PASS", "hazard publishes a pass decision")
 	_check(_survive_stage(game), "reasonable beneficial-collection bot survives stage 1")
 	var stage1_total: int = game.score.score
 	_check(game.state_machine.state == RunState.State.COMPLETED and game.advance_stage(), "completion advances to stage 2")
 	_check(stage1_total > 0 and game.score.score == stage1_total, "campaign score carries into the next stage")
 	_check(game.stage_index == 1 and not game.familiarity.has(&"coffee"), "unseen trade-off remains unknown")
+	_check(game.stages[1].theme_id == &"sunset_city", "stage 2 keeps its destination theme")
 	for index in range(120):
 		game.tick(0.1)
 		for item in game.active_items.duplicate():
