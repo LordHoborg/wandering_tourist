@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.7.2 - 2026-09-04
+
+- Added a custom illustrated Milo character cutout to every story briefing.
+- Replaced the heavy per-line story boxes with lightweight guide accents and a compact travel-tip card.
+- Upgraded item cards with deeper shadows, layered surfaces, brighter category lighting, framed icon plates, and cleaner decision badges.
+
 ## v0.7.1 - 2026-09-03
 
 - Rewrote stage-completion and failure messaging with story-specific guidance, clearer retry/continue actions, and a more polished results card.

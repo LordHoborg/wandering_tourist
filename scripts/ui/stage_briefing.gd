@@ -2,6 +2,7 @@ class_name StageBriefing
 extends Control
 
 const Backdrop = preload("res://scripts/ui/tropical_backdrop.gd")
+const MiloTexture = preload("res://resources/art/milo_story.png")
 const STORY_CHARS_PER_LINE := 52.0
 const STORY_START_Y := 324.0
 const STORY_BOTTOM_Y := 760.0
@@ -76,7 +77,7 @@ func show_stage(stage_number: int, stage_title: String, next_theme: StringName) 
 		var height := _story_line_height(line)
 		_add_line(line, 80, y, 560, 19, Color.WHITE, 0.28 + _line_nodes.size() * 0.10, true, height)
 		y += height + 12.0
-	_add_line("TRAVEL TIP  •  %s" % story["tip"], 80, 820, 560, 18, Color("ffe08a"), 0.82, true, 74.0)
+	_add_line("TRAVEL TIP  •  %s" % story["tip"], 72, 830, 390, 17, Color("ffe08a"), 0.82, false, 64.0)
 	show()
 	queue_redraw()
 	_continue_button.modulate.a = 1.0
@@ -160,19 +161,18 @@ func _draw() -> void:
 	for card_rect in _line_cards:
 		if card_rect == Rect2():
 			continue
-		var card := StyleBoxFlat.new()
-		card.bg_color = Color(0.07, 0.16, 0.28, 0.82)
-		card.border_color = Color(0.55, 0.90, 0.84, 0.18)
-		card.set_border_width_all(1)
-		card.set_corner_radius_all(16)
-		draw_style_box(card, card_rect)
-	var tip_rect := Rect2(66, 812, size.x - 132, 90)
+		draw_line(card_rect.position + Vector2(0, 12), card_rect.position + Vector2(0, card_rect.size.y - 12), Color(0.55, 0.90, 0.84, 0.35), 2.0)
+	var tip_rect := Rect2(62, 812, 420, 90)
 	var tip := StyleBoxFlat.new()
-	tip.bg_color = Color(0.20, 0.18, 0.12, 0.90)
-	tip.border_color = Color("ffe08a")
-	tip.set_border_width_all(2)
-	tip.set_corner_radius_all(16)
+	tip.bg_color = Color(0.20, 0.18, 0.12, 0.72)
+	tip.border_color = Color(1.0, 0.88, 0.54, 0.72)
+	tip.set_border_width_all(1)
+	tip.set_corner_radius_all(14)
 	draw_style_box(tip, tip_rect)
+	draw_circle(Vector2(570, 910), 84, Color(0.03, 0.10, 0.19, 0.82))
+	draw_circle(Vector2(570, 910), 83, Color(0.55, 0.90, 0.84, 0.18), false, 2.0)
+	draw_texture_rect(MiloTexture, Rect2(492, 792, 156, 218), false)
+	draw_string(ThemeDB.fallback_font, Vector2(485, 1010), "MILO'S FIELD NOTES", HORIZONTAL_ALIGNMENT_CENTER, 170, 10, Color("8ce4d8"))
 
 func _reduced_motion() -> bool:
 	var settings := get_node_or_null("/root/AppSettings")

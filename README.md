@@ -4,7 +4,7 @@ Android portrait 2D game project built with Godot 4 and typed GDScript.
 
 ## Current State
 
-The narrative systems v0.7.1 checkpoint is recorded (2026-09-03): all 15 levels now open with an animated humorous story/tutorial briefing; long story text is constrained to safe cards; result screens explain wins and failures with need-specific guidance; parameter decay is faster and follows distinct real-life rhythms; risky item sequences add short-term memory decisions; and the procedural soundtrack uses softer 16-bit low-register synthesis. The full automated suite passes 199/199 including the complete campaign balance gate. The only open gate item is the Phase 4 live human playtest (see `PLAYTEST_PROTOCOL.md`). No Android APK exists yet.
+The visual storytelling v0.7.2 checkpoint is recorded (2026-09-04): all 15 levels open with an animated humorous briefing featuring an illustrated Milo character; story text uses lighter framing; result screens explain wins and failures with need-specific guidance; item cards use a richer layered presentation; parameter decay follows distinct real-life rhythms; risky item sequences add short-term memory decisions; and the procedural soundtrack uses softer 16-bit synthesis. The full automated suite passes 200/200 including the complete campaign balance gate. The only open gate item is the Phase 4 live human playtest (see `PLAYTEST_PROTOCOL.md`). No Android APK exists yet.
 
 Run the game: `tools\godot\Godot_v4.7.1-stable_win64.exe --path .`
 

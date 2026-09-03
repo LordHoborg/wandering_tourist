@@ -30,26 +30,27 @@ func play_departure(harmful: bool, reduced_motion: bool) -> void:
 
 func _draw() -> void:
 	var card_rect := Rect2(Vector2.ZERO, size)
-	# Drop shadow.
-	var shadow := StyleBoxFlat.new(); shadow.bg_color = Color(0.0, 0.02, 0.06, 0.38); shadow.set_corner_radius_all(18)
-	draw_style_box(shadow, Rect2(Vector2(3, 5), card_rect.size))
+	var shadow := StyleBoxFlat.new(); shadow.bg_color = Color(0.0, 0.02, 0.06, 0.48); shadow.set_corner_radius_all(20)
+	draw_style_box(shadow, Rect2(Vector2(4, 6), card_rect.size))
 	if cut_ready:
-		var glow := StyleBoxFlat.new(); glow.bg_color = Color(0, 0, 0, 0); glow.border_color = Color(1.0, 0.88, 0.55, 0.45); glow.set_border_width_all(3); glow.set_corner_radius_all(22)
+		var glow := StyleBoxFlat.new(); glow.bg_color = Color(0, 0, 0, 0); glow.border_color = Color(1.0, 0.88, 0.55, 0.52); glow.set_border_width_all(3); glow.set_corner_radius_all(22)
 		draw_style_box(glow, card_rect.grow(5))
-	var card := StyleBoxFlat.new(); card.bg_color = Color(0.07, 0.13, 0.25, 0.97); card.border_color = Color("ffe597") if cut_ready else accent; card.set_border_width_all(4 if cut_ready else 2); card.set_corner_radius_all(18)
+	var card := StyleBoxFlat.new(); card.bg_color = Color("0b1930"); card.border_color = Color("ffe597") if cut_ready else Color(accent, 0.86); card.set_border_width_all(3 if cut_ready else 2); card.set_corner_radius_all(20)
 	draw_style_box(card, card_rect)
-	# Category header band.
-	var band := StyleBoxFlat.new(); band.bg_color = accent; band.corner_radius_top_left = 16; band.corner_radius_top_right = 16
-	draw_style_box(band, Rect2(2, 2, card_rect.size.x - 4, 24))
-	draw_string(ThemeDB.fallback_font, Vector2(12, 19), _title(), HORIZONTAL_ALIGNMENT_LEFT, 92, 13, Color(0.05, 0.10, 0.20))
-	draw_string(ThemeDB.fallback_font, Vector2(96, 19), "MIXED" if tradeoff else _knowledge_label(), HORIZONTAL_ALIGNMENT_LEFT, 46, 9, Color(0.05, 0.10, 0.20, 0.75))
-	# Icon on a soft backdrop.
-	draw_circle(Vector2(37, 60), 24, Color(1, 1, 1, 0.10)); draw_circle(Vector2(37, 60), 24, Color(1, 1, 1, 0.14), false, 1.5)
-	_draw_icon(Vector2(37, 60))
+	var top_glow := StyleBoxFlat.new(); top_glow.bg_color = Color(accent, 0.16); top_glow.corner_radius_top_left = 18; top_glow.corner_radius_top_right = 18
+	draw_style_box(top_glow, Rect2(3, 3, card_rect.size.x - 6, 34))
+	draw_line(Vector2(12, 36), Vector2(size.x - 12, 36), Color(accent, 0.46), 1.0)
+	draw_string(ThemeDB.fallback_font, Vector2(12, 20), _title(), HORIZONTAL_ALIGNMENT_LEFT, 108, 11, Color("fff4d0"))
+	draw_string(ThemeDB.fallback_font, Vector2(114, 20), "MIXED" if tradeoff else _knowledge_label(), HORIZONTAL_ALIGNMENT_LEFT, 38, 8, Color(accent, 0.9))
+	var icon_plate := StyleBoxFlat.new(); icon_plate.bg_color = Color(1, 1, 1, 0.08); icon_plate.border_color = Color(1, 1, 1, 0.16); icon_plate.set_border_width_all(1); icon_plate.set_corner_radius_all(26)
+	draw_style_box(icon_plate, Rect2(9, 42, 56, 48))
+	draw_circle(Vector2(37, 64), 21, Color(0.01, 0.04, 0.10, 0.34))
+	_draw_icon(Vector2(37, 62))
+	draw_circle(Vector2(23, 49), 4, Color(1, 1, 1, 0.20))
 	if show_effects:
-		_draw_effect_chips(Vector2(70, 44))
+		_draw_effect_chips(Vector2(70, 45))
 	if cut_ready:
-		draw_string(ThemeDB.fallback_font, Vector2(70, 84), "ACTION!", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color("fff1b0"))
+		draw_string(ThemeDB.fallback_font, Vector2(70, 84), "ACTION!", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("fff1b0"))
 	_draw_decision_badge()
 
 func _draw_decision_badge() -> void:
@@ -57,10 +58,12 @@ func _draw_decision_badge() -> void:
 	var neutral := decision == "LET PASS" or decision == "SAVE IT" or decision == "WAIT"
 	var tint := Color("92e7b0") if good else (Color("ffcf76") if neutral else Color("ff958b"))
 	var badge := StyleBoxFlat.new()
-	badge.bg_color = Color(tint, 0.88)
-	badge.set_corner_radius_all(7)
+	badge.bg_color = Color(tint, 0.94)
+	badge.border_color = Color(1, 1, 1, 0.22)
+	badge.set_border_width_all(1)
+	badge.set_corner_radius_all(8)
 	draw_style_box(badge, Rect2(8, 94, size.x - 16, 14))
-	draw_string(ThemeDB.fallback_font, Vector2(14, 105), decision, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color("101c34"))
+	draw_string(ThemeDB.fallback_font, Vector2(14, 105), decision, HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color("101c34"))
 
 func _draw_effect_chips(origin: Vector2) -> void:
 	var names := {&"hunger": "H", &"rest": "R", &"fun": "F", &"social": "S", &"hygiene": "W"}

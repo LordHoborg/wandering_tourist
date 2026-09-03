@@ -1,5 +1,12 @@
 # Test Report
 
+## TR-022 — Character storytelling and item-card art pass
+
+- **Date:** 2026-09-04
+- **Scope:** Player-requested reduction of story-text framing, a relatable tourist character illustration, and higher-quality item presentation.
+- **Changes:** Generated and integrated a transparent Milo cutout; story lines now use restrained accent rails instead of full boxes; travel tips reserve space beside the character; item cards gained layered shadows, highlights, icon plates, and refined badges.
+- **Verification:** Godot editor import/compile succeeds; portrait captures confirm Milo and the lighter story layout; live gameplay capture confirms the upgraded item-card treatment; the asset integration is covered by progression tests.
+
 ## TR-021 — Result messaging and briefing layout polish
 
 - **Date:** 2026-09-03
