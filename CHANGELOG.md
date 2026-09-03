@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.7.1 - 2026-09-03
+
+- Rewrote stage-completion and failure messaging with story-specific guidance, clearer retry/continue actions, and a more polished results card.
+- Rebuilt pre-stage briefing cards so long text stays clipped and wrapped inside safe bounds throughout its entrance animation.
+- Added automated safe-area checks for all 15 briefing chapters.
+
 All notable project changes are recorded here.
 
 - v0.7.0: narrative and rhythm pass — animated humorous briefing before all 15 levels, level 6/11 island-transition stories, differentiated faster decay (Hunger 3× baseline with progressively slower Rest/Fun/Social/Hygiene), four risky item-sequence rules with `WAIT` previews, and softer low-register 16-bit procedural music/SFX; suite 184/184.

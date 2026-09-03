@@ -18,6 +18,8 @@ func _init() -> void:
 	_check(game.stages[10].active_parameters.has(&"hygiene") and game.stages[10].simple_item_ids.has(&"soap"), "level 11 unlocks hygiene needs")
 	_check(game.item_catalog.has(&"street_festival") and game.item_catalog.has(&"spa_day") and game.item_catalog.has(&"group_tour"), "advanced trade-off catalog is complete")
 	_check(StageBriefingClass.STORIES.size() == 15 and String(StageBriefingClass.STORIES[5]["title"]).contains("NEON HARBOR") and String(StageBriefingClass.STORIES[10]["title"]).contains("SERENE COUNTRY"), "briefing story covers all levels and island transitions")
+	for story: Dictionary in StageBriefingClass.STORIES:
+		_check(StageBriefingClass.story_layout_fits(story), "briefing story fits inside its safe content area")
 	var decay_game = Coordinator.new(_definitions(), 120.0, "user://progression_decay_test.dat")
 	decay_game._apply_stage(10)
 	var decay_rates: Dictionary = {}

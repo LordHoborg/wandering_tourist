@@ -55,7 +55,7 @@
 - [x] Re-read the complete source PDF and add decision-aware item guidance, weakest-need HUD priority, three procedural destination themes, and spirit milestone audio (v0.5.3, TR-017); suite 152/152.
 - [x] Add front-item cut-window telegraphing, lane pulse feedback, and dedicated timing cue without changing the approved cut rules (v0.5.4, TR-018); suite 153/153.
 - [x] Re-read the complete PDF and expand the playable slice to a 15-level campaign: staged Social/Hygiene parameters, full recovery/hazard/trade-off item catalog, five destination families, dynamic HUD, and active-parameter fairness validation (v0.6.0, 2026-09-03); suite 179/179.
-- [x] Add 15 animated story/tutorial briefings, realistic differentiated decay rhythms with Hunger at 3× baseline, risky recent-item combo rules, and softened 16-bit procedural audio (v0.7.0, 2026-09-03); suite 184/184.
+- [x] Add 15 animated story/tutorial briefings, realistic differentiated decay rhythms with Hunger at 3× baseline, risky recent-item combo rules, softened 16-bit procedural audio, and polished safe-area/result messaging (v0.7.1, 2026-09-03); suite 199/199.
 
 ## Future Phases
 

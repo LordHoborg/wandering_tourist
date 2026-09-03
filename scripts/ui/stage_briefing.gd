@@ -2,6 +2,9 @@ class_name StageBriefing
 extends Control
 
 const Backdrop = preload("res://scripts/ui/tropical_backdrop.gd")
+const STORY_CHARS_PER_LINE := 52.0
+const STORY_START_Y := 324.0
+const STORY_BOTTOM_Y := 760.0
 
 signal dismissed
 
@@ -26,15 +29,33 @@ const STORIES: Array[Dictionary] = [
 var theme_id: StringName = &"tropical"
 var _shown_at := 0.0
 var _line_nodes: Array[Label] = []
+var _line_cards: Array[Rect2] = []
 var _continue_button: Button
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	_continue_button = Button.new()
 	_continue_button.text = "CONTINUE THE STORY"
-	_continue_button.position = Vector2(200, 1050)
-	_continue_button.size = Vector2(320, 72)
+	_continue_button.position = Vector2(170, 1040)
+	_continue_button.size = Vector2(380, 76)
 	_continue_button.add_theme_font_size_override("font_size", 20)
+	_continue_button.add_theme_color_override("font_color", Color("13213c"))
+	_continue_button.add_theme_color_override("font_hover_color", Color("071426"))
+	_continue_button.add_theme_color_override("font_pressed_color", Color("071426"))
+	var normal_button := StyleBoxFlat.new()
+	normal_button.bg_color = Color("8ce4d8")
+	normal_button.border_color = Color("fff0bd")
+	normal_button.set_border_width_all(2)
+	normal_button.set_corner_radius_all(18)
+	normal_button.shadow_color = Color(0.01, 0.03, 0.08, 0.55)
+	normal_button.shadow_size = 6
+	_continue_button.add_theme_stylebox_override("normal", normal_button)
+	var hover_button := normal_button.duplicate()
+	hover_button.bg_color = Color("b0f2e4")
+	_continue_button.add_theme_stylebox_override("hover", hover_button)
+	var pressed_button := normal_button.duplicate()
+	pressed_button.bg_color = Color("70c9bd")
+	_continue_button.add_theme_stylebox_override("pressed", pressed_button)
 	_continue_button.pressed.connect(_dismiss)
 	add_child(_continue_button)
 	hide()
@@ -45,45 +66,63 @@ func show_stage(stage_number: int, stage_title: String, next_theme: StringName) 
 	for node in _line_nodes:
 		node.queue_free()
 	_line_nodes.clear()
+	_line_cards.clear()
 	var story: Dictionary = STORIES[clampi(stage_number - 1, 0, STORIES.size() - 1)]
-	_add_line("CHAPTER %02d  ·  %s" % [stage_number, stage_title], 70, 160, 580, 34, Color("8ce4d8"), 0.0)
-	_add_line(story["title"], 70, 225, 580, 30, Color("fff0bd"), 0.12)
-	var y := 340.0
+	var destination := stage_title.trim_prefix("LEVEL %02d - " % stage_number)
+	_add_line("CHAPTER %02d  ·  %s" % [stage_number, destination], 70, 154, 580, 30, Color("8ce4d8"), 0.0, false)
+	_add_line(story["title"], 70, 220, 580, 28, Color("fff0bd"), 0.12, false)
+	var y := 324.0
 	for line: String in story["lines"]:
-		_add_line(line, 80, y, 560, 22, Color.WHITE, 0.28 + _line_nodes.size() * 0.10)
-		y += 145.0
-	_add_line("TRAVEL TIP  •  %s" % story["tip"], 80, 850, 560, 20, Color("ffe08a"), 0.82)
-	_continue_button.modulate.a = 0.0
-	_continue_button.disabled = true
-	_continue_button.show()
-	var button_tween := create_tween()
-	button_tween.tween_interval(1.15)
-	button_tween.tween_property(_continue_button, "modulate:a", 1.0, 0.25)
-	button_tween.tween_callback(func() -> void: _continue_button.disabled = false)
+		var height := _story_line_height(line)
+		_add_line(line, 80, y, 560, 19, Color.WHITE, 0.28 + _line_nodes.size() * 0.10, true, height)
+		y += height + 12.0
+	_add_line("TRAVEL TIP  •  %s" % story["tip"], 80, 820, 560, 18, Color("ffe08a"), 0.82, true, 74.0)
 	show()
 	queue_redraw()
+	_continue_button.modulate.a = 1.0
+	_continue_button.disabled = false
+	_continue_button.show()
 
-func _add_line(text: String, x: float, target_y: float, width: float, font_size: int, color: Color, delay: float) -> void:
+func _add_line(text: String, x: float, target_y: float, width: float, font_size: int, color: Color, delay: float, card: bool, height: float = 74.0) -> void:
 	var label := Label.new()
 	label.text = text
-	label.position = Vector2(x, -120.0)
-	label.size = Vector2(width, 120)
+	label.position = Vector2(x, target_y - 42.0)
+	label.size = Vector2(width, height)
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.clip_text = true
 	label.add_theme_font_size_override("font_size", font_size)
 	label.add_theme_color_override("font_color", color)
 	label.add_theme_color_override("font_shadow_color", Color(0.01, 0.03, 0.08, 0.9))
 	label.add_theme_constant_override("shadow_offset_x", 2)
 	label.add_theme_constant_override("shadow_offset_y", 3)
 	add_child(label)
+	label.size = Vector2(width, height)
 	_line_nodes.append(label)
+	if card:
+		_line_cards.append(Rect2(x - 14.0, target_y - 4.0, width + 28.0, height + 8.0))
+	else:
+		_line_cards.append(Rect2())
 	if _reduced_motion():
 		label.position = Vector2(x, target_y)
 		return
-	var tween := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	label.modulate.a = 0.0
+	var tween := create_tween().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	tween.tween_interval(delay)
-	tween.tween_property(label, "position", Vector2(x, target_y), 0.55)
+	tween.parallel().tween_property(label, "position", Vector2(x, target_y), 0.42)
+	tween.parallel().tween_property(label, "modulate:a", 1.0, 0.28)
+
+func _story_line_height(text: String) -> float:
+	var estimated_lines := maxi(1, ceili(float(text.length()) / STORY_CHARS_PER_LINE))
+	return clampf(estimated_lines * 25.0 + 30.0, 74.0, 112.0)
+
+static func story_layout_fits(story: Dictionary) -> bool:
+	var y := STORY_START_Y
+	for line: String in story["lines"]:
+		var estimated_lines := maxi(1, ceili(float(line.length()) / STORY_CHARS_PER_LINE))
+		y += clampf(estimated_lines * 25.0 + 30.0, 74.0, 112.0) + 12.0
+	return y <= STORY_BOTTOM_Y
 
 func _process(_delta: float) -> void:
 	if visible:
@@ -113,7 +152,27 @@ func _draw() -> void:
 	panel.set_corner_radius_all(28)
 	panel.shadow_color = Color(0, 0, 0, 0.45)
 	panel.shadow_size = 10
-	draw_style_box(panel, Rect2(40, 120, size.x - 80, 850))
+	draw_style_box(panel, Rect2(32, 104, size.x - 64, 912))
+	draw_circle(Vector2(size.x - 86, 160), 28, Color("1d5470"))
+	draw_circle(Vector2(size.x - 86, 160), 19, Color("8ce4d8"))
+	draw_circle(Vector2(size.x - 86, 160), 8, Color("fff0bd"))
+	draw_line(Vector2(70, 278), Vector2(size.x - 70, 278), Color(0.55, 0.90, 0.84, 0.24), 2.0)
+	for card_rect in _line_cards:
+		if card_rect == Rect2():
+			continue
+		var card := StyleBoxFlat.new()
+		card.bg_color = Color(0.07, 0.16, 0.28, 0.82)
+		card.border_color = Color(0.55, 0.90, 0.84, 0.18)
+		card.set_border_width_all(1)
+		card.set_corner_radius_all(16)
+		draw_style_box(card, card_rect)
+	var tip_rect := Rect2(66, 812, size.x - 132, 90)
+	var tip := StyleBoxFlat.new()
+	tip.bg_color = Color(0.20, 0.18, 0.12, 0.90)
+	tip.border_color = Color("ffe08a")
+	tip.set_border_width_all(2)
+	tip.set_corner_radius_all(16)
+	draw_style_box(tip, tip_rect)
 
 func _reduced_motion() -> bool:
 	var settings := get_node_or_null("/root/AppSettings")

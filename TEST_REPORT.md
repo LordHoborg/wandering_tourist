@@ -1,5 +1,12 @@
 # Test Report
 
+## TR-021 — Result messaging and briefing layout polish
+
+- **Date:** 2026-09-03
+- **Scope:** Player-reported stage 2 briefing overflow plus weak win/loss explanations and result presentation.
+- **Changes:** Result screens now explain the run outcome, give need-specific recovery advice, and use state-colored polished cards. Briefing labels use locked safe widths, content cards, shorter local entrance motion, and a high-contrast continue button.
+- **Verification:** All 15 story entries pass a deterministic safe-area layout assertion; progression suite passes 40/40; result and stage 2 briefing captures were visually inspected at the 720×1280 project viewport.
+
 ## TR-020 - v0.7.0 Narrative, Need Rhythms, and Sequence Decisions
 
 - **Date:** 2026-09-03

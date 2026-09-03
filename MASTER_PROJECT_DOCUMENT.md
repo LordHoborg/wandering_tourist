@@ -2,14 +2,14 @@
 
 ## Project Identity
 
-- **Current project status:** Phases 0-3 are complete and the live human playtest remains open. The v0.7.0 narrative-systems checkpoint (2026-09-03) adds animated story briefings before every level, differentiated faster need rhythms, risky item-sequence decisions, and a softer 16-bit procedural soundtrack; suite 184/184 green.
+- **Current project status:** Phases 0-3 are complete and the live human playtest remains open. The v0.7.1 presentation checkpoint (2026-09-03) adds safe story cards, clearer win/loss result guidance, differentiated faster need rhythms, risky item-sequence decisions, and a softer 16-bit procedural soundtrack; suite 199/199 green.
 
 - **Platform:** Android, portrait orientation
 - **Engine:** Godot 4.7.1 stable (bundled at `tools/godot`)
 - **Language:** Typed GDScript
 - **Rendering:** 2D
 - **Current phase:** Phase 4 human playtest evidence is the only open gate item; narrative systems checkpoint recorded
-- **Current version/build:** Narrative Systems v0.7.0 (2026-09-03: animated level briefings, differentiated fast decay, risky item sequences, softened 16-bit audio; desktop checkpoint, no Android APK yet)
+- **Current version/build:** Presentation Polish v0.7.1 (2026-09-03: safe animated level briefings, story-specific result guidance, differentiated fast decay, risky item sequences, softened 16-bit audio; desktop checkpoint, no Android APK yet)
 
 ## Source Material Status
 
@@ -71,7 +71,7 @@ One island and one level; Hunger, Rest, and Fun parameters; touch and mouse supp
 - **Need rhythms:** Hunger now decays at three times the prior stage baseline. Rest, Fun, Social, and Hygiene use progressively slower multipliers (2.15, 1.55, 0.72, 0.48) to model realistic urgency rather than synchronized meter loss.
 - **Sequence decisions:** From level 3 onward, recent collected items matter. Double Coffee, Too Much Food, No Sleep Tour, and Crowd Overload apply combined penalties inside documented time windows; cards publish `WAIT` and preview the effective deltas before the cut.
 - **Audio:** Runtime audio moved from harsh normalized 8-bit synthesis to low-register 16-bit PCM with softer envelopes, quieter ambience, heavily smoothed surf, and restrained harmonics.
-- **Verification:** Full automated suite: 184 passed, 0 failed across 11 suites; windowed screenshot capture verifies the briefing layout, balance validation clears all 15 levels under state-aware play, and headless project boot is clean.
+- **Verification:** Full automated suite: 199 passed, 0 failed across 11 suites; windowed screenshot capture verifies the briefing and result layouts, all 15 story entries pass safe-area checks, balance validation clears all 15 levels under state-aware play, and headless project boot is clean.
 
 ## Prototype v0.1 Checkpoint (2026-08-30)
 
