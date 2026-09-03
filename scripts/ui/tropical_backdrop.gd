@@ -16,8 +16,12 @@ static func draw(canvas: CanvasItem, area: Vector2, time: float, reduced_motion:
 	_sea(canvas, area, horizon, t, palette)
 	if theme_id == &"sunset_city":
 		_city(canvas, area, horizon, palette)
+	elif theme_id == &"countryside":
+		_countryside(canvas, area, horizon, palette)
 	elif theme_id == &"ancient_ruins":
 		_ruins(canvas, area, horizon, palette)
+	elif theme_id == &"crystal_isles":
+		_crystal_isles(canvas, area, horizon, palette)
 	else:
 		_island(canvas, area, horizon)
 		_beach(canvas, area)
@@ -97,11 +101,54 @@ static func _ruins(canvas: CanvasItem, area: Vector2, horizon: float, palette: D
 		var x := 40.0 + index * 104.0
 		canvas.draw_circle(Vector2(x, base + 34.0 + (index % 2) * 26.0), 5.0, palette["relic"])
 
+static func _countryside(canvas: CanvasItem, area: Vector2, horizon: float, palette: Dictionary) -> void:
+	var base := horizon + 18.0
+	canvas.draw_colored_polygon(PackedVector2Array([
+		Vector2(0, base + 20), Vector2(area.x * 0.20, base - 82), Vector2(area.x * 0.42, base + 8),
+		Vector2(area.x * 0.64, base - 102), Vector2(area.x, base + 14), Vector2(area.x, area.y), Vector2(0, area.y)
+	]), palette["hill_far"])
+	canvas.draw_colored_polygon(PackedVector2Array([
+		Vector2(0, base + 70), Vector2(area.x * 0.28, base - 6), Vector2(area.x * 0.55, base + 54),
+		Vector2(area.x * 0.78, base - 18), Vector2(area.x, base + 44), Vector2(area.x, area.y), Vector2(0, area.y)
+	]), palette["hill_near"])
+	for row in 5:
+		var y := base + 92.0 + row * 27.0
+		canvas.draw_line(Vector2(0, y), Vector2(area.x, y - 34), Color(palette["field"], 0.55), 3.0)
+	var tower := Rect2(area.x * 0.68, base - 132, 34, 132)
+	canvas.draw_rect(tower, palette["barn"])
+	canvas.draw_colored_polygon(PackedVector2Array([
+		Vector2(tower.position.x - 10, tower.position.y), Vector2(tower.position.x + 17, tower.position.y - 28),
+		Vector2(tower.end.x + 10, tower.position.y)
+	]), palette["roof"])
+	canvas.draw_rect(Rect2(tower.position + Vector2(10, 24), Vector2(14, 20)), palette["window"])
+	for index in 6:
+		var x := 36.0 + index * 104.0
+		canvas.draw_line(Vector2(x, base + 34), Vector2(x + 18, base - 8), palette["fence"], 3.0)
+		canvas.draw_line(Vector2(x + 18, base - 8), Vector2(x + 37, base + 34), palette["fence"], 3.0)
+
+static func _crystal_isles(canvas: CanvasItem, area: Vector2, horizon: float, palette: Dictionary) -> void:
+	var base := horizon + 10.0
+	var ground := PackedVector2Array([Vector2(0, base + 58), Vector2(area.x * 0.18, base - 4), Vector2(area.x * 0.39, base + 28), Vector2(area.x * 0.58, base - 24), Vector2(area.x * 0.83, base + 18), Vector2(area.x, base - 6), Vector2(area.x, area.y), Vector2(0, area.y)])
+	canvas.draw_colored_polygon(ground, palette["crystal_ground"])
+	for index in 8:
+		var x := 30.0 + index * 94.0
+		var height := 42.0 + float((index * 19) % 48)
+		var crystal := PackedVector2Array([Vector2(x, base + 24), Vector2(x + 18, base - height), Vector2(x + 36, base + 24)])
+		canvas.draw_colored_polygon(crystal, palette["crystal"])
+		canvas.draw_line(Vector2(x + 18, base - height), Vector2(x + 25, base + 20), Color(1, 1, 1, 0.35), 2.0)
+	for index in 5:
+		var x := area.x * 0.12 + index * area.x * 0.19
+		canvas.draw_circle(Vector2(x, base - 82 - (index % 2) * 22), 7, Color(palette["glow"], 0.65))
+
 static func _palette(theme_id: StringName) -> Dictionary:
 	if theme_id == &"sunset_city":
 		return {"sky_top": Color("3c286e"), "sky_bottom": Color("f29b72"), "sun": Color("ffd17b"), "sun_core": Color("fff0b0"), "sea_near": Color("5e5ca7"), "sea_deep": Color("171c4d"), "city_shadow": Color("20214b"), "window": Color("ffd878"), "street": Color("252448")}
 	if theme_id == &"ancient_ruins":
 		return {"sky_top": Color("243b73"), "sky_bottom": Color("d88f74"), "sun": Color("f6bd73"), "sun_core": Color("ffe8ac"), "sea_near": Color("586a93"), "sea_deep": Color("1c294e"), "ruin": Color("73545a"), "stone_light": Color("b48a6c"), "stone_shadow": Color("513e4c"), "sand": Color("9d7559"), "relic": Color("f2c06c")}
+	if theme_id == &"countryside":
+		return {"sky_top": Color("1c5b78"), "sky_bottom": Color("f5d58b"), "sun": Color("ffe28b"), "sun_core": Color("fff6c5"), "sea_near": Color("4ca7a0"), "sea_deep": Color("1a5360"), "hill_far": Color("609b77"), "hill_near": Color("3b765f"), "field": Color("c8d77e"), "barn": Color("a95f4e"), "roof": Color("6e3f4d"), "window": Color("ffe08a"), "fence": Color("d9b879")}
+	if theme_id == &"crystal_isles":
+		return {"sky_top": Color("292c72"), "sky_bottom": Color("b5a4ed"), "sun": Color("e7d5ff"), "sun_core": Color("fff5ff"), "sea_near": Color("4b91c4"), "sea_deep": Color("17295c"), "crystal_ground": Color("3c4d91"), "crystal": Color("78d7e8"), "glow": Color("f5b6ff")}
 	return {"sky_top": Color("0d3f78"), "sky_bottom": Color("f7c87b"), "sun": Color("ffd97a"), "sun_core": Color("fff3c4"), "sea_near": Color("1c9fb5"), "sea_deep": Color("07456a")}
 
 static func _island(canvas: CanvasItem, area: Vector2, horizon: float) -> void:

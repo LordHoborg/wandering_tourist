@@ -54,6 +54,7 @@
 - [x] Add game feel and ambient audio: electric-bolt cuts, item sway, lerped meters, spirit pips, looping ambience (v0.5.2, TR-016); suite 148/148.
 - [x] Re-read the complete source PDF and add decision-aware item guidance, weakest-need HUD priority, three procedural destination themes, and spirit milestone audio (v0.5.3, TR-017); suite 152/152.
 - [x] Add front-item cut-window telegraphing, lane pulse feedback, and dedicated timing cue without changing the approved cut rules (v0.5.4, TR-018); suite 153/153.
+- [x] Re-read the complete PDF and expand the playable slice to a 15-level campaign: staged Social/Hygiene parameters, full recovery/hazard/trade-off item catalog, five destination families, dynamic HUD, and active-parameter fairness validation (v0.6.0, 2026-09-03); suite 179/179.
 
 ## Future Phases
 

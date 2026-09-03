@@ -34,7 +34,7 @@ var restart_armed_at := -1.0
 
 func _ready() -> void:
 	var definitions: Array[ParameterDefinition] = []
-	for id in [&"hunger", &"rest", &"fun"]:
+	for id in [&"hunger", &"rest", &"fun", &"social", &"hygiene"]:
 		var definition: ParameterDefinition = Definition.new()
 		definition.id = id
 		definitions.append(definition)
@@ -128,7 +128,7 @@ func _handle_restart_key() -> void:
 		game.restart()
 	elif state == RunStateMachine.State.COMPLETED:
 		restart_armed_at = -1.0
-		if snapshot.get("stage", 1) >= 3:
+		if snapshot.get("stage", 1) >= 15:
 			game.restart_campaign()
 		else:
 			game.restart()
@@ -225,7 +225,7 @@ func _mark_item_event(data: Dictionary, kind: StringName) -> void:
 
 func _delta_text(data: Dictionary) -> String:
 	var chunks: Array[String] = []
-	var names := {&"hunger": "H", &"rest": "R", &"fun": "F"}
+	var names := {&"hunger": "H", &"rest": "R", &"fun": "F", &"social": "S", &"hygiene": "W"}
 	for parameter_id in data.get("deltas", {}):
 		var amount: float = data["deltas"][parameter_id]
 		chunks.append("%+d %s" % [int(amount), names.get(parameter_id, "?")])

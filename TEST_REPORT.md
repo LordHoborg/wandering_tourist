@@ -1,5 +1,15 @@
 # Test Report
 
+## TR-019 - v0.6.0 PDF-Aligned Content Expansion
+
+- **Date:** 2026-09-03
+- **Godot:** 4.7.1.stable.official.a13da4feb (headless, `tools/godot`)
+- **Scope:** Complete the source PDF's item and progression direction without adding the explicitly deferred monetization systems: staged parameter unlocks, expanded item vocabulary, multi-level destination progression, and responsive presentation.
+- **Changes:** Added 15 configured levels; activated Social at level 6 and Hygiene at level 11; added recovery and hazard items for all five needs plus Street Festival, Spa Day, and Group Tour trade-offs; extended spawn-bag fairness to the active parameter set; added countryside and crystal-isles procedural destinations; and updated the HUD/item cards for five needs and 15-level progress.
+- **Method:** Full headless regression across all 11 suites, campaign balance validation across every level, progression assertions for unlock timing/catalog coverage, and headless project boot.
+- **Results:** 179 passed, 0 failed across 11 suites. Balance validation passes neglect pressure, full-campaign bot winnability, lane fairness, persistence, inert taps, and determinism. Headless boot exits cleanly.
+- **Known limitation:** Final Android device verification, final art/music, and the five-person human acceptance playtest remain open.
+
 ## TR-018 - v0.5.4 Cut-Window Telegraphing
 
 - **Date:** 2026-09-03

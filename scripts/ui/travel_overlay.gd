@@ -36,7 +36,7 @@ func _draw() -> void:
 	var panel := StyleBoxFlat.new(); panel.bg_color = Color("162c4c"); panel.border_color = Color("ffe08a"); panel.set_border_width_all(3); panel.set_corner_radius_all(28); draw_style_box(panel, panel_rect)
 	var sheen := StyleBoxFlat.new(); sheen.bg_color = Color(1, 1, 1, 0.05); sheen.corner_radius_top_left = 26; sheen.corner_radius_top_right = 26; draw_style_box(sheen, Rect2(panel_rect.position + Vector2(4, 4), Vector2(panel_rect.size.x - 8, 120)))
 	var state: int = snapshot["state"]; var title := "PAUSED"; var subtitle := "Take a breath. The island waits."
-	var final_stage: bool = snapshot.get("stage", 1) >= 3
+	var final_stage: bool = snapshot.get("stage", 1) >= 15
 	if state == RunStateMachine.State.FAILED: title = "TRIP OVER"; subtitle = "%s needs attention." % String(snapshot.get("failure_parameter", "YOUR TRAVELER")).capitalize()
 	elif state == RunStateMachine.State.COMPLETED:
 		if final_stage: title = "JOURNEY COMPLETE"; subtitle = "Every stage cleared. The tourist wanders on."

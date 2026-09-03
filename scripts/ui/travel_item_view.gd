@@ -63,19 +63,19 @@ func _draw_decision_badge() -> void:
 	draw_string(ThemeDB.fallback_font, Vector2(14, 105), decision, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color("101c34"))
 
 func _draw_effect_chips(origin: Vector2) -> void:
-	var names := {&"hunger": "H", &"rest": "R", &"fun": "F"}
+	var names := {&"hunger": "H", &"rest": "R", &"fun": "F", &"social": "S", &"hygiene": "W"}
 	var index := 0
 	for parameter_id in deltas:
 		var amount: float = deltas[parameter_id]
 		var chip_color := Color(0.30, 0.75, 0.45) if amount > 0 else Color(0.85, 0.38, 0.34)
-		var pos := origin + Vector2(0, index * 17)
+		var pos := origin + Vector2((index % 2) * 45, (index / 2) * 17)
 		var chip := StyleBoxFlat.new(); chip.bg_color = chip_color; chip.set_corner_radius_all(8)
-		draw_style_box(chip, Rect2(pos, Vector2(52, 15)))
+		draw_style_box(chip, Rect2(pos, Vector2(42, 15)))
 		draw_string(ThemeDB.fallback_font, pos + Vector2(5, 12), "%s%+d" % [names.get(parameter_id, "?"), int(amount)], HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color(0.04, 0.08, 0.16))
 		index += 1
 
 func _title() -> String:
-	return {&"fruit": "FRUIT", &"pillow": "PILLOW", &"camera": "CAMERA", &"stale_snack": "STALE SNACK", &"alarm_clock": "ALARM", &"rain_cloud": "RAIN CLOUD", &"coffee": "COFFEE", &"local_meal": "LOCAL MEAL", &"night_market": "NIGHT MARKET"}.get(item_id, "ITEM")
+	return {&"fruit": "FRUIT", &"pillow": "PILLOW", &"camera": "CAMERA", &"stale_snack": "STALE SNACK", &"alarm_clock": "ALARM", &"rain_cloud": "RAIN CLOUD", &"friend_group": "FRIENDS", &"awkward_meeting": "AWKWARD", &"soap": "SOAP", &"muddy_shoes": "MUDDY", &"coffee": "COFFEE", &"local_meal": "LOCAL MEAL", &"night_market": "NIGHT MARKET", &"street_festival": "FESTIVAL", &"spa_day": "SPA DAY", &"group_tour": "GROUP TOUR"}.get(item_id, "ITEM")
 
 func _knowledge_label() -> String:
 	if knowledge == "KNOWN":
@@ -93,4 +93,11 @@ func _draw_icon(c: Vector2) -> void:
 	elif item_id == &"rain_cloud": draw_circle(c + Vector2(-10, 1), 13, Color("a9c4e8")); draw_circle(c + Vector2(5, -5), 17, Color("a9c4e8")); draw_circle(c + Vector2(18, 3), 11, Color("a9c4e8")); draw_line(c + Vector2(-7, 21), c + Vector2(-12, 31), Color("72c4ff"), 3); draw_line(c + Vector2(12, 20), c + Vector2(7, 30), Color("72c4ff"), 3)
 	elif item_id == &"coffee": draw_rect(Rect2(c - Vector2(16, 14), Vector2(32, 30)), Color("f5d0a1")); draw_arc(c + Vector2(17, 0), 9, -1.4, 1.4, 12, Color("f5d0a1"), 4); draw_line(c + Vector2(-7, -22), c + Vector2(-3, -31), Color.WHITE, 2)
 	elif item_id == &"local_meal": draw_circle(c, 24, Color("f8e2b1")); draw_circle(c, 17, Color("f18259")); draw_circle(c + Vector2(8, -4), 4, Color("88be62"))
+	elif item_id == &"friend_group": draw_circle(c + Vector2(-12, -5), 8, Color("ffd370")); draw_circle(c + Vector2(12, -5), 8, Color("9ee276")); draw_line(c + Vector2(-18, 22), c + Vector2(-10, 6), Color("ffd370"), 7); draw_line(c + Vector2(18, 22), c + Vector2(10, 6), Color("9ee276"), 7)
+	elif item_id == &"awkward_meeting": draw_rect(Rect2(c - Vector2(24, 14), Vector2(48, 28)), Color("a88cff")); draw_circle(c + Vector2(-10, 0), 5, Color("ffe08a")); draw_circle(c + Vector2(10, 0), 5, Color("ffe08a")); draw_line(c + Vector2(-15, 20), c + Vector2(15, 20), Color("ff917b"), 3)
+	elif item_id == &"soap": draw_rect(Rect2(c - Vector2(20, 14), Vector2(40, 28)), Color("75e0c0")); draw_circle(c + Vector2(-8, -19), 5, Color(1, 1, 1, 0.6)); draw_circle(c + Vector2(8, -24), 3, Color(1, 1, 1, 0.5))
+	elif item_id == &"muddy_shoes": draw_rect(Rect2(c - Vector2(20, 5), Vector2(18, 20)), Color("8b5d47")); draw_rect(Rect2(c + Vector2(3, -10), Vector2(18, 25)), Color("6f4b42")); draw_circle(c + Vector2(-10, 21), 7, Color("5b3d35")); draw_circle(c + Vector2(13, 17), 7, Color("5b3d35"))
+	elif item_id == &"street_festival": draw_circle(c, 21, Color("f49ad6")); draw_line(c + Vector2(-25, -17), c + Vector2(25, -17), Color("ffe08a"), 4); draw_line(c + Vector2(-15, -17), c + Vector2(-15, -28), Color("ffe08a"), 3); draw_line(c + Vector2(15, -17), c + Vector2(15, -28), Color("ffe08a"), 3)
+	elif item_id == &"spa_day": draw_circle(c, 22, Color("75e0c0")); draw_circle(c + Vector2(0, -8), 8, Color("fff0bd")); draw_arc(c + Vector2(0, 6), 13, 0.2, PI - 0.2, 12, Color("fff0bd"), 4)
+	elif item_id == &"group_tour": draw_circle(c + Vector2(-11, -5), 8, Color("ffd370")); draw_circle(c + Vector2(11, -5), 8, Color("a88cff")); draw_line(c + Vector2(-17, 21), c + Vector2(-8, 5), Color("ffd370"), 6); draw_line(c + Vector2(17, 21), c + Vector2(8, 5), Color("a88cff"), 6)
 	else: draw_rect(Rect2(c - Vector2(23, 14), Vector2(46, 29)), Color("db7ede")); draw_line(c + Vector2(-25, -14), c + Vector2(25, -14), Color("ffe08a"), 5); draw_line(c + Vector2(-15, -24), c + Vector2(-15, -14), Color("ffe08a"), 3); draw_line(c + Vector2(15, -24), c + Vector2(15, -14), Color("ffe08a"), 3)

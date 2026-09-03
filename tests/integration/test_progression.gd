@@ -10,10 +10,12 @@ var failed := 0
 
 func _init() -> void:
 	var game = Coordinator.new(_definitions(), 120.0, "user://progression_test.dat")
-	_check(game.stages.size() == 3 and game.stages[0].simple_item_ids == [&"fruit", &"pillow", &"camera"] and game.stages[0].trade_count == 0, "stage 1 basic item pool")
-	_check(game.stages[1].simple_item_ids.has(&"stale_snack") and game.stages[1].trade_count == 0, "stage 2 hazard pool")
-	_check(game.stages[2].trade_item_ids.has(&"coffee") and game.stages[2].trade_count == 3, "stage 3 trade-off pool")
-	_check(game.stages[0].theme_id == &"tropical" and game.stages[1].theme_id == &"sunset_city" and game.stages[2].theme_id == &"ancient_ruins", "stages carry distinct destination themes")
+	_check(game.stages.size() == 15 and game.stages[0].simple_item_ids == [&"fruit", &"pillow", &"camera"] and game.stages[0].trade_count == 0, "15-level campaign starts with essentials")
+	_check(game.stages[1].simple_item_ids.has(&"stale_snack") and game.stages[1].trade_count == 0, "level 2 introduces hazards")
+	_check(game.stages[2].trade_item_ids.has(&"coffee") and game.stages[2].trade_count == 3, "level 3 introduces trade-offs")
+	_check(game.stages[5].active_parameters.has(&"social") and game.stages[5].simple_item_ids.has(&"friend_group"), "level 6 unlocks social needs")
+	_check(game.stages[10].active_parameters.has(&"hygiene") and game.stages[10].simple_item_ids.has(&"soap"), "level 11 unlocks hygiene needs")
+	_check(game.item_catalog.has(&"street_festival") and game.item_catalog.has(&"spa_day") and game.item_catalog.has(&"group_tour"), "advanced trade-off catalog is complete")
 	game.start()
 	_check(game._decision_label(game.item_catalog[&"fruit"]) == "COLLECT", "simple item publishes a collect decision")
 	_check(game._decision_label(game.item_catalog[&"stale_snack"]) == "LET PASS", "hazard publishes a pass decision")
@@ -45,7 +47,7 @@ func _init() -> void:
 	game.timer.elapsed = game.timer.duration
 	game.tick(0.0)
 	game.advance_stage()
-	_check(game.stage_index == 2 and game.stages[2].destination_id == &"tropical", "stage 3 advances with destination data")
+	_check(game.stage_index == 2 and game.stages[2].destination_id == &"countryside", "level 3 advances with destination data")
 	var idle_game = Coordinator.new(_definitions(), 120.0, "user://progression_idle_test.dat")
 	idle_game.start()
 	idle_game.timer.elapsed = idle_game.timer.duration
@@ -64,7 +66,7 @@ func _init() -> void:
 
 func _definitions() -> Array[ParameterDefinition]:
 	var result: Array[ParameterDefinition] = []
-	for id in [&"hunger", &"rest", &"fun"]:
+	for id in [&"hunger", &"rest", &"fun", &"social", &"hygiene"]:
 		var definition: ParameterDefinition = Definition.new()
 		definition.id = id
 		result.append(definition)

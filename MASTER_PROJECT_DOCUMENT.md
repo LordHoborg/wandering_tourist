@@ -2,14 +2,14 @@
 
 ## Project Identity
 
-- **Current project status:** Phases 0-3 are complete: the Prototype v0.1 checkpoint is recorded (2026-08-30) with a playable three-stage desktop prototype. Phase 4 (Gameplay Iteration) passed its automated balance gate with no tuning required; the live human playtest for AC-05 through AC-08, AC-10, and AC-11 remains open. Phase 5 (Vertical Slice) is complete: the v0.5.4 checkpoint (2026-09-03) adds cut-window telegraphing on top of decision-aware guidance, stage themes, milestone audio, and destination presentation; suite 153/153 green.
+- **Current project status:** Phases 0-3 are complete: the Prototype v0.1 checkpoint is recorded (2026-08-30). Phase 4 (Gameplay Iteration) passed its automated balance gate; the live human playtest for AC-05 through AC-08, AC-10, and AC-11 remains open. The PDF-aligned v0.6.0 content checkpoint (2026-09-03) expands the playable desktop campaign to 15 levels with staged Social and Hygiene needs, expanded item catalog, five destination families, and a 179/179 green automated suite.
 
 - **Platform:** Android, portrait orientation
 - **Engine:** Godot 4.7.1 stable (bundled at `tools/godot`)
 - **Language:** Typed GDScript
 - **Rendering:** 2D
-- **Current phase:** Phase 4 human playtest evidence is the only open gate item; Phase 5 Vertical Slice v0.5.3 checkpoint recorded
-- **Current version/build:** Vertical Slice v0.5.4 (2026-09-03: front-item cut-window telegraphing, decision guidance, destination themes, milestone audio, and presentation polish; desktop checkpoint, no Android APK yet)
+- **Current phase:** Phase 4 human playtest evidence is the only open gate item; PDF-aligned content expansion checkpoint recorded
+- **Current version/build:** Content Expansion v0.6.0 (2026-09-03: 15-level campaign, staged Social/Hygiene needs, expanded item catalog, five destination families, and responsive HUD; desktop checkpoint, no Android APK yet)
 
 ## Source Material Status
 
@@ -57,6 +57,13 @@ One island and one level; Hunger, Rest, and Fun parameters; touch and mouse supp
 
 - **Polish added over v0.5.3:** The coordinator announces the exact moment the front item in each lane enters the 0.60-second cut window. The playfield responds with a lane pulse and the feedback layer names the available action, while a dedicated procedural cue provides optional audio reinforcement. Rear items do not trigger false telegraphs.
 - **Verification:** Full automated suite: 153 passed, 0 failed across 11 suites; progression covers deterministic cut-window announcement state and audio covers the new presentation event. Headless boot is clean.
+
+## PDF-Aligned Content Expansion v0.6.0 Checkpoint (2026-09-03)
+
+- **Gameplay expansion:** The campaign now contains 15 configured levels. Hunger, Rest, and Fun are active in levels 1-5; Social is introduced at level 6; Hygiene is introduced at level 11. Each level increases time pressure and rotates through tropical, neon-city, countryside, ancient-ruins, and crystal-isles destination presentations.
+- **Items:** The catalog now includes recovery and hazard items for all five needs plus contextual trade-offs for social and hygiene decisions. Spawn bags remain the approved 7-simple/3-trade shape once trade-offs unlock, and fairness validation now evaluates every active parameter.
+- **Presentation:** The HUD renders only the parameters active in the current level, shows 15-level progress, labels the current destination, and supports the expanded item vocabulary with distinct icons and effect chips.
+- **Verification:** Full automated suite: 179 passed, 0 failed across 11 suites; progression validates level unlocks and item catalog coverage, balance validation confirms neglect pressure and bot winnability across the full campaign, and headless boot exits cleanly.
 
 ## Prototype v0.1 Checkpoint (2026-08-30)
 

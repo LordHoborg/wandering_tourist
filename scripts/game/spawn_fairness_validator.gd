@@ -1,10 +1,12 @@
 class_name SpawnFairnessValidator
 extends RefCounted
 
-var drought: Dictionary[StringName, int] = {&"hunger": 0, &"rest": 0, &"fun": 0}
+var drought: Dictionary[StringName, int] = {}
 var max_drought: int
-func _init(limit: int = 6) -> void:
+func _init(limit: int = 6, parameter_ids: Array[StringName] = [&"hunger", &"rest", &"fun"]) -> void:
 	max_drought = limit
+	for id in parameter_ids:
+		drought[id] = 0
 func accept(item: ItemDefinition) -> bool:
 	var next_drought: Dictionary[StringName, int] = {}
 	for id: StringName in drought:

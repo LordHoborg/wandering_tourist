@@ -31,7 +31,7 @@ each item's effect once, in neutral terms. Do not advise strategy.
 
 ### Step 2 — Uninterrupted first run (~5–10 min)
 
-- Let the tester play the full three-stage campaign (or until a loss) without interruption.
+- Let the tester play the full fifteen-level campaign (or until a loss) without interruption. Pay special attention to the Social unlock at level 6 and Hygiene unlock at level 11.
 - Observer logs:
   - Any moment the tester appears confused by what an item will do.
   - Any loss or near-loss — and whether the tester could see/read the cause

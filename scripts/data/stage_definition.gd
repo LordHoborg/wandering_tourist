@@ -7,6 +7,7 @@ extends Resource
 @export var destination_id: StringName = &"tropical"
 @export var theme_id: StringName = &"tropical"
 @export var active_parameters: Array[StringName] = [&"hunger", &"rest", &"fun"]
+@export var level_number: int = 1
 @export var duration_seconds: float = 120.0
 @export var passive_decay_per_second: float = -0.3
 @export var simple_item_ids: Array[StringName] = []

@@ -30,12 +30,11 @@ func _init() -> void:
 func _check_pressure_exists() -> void:
 	# Neglect must be punished on every stage: an idle player fails before the
 	# stage timer ends, proving passive decay creates real pressure.
-	for target_stage in range(3):
+	for target_stage in range(15):
 		var game = _new_game("user://balance_idle_%d.dat" % target_stage)
+		game._apply_stage(target_stage)
+		game._reset_stage_run()
 		game.start()
-		if not _drive_to_stage(game, target_stage):
-			_check(false, "idle pressure setup reaches stage %d" % (target_stage + 1))
-			continue
 		var ticks := 0
 		while game.state_machine.state == RunState.State.RUNNING and ticks < MAX_TICKS:
 			game.tick(TICK)
@@ -43,20 +42,20 @@ func _check_pressure_exists() -> void:
 		_check(game.state_machine.state == RunState.State.FAILED, "stage %d fails under total neglect" % (target_stage + 1))
 
 func _check_campaign_winnable() -> void:
-	# A reasonable state-aware bot must clear all three stages back to back.
+	# A reasonable state-aware bot must clear all fifteen levels back to back.
 	var game = _new_game("user://balance_test.dat")
 	game.start()
 	var cleared := 0
-	for target_stage in range(3):
+	for target_stage in range(15):
 		if not _play_stage(game):
 			break
 		cleared += 1
 		_check(true, "stage %d winnable by state-aware bot" % (target_stage + 1))
-		if target_stage < 2:
+		if target_stage < 14:
 			if not game.advance_stage():
 				_check(false, "advance from stage %d" % (target_stage + 1))
 				break
-	_check(cleared == 3, "full three-stage campaign is completable")
+	_check(cleared == 15, "full fifteen-level campaign is completable")
 	_check(game.score.score > 0 and game.best_scores.best_score >= game.score.score, "campaign result submitted to best score (AC-09)")
 	var reloaded = _new_game("user://balance_test.dat")
 	_check(reloaded.best_scores.best_score == game.best_scores.best_score, "best score persists across sessions (AC-09)")
@@ -142,7 +141,7 @@ func _should_cut(game, item) -> bool:
 	var values: Dictionary = game.parameters.state.values
 	var before_distance := 0.0
 	var after_distance := 0.0
-	for id: StringName in [&"hunger", &"rest", &"fun"]:
+	for id: StringName in game._stage().active_parameters:
 		var current: float = values.get(id, 50.0)
 		var next: float = current + item.deltas.get(id, 0.0)
 		if next < 22.0 or next > 78.0:
@@ -155,7 +154,7 @@ func _should_cut(game, item) -> bool:
 
 func _new_game(path: String):
 	var definitions: Array[ParameterDefinition] = []
-	for id in [&"hunger", &"rest", &"fun"]:
+	for id in [&"hunger", &"rest", &"fun", &"social", &"hygiene"]:
 		var definition: ParameterDefinition = Definition.new()
 		definition.id = id
 		definitions.append(definition)
