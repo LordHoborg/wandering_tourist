@@ -2,6 +2,7 @@
 
 All notable project changes are recorded here.
 
+- v0.7.0: narrative and rhythm pass — animated humorous briefing before all 15 levels, level 6/11 island-transition stories, differentiated faster decay (Hunger 3× baseline with progressively slower Rest/Fun/Social/Hygiene), four risky item-sequence rules with `WAIT` previews, and softer low-register 16-bit procedural music/SFX; suite 184/184.
 - v0.6.0: PDF-aligned content expansion — 15-level campaign with Social at level 6 and Hygiene at level 11, recovery/hazard items for all five needs, six contextual trade-offs, five destination families including countryside and crystal isles, dynamic five-need HUD, and active-parameter fairness validation; suite 179/179.
 - v0.5.4: timing and readability pass — the front item announces entry into the cut window, lanes pulse before action, a dedicated procedural cue reinforces timing, and rear items remain quiet until they become actionable; suite 153/153 (TR-018).
 - v0.5.3: source-aligned gameplay/presentation pass — active items publish decision guidance and reasons, HUD highlights the weakest need and destination, stages gain tropical/sunset-city/ancient-ruins procedural themes, and spirit milestones receive a dedicated cue and callout; suite 152/152 (TR-017).

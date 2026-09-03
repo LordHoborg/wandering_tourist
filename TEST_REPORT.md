@@ -1,5 +1,15 @@
 # Test Report
 
+## TR-020 - v0.7.0 Narrative, Need Rhythms, and Sequence Decisions
+
+- **Date:** 2026-09-03
+- **Godot:** 4.7.1.stable.official.a13da4feb
+- **Scope:** Address player feedback about harsh music, slow synchronized parameter loss, missing story/tutorial flow, and insufficient short-term decision complexity.
+- **Changes:** Rebuilt procedural ambience/cues as quieter 16-bit PCM; introduced per-parameter decay multipliers with Hunger at 3× baseline; added 15 animated humorous pre-level briefings; added four timed item-sequence penalties and `WAIT` decision previews.
+- **Method:** Audio format/loop/determinism checks, progression assertions for story coverage/level 6 and 11 transitions/decay ordering/tripled Hunger/combo expiry, full campaign balance simulation using effective combo deltas, clean headless boot, and windowed screenshot capture.
+- **Results:** 184 passed, 0 failed across 11 suites. Progression 25/25; balance 37/37; audio 14/14. Briefing capture is readable at the project portrait viewport.
+- **Known limitation:** Audio pleasantness and story pacing still require the user's ongoing human playtest; Android device verification remains open.
+
 ## TR-019 - v0.6.0 PDF-Aligned Content Expansion
 
 - **Date:** 2026-09-03

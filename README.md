@@ -4,7 +4,7 @@ Android portrait 2D game project built with Godot 4 and typed GDScript.
 
 ## Current State
 
-The PDF-aligned campaign v0.6.0 checkpoint is recorded (2026-09-03): the playable desktop slice now contains 15 levels, staged Social and Hygiene needs, an expanded item catalog, five destination families, front-item cut-window telegraphing, decision-aware labels, weakest-need guidance, milestone audio, and richer destination presentation. The full automated suite passes 179/179 including the balance-validation gate. The only open gate item is the Phase 4 live human playtest (see `PLAYTEST_PROTOCOL.md`). No Android APK exists yet.
+The narrative systems v0.7.0 checkpoint is recorded (2026-09-03): all 15 levels now open with an animated humorous story/tutorial briefing; parameter decay is faster and follows distinct real-life rhythms; risky item sequences add short-term memory decisions; and the procedural soundtrack uses softer 16-bit low-register synthesis. The full automated suite passes 184/184 including the complete campaign balance gate. The only open gate item is the Phase 4 live human playtest (see `PLAYTEST_PROTOCOL.md`). No Android APK exists yet.
 
 Run the game: `tools\godot\Godot_v4.7.1-stable_win64.exe --path .`
 

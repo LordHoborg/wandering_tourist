@@ -54,7 +54,7 @@ func _draw() -> void:
 
 func _draw_decision_badge() -> void:
 	var good := decision == "COLLECT" or decision == "GOOD CHOICE"
-	var neutral := decision == "LET PASS" or decision == "SAVE IT"
+	var neutral := decision == "LET PASS" or decision == "SAVE IT" or decision == "WAIT"
 	var tint := Color("92e7b0") if good else (Color("ffcf76") if neutral else Color("ff958b"))
 	var badge := StyleBoxFlat.new()
 	badge.bg_color = Color(tint, 0.88)

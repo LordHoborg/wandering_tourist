@@ -139,15 +139,18 @@ func _should_cut(game, item) -> bool:
 	if not item.should_collect:
 		return false
 	var values: Dictionary = game.parameters.state.values
+	var effective_deltas: Dictionary = game._preview_deltas(item)
 	var before_distance := 0.0
 	var after_distance := 0.0
 	for id: StringName in game._stage().active_parameters:
 		var current: float = values.get(id, 50.0)
-		var next: float = current + item.deltas.get(id, 0.0)
+		var next: float = current + effective_deltas.get(id, 0.0)
 		if next < 22.0 or next > 78.0:
 			return false
 		before_distance += absf(current - 50.0)
 		after_distance += absf(next - 50.0)
+	if game._decision_label(item) == "WAIT":
+		return false
 	if item.is_tradeoff:
 		return after_distance < before_distance
 	return true

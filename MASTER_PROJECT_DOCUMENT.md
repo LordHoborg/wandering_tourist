@@ -2,14 +2,14 @@
 
 ## Project Identity
 
-- **Current project status:** Phases 0-3 are complete: the Prototype v0.1 checkpoint is recorded (2026-08-30). Phase 4 (Gameplay Iteration) passed its automated balance gate; the live human playtest for AC-05 through AC-08, AC-10, and AC-11 remains open. The PDF-aligned v0.6.0 content checkpoint (2026-09-03) expands the playable desktop campaign to 15 levels with staged Social and Hygiene needs, expanded item catalog, five destination families, and a 179/179 green automated suite.
+- **Current project status:** Phases 0-3 are complete and the live human playtest remains open. The v0.7.0 narrative-systems checkpoint (2026-09-03) adds animated story briefings before every level, differentiated faster need rhythms, risky item-sequence decisions, and a softer 16-bit procedural soundtrack; suite 184/184 green.
 
 - **Platform:** Android, portrait orientation
 - **Engine:** Godot 4.7.1 stable (bundled at `tools/godot`)
 - **Language:** Typed GDScript
 - **Rendering:** 2D
-- **Current phase:** Phase 4 human playtest evidence is the only open gate item; PDF-aligned content expansion checkpoint recorded
-- **Current version/build:** Content Expansion v0.6.0 (2026-09-03: 15-level campaign, staged Social/Hygiene needs, expanded item catalog, five destination families, and responsive HUD; desktop checkpoint, no Android APK yet)
+- **Current phase:** Phase 4 human playtest evidence is the only open gate item; narrative systems checkpoint recorded
+- **Current version/build:** Narrative Systems v0.7.0 (2026-09-03: animated level briefings, differentiated fast decay, risky item sequences, softened 16-bit audio; desktop checkpoint, no Android APK yet)
 
 ## Source Material Status
 
@@ -64,6 +64,14 @@ One island and one level; Hunger, Rest, and Fun parameters; touch and mouse supp
 - **Items:** The catalog now includes recovery and hazard items for all five needs plus contextual trade-offs for social and hygiene decisions. Spawn bags remain the approved 7-simple/3-trade shape once trade-offs unlock, and fairness validation now evaluates every active parameter.
 - **Presentation:** The HUD renders only the parameters active in the current level, shows 15-level progress, labels the current destination, and supports the expanded item vocabulary with distinct icons and effect chips.
 - **Verification:** Full automated suite: 179 passed, 0 failed across 11 suites; progression validates level unlocks and item catalog coverage, balance validation confirms neglect pressure and bot winnability across the full campaign, and headless boot exits cleanly.
+
+## Narrative Systems v0.7.0 Checkpoint (2026-09-03)
+
+- **Story flow:** Every level begins on a full-screen animated briefing. Fifteen humorous chapters follow Milo, an enthusiastic island tourist with poor self-care habits, while progressively teaching controls, parameters, contextual items, warnings, Travel Spirit, and the Social/Hygiene island transitions at levels 6 and 11.
+- **Need rhythms:** Hunger now decays at three times the prior stage baseline. Rest, Fun, Social, and Hygiene use progressively slower multipliers (2.15, 1.55, 0.72, 0.48) to model realistic urgency rather than synchronized meter loss.
+- **Sequence decisions:** From level 3 onward, recent collected items matter. Double Coffee, Too Much Food, No Sleep Tour, and Crowd Overload apply combined penalties inside documented time windows; cards publish `WAIT` and preview the effective deltas before the cut.
+- **Audio:** Runtime audio moved from harsh normalized 8-bit synthesis to low-register 16-bit PCM with softer envelopes, quieter ambience, heavily smoothed surf, and restrained harmonics.
+- **Verification:** Full automated suite: 184 passed, 0 failed across 11 suites; windowed screenshot capture verifies the briefing layout, balance validation clears all 15 levels under state-aware play, and headless project boot is clean.
 
 ## Prototype v0.1 Checkpoint (2026-08-30)
 

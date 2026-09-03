@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scenes/gameplay/gameplay_root.gd" id="1_root"]
 [ext_resource type="Script" path="res://scripts/ui/travel_playfield.gd" id="2_field"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://scripts/ui/travel_feedback_layer.gd" id="4_feedback"]
 [ext_resource type="Script" path="res://scripts/ui/travel_overlay.gd" id="5_overlay"]
 [ext_resource type="Script" path="res://scenes/ui/title_screen.gd" id="6_title"]
+[ext_resource type="Script" path="res://scripts/ui/stage_briefing.gd" id="7_briefing"]
 
 [node name="GameplayRoot" type="Control"]
 layout_mode = 3
@@ -141,3 +142,13 @@ offset_top = 860.0
 offset_right = 660.0
 offset_bottom = 924.0
 theme_override_font_sizes/font_size = 13
+
+[node name="StageBriefing" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("7_briefing")

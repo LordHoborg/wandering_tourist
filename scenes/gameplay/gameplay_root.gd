@@ -21,6 +21,7 @@ var item_views: Dictionary = {}
 var event_kinds: Dictionary = {}
 var hint_seen := false
 var run_started := false
+var briefing_active := false
 var restart_armed_at := -1.0
 
 @onready var playfield = $Playfield
@@ -31,6 +32,7 @@ var restart_armed_at := -1.0
 @onready var hint: Label = $Hint
 @onready var title_screen = $TitleScreen
 @onready var pause_button: Button = $PauseButton
+@onready var stage_briefing = $StageBriefing
 
 func _ready() -> void:
 	var definitions: Array[ParameterDefinition] = []
@@ -52,14 +54,14 @@ func _ready() -> void:
 	title_screen.start_requested.connect(_start_run)
 	overlay.tapped.connect(_on_overlay_tapped)
 	pause_button.pressed.connect(_on_pause_pressed)
+	stage_briefing.dismissed.connect(_on_briefing_dismissed)
 
 func _start_run() -> void:
 	if run_started:
 		return
 	run_started = true
 	title_screen.hide()
-	audio.play_cue(&"ui_start")
-	game.start()
+	_show_stage_briefing()
 	if not AppSettings.reduced_motion:
 		var tween := create_tween()
 		tween.tween_interval(5.0)
@@ -69,7 +71,7 @@ func _process(delta: float) -> void:
 	game.tick(delta)
 
 func _input(event: InputEvent) -> void:
-	if not run_started:
+	if not run_started or briefing_active:
 		return
 	if event is InputEventMouseButton and event.pressed:
 		_forward_lane_pointer(event.position)
@@ -85,6 +87,8 @@ func _forward_lane_pointer(pointer: Vector2) -> void:
 		input_adapter.activate_from_pointer(1)
 
 func _unhandled_input(event: InputEvent) -> void:
+	if briefing_active:
+		return
 	if not run_started:
 		if event.is_action_pressed("ui_accept"):
 			_start_run()
@@ -97,11 +101,12 @@ func _unhandled_input(event: InputEvent) -> void:
 			audio.play_cue(&"ui_start")
 			game.resume()
 		elif snapshot.get("state") == RunStateMachine.State.COMPLETED:
-			game.advance_stage()
+			_advance_or_restart_campaign()
 	elif event is InputEventKey and event.pressed and event.keycode == KEY_R and not event.echo:
 		_handle_restart_key()
 	elif event is InputEventKey and event.pressed and event.keycode == KEY_N and not event.echo:
-		game.advance_stage()
+		if snapshot.get("state") == RunStateMachine.State.COMPLETED:
+			_advance_or_restart_campaign()
 
 func _on_overlay_tapped() -> void:
 	var state: int = snapshot.get("state", RunStateMachine.State.IDLE)
@@ -111,9 +116,27 @@ func _on_overlay_tapped() -> void:
 	elif state == RunStateMachine.State.FAILED:
 		game.restart()
 	elif state == RunStateMachine.State.COMPLETED:
-		# Non-final stages advance; a completed journey starts a new campaign.
-		if not game.advance_stage():
-			game.restart_campaign()
+		_advance_or_restart_campaign()
+
+func _advance_or_restart_campaign() -> void:
+	if not game.advance_stage():
+		game.restart_campaign()
+	game.pause_intent()
+	_show_stage_briefing()
+
+func _show_stage_briefing() -> void:
+	briefing_active = true
+	pause_button.hide()
+	var stage = game.stages[game.stage_index]
+	stage_briefing.show_stage(game.stage_index + 1, stage.title, stage.theme_id)
+
+func _on_briefing_dismissed() -> void:
+	briefing_active = false
+	audio.play_cue(&"ui_start")
+	if game.state_machine.state == RunStateMachine.State.IDLE:
+		game.start()
+	elif game.state_machine.state == RunStateMachine.State.PAUSED:
+		game.resume()
 
 func _on_pause_pressed() -> void:
 	if snapshot.get("state") == RunStateMachine.State.RUNNING:
@@ -130,6 +153,8 @@ func _handle_restart_key() -> void:
 		restart_armed_at = -1.0
 		if snapshot.get("stage", 1) >= 15:
 			game.restart_campaign()
+			game.pause_intent()
+			_show_stage_briefing()
 		else:
 			game.restart()
 	elif state == RunStateMachine.State.PAUSED:
@@ -147,7 +172,7 @@ func _render_snapshot(next_snapshot: Dictionary) -> void:
 	hud.set_snapshot(snapshot)
 	overlay.set_snapshot(snapshot)
 	playfield.apply_stage_theme(snapshot.get("theme_id", &"tropical"))
-	pause_button.visible = run_started and snapshot.get("state") == RunStateMachine.State.RUNNING
+	pause_button.visible = run_started and not briefing_active and snapshot.get("state") == RunStateMachine.State.RUNNING
 	var ready := [false, false]
 	var live_ids: Dictionary = {}
 	var sway_time := 0.0 if AppSettings.reduced_motion else Time.get_ticks_msec() / 1000.0
@@ -193,6 +218,11 @@ func _on_presentation_event(kind: StringName, data: Dictionary) -> void:
 		playfield.zap_lane(lane)
 		feedback.show_feedback("OOPS!  %s" % _delta_text(data), Color("ff9b89"), at)
 		_mark_item_event(data, kind)
+	elif kind == &"risky_combo":
+		playfield.flash_lane(lane, false)
+		playfield.zap_lane(lane)
+		feedback.show_feedback("%s!  %s" % [data.get("combo_label", "BAD COMBO"), _delta_text(data)], Color("ffb07c"), at)
+		_mark_item_event(data, &"harmful_cut")
 	elif kind == &"hazard_passed":
 		playfield.flash_lane(lane, true)
 		feedback.show_feedback("GOOD!  +%d" % data.get("score_delta", 50), Color("a7f1ca"), at)

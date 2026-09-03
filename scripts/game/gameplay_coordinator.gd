@@ -17,6 +17,20 @@ const StageDefinition = preload("res://scripts/data/stage_definition.gd")
 
 signal snapshot_published(snapshot: Dictionary)
 signal presentation_event(kind: StringName, data: Dictionary)
+
+const PARAMETER_DECAY_MULTIPLIERS: Dictionary = {
+	&"hunger": 3.0,
+	&"rest": 2.15,
+	&"fun": 1.55,
+	&"social": 0.72,
+	&"hygiene": 0.48,
+}
+const SEQUENCE_RULES: Array[Dictionary] = [
+	{"min_level": 3, "previous": &"coffee", "current": &"coffee", "window": 10.0, "label": "DOUBLE COFFEE", "deltas": {&"rest": -12.0, &"fun": -3.0}},
+	{"min_level": 4, "previous": &"local_meal", "current": &"night_market", "window": 12.0, "label": "TOO MUCH FOOD", "deltas": {&"hunger": 10.0, &"rest": -5.0}},
+	{"min_level": 7, "previous": &"night_market", "current": &"group_tour", "window": 14.0, "label": "NO SLEEP TOUR", "deltas": {&"rest": -11.0, &"social": -3.0}},
+	{"min_level": 12, "previous": &"group_tour", "current": &"street_festival", "window": 12.0, "label": "CROWD OVERLOAD", "deltas": {&"rest": -9.0, &"hygiene": -5.0}},
+]
 var state_machine: RunStateMachine = RunStateMachine.new()
 var parameters: ParameterService
 var timer: TimerService
@@ -57,6 +71,8 @@ var failure_parameter_id: StringName = &""
 ## carries the total forward; retrying a stage rolls back to this baseline so
 ## a failed attempt cannot be farmed for points.
 var stage_entry_score: int = 0
+var last_collected_item_id: StringName = &""
+var last_collected_at: float = -1000.0
 
 func _init(definitions: Array[ParameterDefinition], duration: float, repository_path: String) -> void:
 	_ensure_parameter_definitions(definitions)
@@ -97,8 +113,12 @@ func handle_lane_intent(lane_id: int) -> void:
 	lane_ready_at[lane_id] = timer.elapsed + level.lane_cooldown
 	var item: ItemDefinition = instance.definition
 	var score_before := score.score
-	var transaction = resolver.resolve(item, parameters, true)
-	if item.is_tradeoff:
+	var sequence_rule := _active_sequence_rule(item)
+	var modifier_deltas: Dictionary = sequence_rule.get("deltas", {})
+	var transaction = resolver.resolve(item, parameters, true, 50.0, modifier_deltas)
+	if not sequence_rule.is_empty():
+		score.break_momentum()
+	elif item.is_tradeoff:
 		score.add_tradeoff(transaction.before_distance, transaction.after_distance, not transaction.safe)
 		tradeoffs_taken += 1
 	elif item.should_collect:
@@ -109,11 +129,17 @@ func handle_lane_intent(lane_id: int) -> void:
 		score.break_momentum()
 	active_items.erase(instance)
 	var score_delta := score.score - score_before
-	var event_data := {"instance_id": instance.get_instance_id(), "item_id": item.id, "lane": lane_id, "score_delta": score_delta, "deltas": transaction.deltas, "safe": transaction.safe}
+	if item.should_collect:
+		last_collected_item_id = item.id
+		last_collected_at = timer.elapsed
+	var event_data := {"instance_id": instance.get_instance_id(), "item_id": item.id, "lane": lane_id, "score_delta": score_delta, "deltas": transaction.deltas, "safe": transaction.safe, "combo_label": sequence_rule.get("label", "")}
 	if not item.should_collect:
 		harmful_cuts += 1
 		hazards_cut += 1
 		presentation_event.emit(&"harmful_cut", event_data)
+	elif not sequence_rule.is_empty():
+		harmful_cuts += 1
+		presentation_event.emit(&"risky_combo", event_data)
 	elif transaction.safe:
 		if score_delta > 0:
 			correct_decisions += 1
@@ -377,14 +403,14 @@ func _apply_stage(next_index: int) -> void:
 	level.fall_duration = _stage().fall_duration
 	timer = TimerService.new(level.duration_seconds)
 	for definition: ParameterDefinition in parameters.definitions:
-		definition.decay_per_second = _stage().passive_decay_per_second
+		definition.decay_per_second = _stage().passive_decay_per_second * PARAMETER_DECAY_MULTIPLIERS.get(definition.id, 1.0)
 
 func _reset_stage_run() -> void:
 	state_machine = RunStateMachine.new()
 	parameters.state.set_defaults(parameters.definitions)
 	timer = TimerService.new(_stage().duration_seconds)
 	score = ScoreService.new(); score.restore(stage_entry_score); resolver = ItemResolver.new(); scheduler = SpawnScheduler.new(); fairness = SpawnFairnessValidator.new(level.max_recovery_drought, _stage().active_parameters)
-	active_items.clear(); failure_parameter_id = &""; spawn_elapsed = 0.0; lane_ready_at = {0: 0.0, 1: 0.0}; stage_spawn_count = 0; correct_decisions = 0; missed_beneficial = 0; harmful_cuts = 0; beneficial_collected = 0; hazards_passed = 0; hazards_cut = 0; tradeoffs_taken = 0; beneficial_tradeoffs = 0; failed_tradeoffs = 0; item_collections.clear(); item_hazard_passes.clear(); _last_momentum = 0
+	active_items.clear(); failure_parameter_id = &""; spawn_elapsed = 0.0; lane_ready_at = {0: 0.0, 1: 0.0}; stage_spawn_count = 0; correct_decisions = 0; missed_beneficial = 0; harmful_cuts = 0; beneficial_collected = 0; hazards_passed = 0; hazards_cut = 0; tradeoffs_taken = 0; beneficial_tradeoffs = 0; failed_tradeoffs = 0; item_collections.clear(); item_hazard_passes.clear(); _last_momentum = 0; last_collected_item_id = &""; last_collected_at = -1000.0
 
 func _stage_objective_complete() -> bool:
 	var stage := _stage()
@@ -434,7 +460,7 @@ func publish_snapshot() -> void:
 		if cut_ready and not instance.cut_window_announced:
 			instance.cut_window_announced = true
 			presentation_event.emit(&"cut_window_open", {"instance_id": instance.get_instance_id(), "item_id": instance.definition.id, "lane": instance.lane_id, "collect": instance.definition.should_collect, "decision": _decision_label(instance.definition)})
-		item_snapshots.append({"instance_id": instance.get_instance_id(), "id": instance.definition.id, "lane": instance.lane_id, "progress": clampf(instance.age(timer.elapsed) / level.fall_duration, 0.0, 1.0), "cut_ready": cut_ready, "collect": instance.definition.should_collect, "tradeoff": instance.definition.is_tradeoff, "knowledge": "NEW" if seen <= 1 else ("LEARNING" if seen <= 5 else "KNOWN"), "familiarity_count": seen, "show_effects": instance.definition.is_tradeoff or seen <= 5, "deltas": instance.definition.deltas, "decision": _decision_label(instance.definition), "decision_reason": _decision_reason(instance.definition)})
+		item_snapshots.append({"instance_id": instance.get_instance_id(), "id": instance.definition.id, "lane": instance.lane_id, "progress": clampf(instance.age(timer.elapsed) / level.fall_duration, 0.0, 1.0), "cut_ready": cut_ready, "collect": instance.definition.should_collect, "tradeoff": instance.definition.is_tradeoff, "knowledge": "NEW" if seen <= 1 else ("LEARNING" if seen <= 5 else "KNOWN"), "familiarity_count": seen, "show_effects": instance.definition.is_tradeoff or seen <= 5 or not _active_sequence_rule(instance.definition).is_empty(), "deltas": _preview_deltas(instance.definition), "decision": _decision_label(instance.definition), "decision_reason": _decision_reason(instance.definition)})
 	var weakest := _weakest_parameter()
 	var snapshot: Dictionary = {"state": state_machine.state, "score": score.score, "best_score": best_scores.best_score, "bonus": level.completion_bonus, "remaining": timer.remaining(), "parameters": parameters.state.values.duplicate(), "active_parameters": _stage().active_parameters.duplicate(), "failure_parameter": failure_parameter_id, "stage": stage_index + 1, "stage_title": _stage().title, "stage_lesson": _stage().lesson, "theme_id": _stage().theme_id, "objective": _objective_text(), "priority_parameter": weakest["id"], "priority_value": weakest["value"], "momentum": score.momentum, "correct_decisions": correct_decisions, "missed_beneficial": missed_beneficial, "harmful_cuts": harmful_cuts, "beneficial_collected": beneficial_collected, "hazards_passed": hazards_passed, "hazards_cut": hazards_cut, "tradeoffs_taken": tradeoffs_taken, "beneficial_tradeoffs": beneficial_tradeoffs, "failed_tradeoffs": failed_tradeoffs, "items": item_snapshots}
 	snapshot_published.emit(snapshot)
@@ -452,6 +478,8 @@ func _weakest_parameter() -> Dictionary:
 func _decision_label(item: ItemDefinition) -> String:
 	if not item.should_collect:
 		return "LET PASS"
+	if not _active_sequence_rule(item).is_empty():
+		return "WAIT"
 	var values: Dictionary = parameters.state.values
 	var safe := true
 	var before_distance := 0.0
@@ -471,6 +499,9 @@ func _decision_label(item: ItemDefinition) -> String:
 func _decision_reason(item: ItemDefinition) -> String:
 	if not item.should_collect:
 		return "avoid the hit"
+	var sequence_rule := _active_sequence_rule(item)
+	if not sequence_rule.is_empty():
+		return "%s after %s" % [String(sequence_rule.get("label", "bad combo")).to_lower(), String(last_collected_item_id).replace("_", " ")]
 	if item.is_tradeoff:
 		return "moves you toward center" if _decision_label(item) == "GOOD CHOICE" else "wait for a better state"
 	return "supports %s" % _parameter_label(_positive_parameter(item))
@@ -483,6 +514,23 @@ func _positive_parameter(item: ItemDefinition) -> StringName:
 			best_id = id
 			best_delta = item.deltas[id]
 	return best_id
+
+func _active_sequence_rule(item: ItemDefinition) -> Dictionary:
+	if last_collected_item_id == &"" or timer.elapsed - last_collected_at < 0.0:
+		return {}
+	for rule: Dictionary in SEQUENCE_RULES:
+		if _stage().level_number < int(rule["min_level"]):
+			continue
+		if item.id == rule["current"] and last_collected_item_id == rule["previous"] and timer.elapsed - last_collected_at <= float(rule["window"]):
+			return rule
+	return {}
+
+func _preview_deltas(item: ItemDefinition) -> Dictionary[StringName, float]:
+	var result: Dictionary[StringName, float] = item.deltas.duplicate()
+	var rule := _active_sequence_rule(item)
+	for parameter_id: StringName in rule.get("deltas", {}):
+		result[parameter_id] = result.get(parameter_id, 0.0) + rule["deltas"][parameter_id]
+	return result
 
 func _parameter_label(id: StringName) -> String:
 	return {"hunger": "hunger", "rest": "rest", "fun": "fun", "social": "social", "hygiene": "hygiene"}.get(id, "your needs")

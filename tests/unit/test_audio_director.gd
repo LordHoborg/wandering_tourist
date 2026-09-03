@@ -16,7 +16,7 @@ func _initialize() -> void:
 	var director = AudioDirectorClass.new()
 	director.settings = settings
 	root.add_child(director)
-	var emitted_kinds: Array[StringName] = [&"stage_started", &"spawn", &"cut_success", &"harmful_cut", &"hazard_passed", &"beneficial_missed", &"failed", &"completed", &"warning", &"ui_start", &"cut_window_open"]
+	var emitted_kinds: Array[StringName] = [&"stage_started", &"spawn", &"cut_success", &"harmful_cut", &"risky_combo", &"hazard_passed", &"beneficial_missed", &"failed", &"completed", &"warning", &"ui_start", &"cut_window_open"]
 	var all_covered := true
 	for kind in emitted_kinds:
 		if not director.has_cue(kind):
@@ -25,7 +25,7 @@ func _initialize() -> void:
 	var streams_valid := true
 	for kind in emitted_kinds:
 		var stream: AudioStreamWAV = director.streams[kind]
-		if stream.mix_rate != AudioDirectorClass.MIX_RATE or stream.data.size() == 0:
+		if stream.mix_rate != AudioDirectorClass.MIX_RATE or stream.format != AudioStreamWAV.FORMAT_16_BITS or stream.data.size() == 0:
 			streams_valid = false
 	_check(streams_valid, "generated cue streams are valid non-empty WAVs")
 	var synthesized := AudioDirectorClass.synthesize([[440.0, 0.1]])
@@ -34,17 +34,17 @@ func _initialize() -> void:
 	var silent := AudioDirectorClass.synthesize([[0.0, 0.1]])
 	var silent_centered := true
 	for byte in silent.data:
-		if byte != 128:
+		if byte != 0:
 			silent_centered = false
 	_check(silent_centered, "zero frequency produces silence")
 	var loud := false
 	for byte in synthesized.data:
-		if byte != 128:
+		if byte != 0:
 			loud = true
 	_check(loud, "tone produces audible samples")
 	var ambience_stream: AudioStreamWAV = AudioDirectorClass.synthesize_ambience()
-	_check(ambience_stream.loop_mode == AudioStreamWAV.LOOP_FORWARD and ambience_stream.loop_end == ambience_stream.data.size(), "ambience stream loops")
-	_check(ambience_stream.data.size() == AudioDirectorClass.MIX_RATE * int(AudioDirectorClass.AMBIENCE_SECONDS), "ambience length matches loop seconds")
+	_check(ambience_stream.loop_mode == AudioStreamWAV.LOOP_FORWARD and ambience_stream.loop_end * 2 == ambience_stream.data.size(), "ambience stream loops")
+	_check(ambience_stream.data.size() == AudioDirectorClass.MIX_RATE * int(AudioDirectorClass.AMBIENCE_SECONDS) * 2, "ambience length matches loop seconds")
 	_check(ambience_stream.data == AudioDirectorClass.synthesize_ambience().data, "ambience synthesis is deterministic")
 	_check(director.ambience != null and director.ambience.stream.loop_mode == AudioStreamWAV.LOOP_FORWARD, "ambience player exists and loops")
 	var saved_muted: bool = settings.muted

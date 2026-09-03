@@ -7,12 +7,14 @@ class Transaction:
 	var safe: bool
 	var deltas: Dictionary[StringName, float]
 
-func resolve(item: ItemDefinition, parameters: ParameterService, collected: bool, neutral_target: float = 50.0) -> Transaction:
+func resolve(item: ItemDefinition, parameters: ParameterService, collected: bool, neutral_target: float = 50.0, modifier_deltas: Dictionary = {}) -> Transaction:
 	var result := Transaction.new()
 	var transaction_deltas: Dictionary[StringName, float] = {}
 	if collected:
 		for parameter_id: StringName in item.deltas:
 			transaction_deltas[parameter_id] = item.deltas[parameter_id]
+		for parameter_id: StringName in modifier_deltas:
+			transaction_deltas[parameter_id] = transaction_deltas.get(parameter_id, 0.0) + modifier_deltas[parameter_id]
 	result.deltas = transaction_deltas
 	result.before_distance = _distance(parameters.state.values, neutral_target, parameters.definitions)
 	result.safe = parameters.apply(result.deltas) if collected else parameters.is_safe()
