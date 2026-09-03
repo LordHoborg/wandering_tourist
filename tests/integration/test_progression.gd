@@ -3,6 +3,7 @@ extends SceneTree
 const Definition = preload("res://scripts/data/parameter_definition.gd")
 const Coordinator = preload("res://scripts/game/gameplay_coordinator.gd")
 const RunState = preload("res://scripts/game/run_state_machine.gd")
+const ItemInstance = preload("res://scripts/state/item_instance.gd")
 
 var passed := 0
 var failed := 0
@@ -16,6 +17,13 @@ func _init() -> void:
 	game.start()
 	_check(game._decision_label(game.item_catalog[&"fruit"]) == "COLLECT", "simple item publishes a collect decision")
 	_check(game._decision_label(game.item_catalog[&"stale_snack"]) == "LET PASS", "hazard publishes a pass decision")
+	game.active_items.clear()
+	game.timer.elapsed = game.level.fall_duration - game.level.cut_window * 0.5
+	var telegraph := ItemInstance.new(game.item_catalog[&"fruit"], 0, 0.0)
+	game.active_items.append(telegraph)
+	game.publish_snapshot()
+	_check(telegraph.cut_window_announced, "front item announces its cut window")
+	game.active_items.clear()
 	_check(_survive_stage(game), "reasonable beneficial-collection bot survives stage 1")
 	var stage1_total: int = game.score.score
 	_check(game.state_machine.state == RunState.State.COMPLETED and game.advance_stage(), "completion advances to stage 2")

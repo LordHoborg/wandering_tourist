@@ -25,6 +25,7 @@ const CUES: Dictionary = {
 	&"ui_start": [[587.0, 0.08], [880.0, 0.12]],
 	&"ui_pause": [[440.0, 0.06], [330.0, 0.08]],
 	&"spirit_milestone": [[784.0, 0.07], [988.0, 0.07], [1175.0, 0.14]],
+	&"cut_window_open": [[740.0, 0.05], [880.0, 0.08]],
 }
 
 var streams: Dictionary = {}
@@ -53,7 +54,8 @@ func _ensure_ready() -> void:
 		ambience = AudioStreamPlayer.new()
 		ambience.stream = synthesize_ambience()
 		add_child(ambience)
-		ambience.play()
+		if is_inside_tree():
+			ambience.play()
 
 func _process(_delta: float) -> void:
 	if ambience == null:
@@ -89,7 +91,8 @@ func play_cue(cue: StringName) -> bool:
 	_next_player = (_next_player + 1) % POOL_SIZE
 	player.stream = streams[cue]
 	player.volume_db = linear_to_db(maxf(volume, 0.001))
-	player.play()
+	if player.is_inside_tree():
+		player.play()
 	return true
 
 ## Builds a mono 8-bit WAV stream from a note sequence with a short linear

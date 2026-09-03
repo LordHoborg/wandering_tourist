@@ -2,14 +2,14 @@
 
 ## Project Identity
 
-- **Current project status:** Phases 0-3 are complete: the Prototype v0.1 checkpoint is recorded (2026-08-30) with a playable three-stage desktop prototype. Phase 4 (Gameplay Iteration) passed its automated balance gate with no tuning required; the live human playtest for AC-05 through AC-08, AC-10, and AC-11 remains open. Phase 5 (Vertical Slice) is complete: the v0.5.3 checkpoint (2026-09-02) adds decision-aware guidance, stage themes, milestone audio, and destination presentation; suite 152/152 green.
+- **Current project status:** Phases 0-3 are complete: the Prototype v0.1 checkpoint is recorded (2026-08-30) with a playable three-stage desktop prototype. Phase 4 (Gameplay Iteration) passed its automated balance gate with no tuning required; the live human playtest for AC-05 through AC-08, AC-10, and AC-11 remains open. Phase 5 (Vertical Slice) is complete: the v0.5.4 checkpoint (2026-09-03) adds cut-window telegraphing on top of decision-aware guidance, stage themes, milestone audio, and destination presentation; suite 153/153 green.
 
 - **Platform:** Android, portrait orientation
 - **Engine:** Godot 4.7.1 stable (bundled at `tools/godot`)
 - **Language:** Typed GDScript
 - **Rendering:** 2D
 - **Current phase:** Phase 4 human playtest evidence is the only open gate item; Phase 5 Vertical Slice v0.5.3 checkpoint recorded
-- **Current version/build:** Vertical Slice v0.5.3 (2026-09-02: decision guidance, destination themes, milestone audio, and presentation polish; desktop checkpoint, no Android APK yet)
+- **Current version/build:** Vertical Slice v0.5.4 (2026-09-03: front-item cut-window telegraphing, decision guidance, destination themes, milestone audio, and presentation polish; desktop checkpoint, no Android APK yet)
 
 ## Source Material Status
 
@@ -52,6 +52,11 @@ One island and one level; Hunger, Rest, and Fun parameters; touch and mouse supp
 - **Polish added over v0.5.2:** The coordinator now publishes a weakest-need priority and a decision label for every active item (`COLLECT`, `LET PASS`, `GOOD CHOICE`, `SAVE IT`, or `TOO RISKY`) so the intended brain of the game is visible in the playfield. The HUD identifies the current destination and priority parameter. Stages use distinct procedural destination palettes: sunlit tropical cove, sunset neon harbor, and ancient ruins. Spirit milestones have a dedicated audio cue and visual callout.
 - **Source alignment:** The full 8-page source PDF was re-read and visually inspected on 2026-09-02. The two active falling-item lanes, bottom electric-line controls, parameter management, themed-island progression, and legacy monetization exclusions remain the governing first-playable direction.
 - **Verification:** Full automated suite: 152 passed, 0 failed across 11 suites; stage progression now includes theme and decision-guidance assertions. Headless boot is clean; windowed visual verification remains part of the manual playtest/device gate.
+
+## Vertical Slice v0.5.4 Checkpoint (2026-09-03)
+
+- **Polish added over v0.5.3:** The coordinator announces the exact moment the front item in each lane enters the 0.60-second cut window. The playfield responds with a lane pulse and the feedback layer names the available action, while a dedicated procedural cue provides optional audio reinforcement. Rear items do not trigger false telegraphs.
+- **Verification:** Full automated suite: 153 passed, 0 failed across 11 suites; progression covers deterministic cut-window announcement state and audio covers the new presentation event. Headless boot is clean.
 
 ## Prototype v0.1 Checkpoint (2026-08-30)
 

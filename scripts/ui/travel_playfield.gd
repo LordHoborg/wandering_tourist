@@ -8,10 +8,12 @@ const LANE_HEIGHT := 680.0
 const CUT_START := 850.0
 const FLASH_DURATION := 0.35
 const ZAP_DURATION := 0.18
+const ARM_DURATION := 0.42
 var cut_ready: Array[bool] = [false, false]
 var theme_id: StringName = &"tropical"
 var _flashes: Array[Dictionary] = []
 var _zaps: Array[Dictionary] = []
+var _arms: Array[Dictionary] = []
 
 func set_cut_ready(left_ready: bool, right_ready: bool) -> void:
 	cut_ready = [left_ready, right_ready]
@@ -34,6 +36,10 @@ func zap_lane(lane: int) -> void:
 	_zaps.append({"lane": lane, "at": Time.get_ticks_msec() / 1000.0})
 	queue_redraw()
 
+func arm_lane(lane: int, good: bool) -> void:
+	_arms.append({"lane": lane, "good": good, "at": Time.get_ticks_msec() / 1000.0})
+	queue_redraw()
+
 func _process(_delta: float) -> void:
 	# Backdrop waves/clouds and the action-line pulse animate every frame.
 	queue_redraw()
@@ -45,6 +51,7 @@ func _draw() -> void:
 		_draw_lane(lane, now)
 	_draw_zaps(now)
 	_draw_flashes(now)
+	_draw_arms(now)
 
 func _draw_lane(lane: int, now: float) -> void:
 	var x := 40.0 if lane == 0 else 380.0
@@ -130,3 +137,20 @@ func _draw_flashes(now: float) -> void:
 			color.a = 0.85 * (1.0 - progress)
 			draw_arc(Vector2(x, 922), 24.0 + progress * 84.0, 0, TAU, 32, color, 4.0)
 	_flashes = alive
+
+func _draw_arms(now: float) -> void:
+	var alive: Array[Dictionary] = []
+	for arm in _arms:
+		var age: float = now - arm["at"]
+		if age >= ARM_DURATION:
+			continue
+		alive.append(arm)
+		var progress := age / ARM_DURATION
+		var x := 190.0 if arm["lane"] == 0 else 530.0
+		var color := Color("9ee8d4") if arm["good"] else Color("ffb18d")
+		if AppSettings.reduced_motion:
+			draw_circle(Vector2(x, 922), 34, Color(color, 0.38))
+		else:
+			color.a = 0.65 * (1.0 - progress)
+			draw_arc(Vector2(x, 922), 28.0 + progress * 42.0, 0, TAU, 24, color, 3.0)
+	_arms = alive

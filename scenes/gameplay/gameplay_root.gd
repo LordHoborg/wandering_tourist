@@ -211,6 +211,10 @@ func _on_presentation_event(kind: StringName, data: Dictionary) -> void:
 			tween.tween_property(hint, "modulate:a", 0.0, 0.45)
 	elif kind == &"spirit_milestone":
 		feedback.show_feedback("SPIRIT TIER %d!" % data.get("tier", 1), Color("ffe08a"), Vector2(225.0, 350.0))
+	elif kind == &"cut_window_open":
+		var ready_color := Color("9ee8d4") if data.get("collect", true) else Color("ffb18d")
+		playfield.arm_lane(lane, data.get("collect", true))
+		feedback.show_feedback("NOW  %s" % data.get("decision", "DECIDE"), ready_color, Vector2(130.0 if lane == 0 else 470.0, 805.0))
 
 func _mark_item_event(data: Dictionary, kind: StringName) -> void:
 	# The corresponding presentation node is removed by the next snapshot.

@@ -2,6 +2,7 @@
 
 All notable project changes are recorded here.
 
+- v0.5.4: timing and readability pass — the front item announces entry into the cut window, lanes pulse before action, a dedicated procedural cue reinforces timing, and rear items remain quiet until they become actionable; suite 153/153 (TR-018).
 - v0.5.3: source-aligned gameplay/presentation pass — active items publish decision guidance and reasons, HUD highlights the weakest need and destination, stages gain tropical/sunset-city/ancient-ruins procedural themes, and spirit milestones receive a dedicated cue and callout; suite 152/152 (TR-017).
 - v0.5.2: GDD compliance and game feel — visible touch pause button, tap-to-act overlays with dismissal grace, campaign restart after the final stage, electric-bolt cut effect, item sway, lerped HUD meters, spirit pips, looping procedural ambience, pause/resume cues; suite 148/148 (TR-016).
 - v0.5.1: fixed campaign score not carrying across stages (carries forward on advance; retry rolls back to the stage-entry total); full procedural visual overhaul — shared animated tropical backdrop (sky, sun, clouds, waves, island, beach, palms), glassy lane panels with glowing action lines and cut-flash rings, item cards with category bands and effect chips, rounded HUD meters with safe-zone ticks, drawn star ratings on the result overlay, and a screenshot capture dev tool; suite 143/143 (TR-015).

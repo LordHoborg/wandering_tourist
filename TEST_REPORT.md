@@ -1,5 +1,15 @@
 # Test Report
 
+## TR-018 - v0.5.4 Cut-Window Telegraphing
+
+- **Date:** 2026-09-03
+- **Godot:** 4.7.1.stable.official.a13da4feb (headless, `tools/godot`)
+- **Scope:** Improve timing readability while preserving the approved 0.60-second cut window and front-most eligible-item rule.
+- **Changes:** `ItemInstance` tracks whether its cut window was announced; the coordinator emits `cut_window_open` only for the front item; the playfield renders a brief lane pulse; the feedback layer names the current action; `AudioDirector` adds a timing cue. Headless audio playback is guarded when nodes are outside the scene tree.
+- **Method:** Progression assertion for deterministic front-item telegraph state, audio cue coverage, full-suite regression, and clean headless boot.
+- **Results:** 153 passed, 0 failed across 11 suites. Progression suite: 18/18.
+- **Known limitation:** Human timing feel remains part of the ongoing manual playtest and future Android device verification.
+
 ## TR-017 - v0.5.3 Decision Guidance and Destination Themes
 
 - **Date:** 2026-09-02
