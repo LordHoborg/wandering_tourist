@@ -24,7 +24,7 @@ const STORIES: Array[Dictionary] = [
 	{"title": "TOO MANY PEOPLE, NOT ENOUGH SHOWER", "lines": ["Milo scheduled a group tour and a street festival back-to-back.", "The crowd was wonderful. His Rest and Hygiene filed formal complaints.", "Group Tour followed quickly by Street Festival triggers CROWD OVERLOAD."], "tip": "WAIT when an item card warns about a combo."},
 	{"title": "THE FIVE-METER WALTZ", "lines": ["Hunger moves quickly, Rest follows, Fun wanders, Social strolls, Hygiene takes its time.", "Fast meters need frequent small care. Slow meters need occasional deliberate care.", "Do not waste a rare item just because it is available."], "tip": "Match your decisions to each need's rhythm."},
 	{"title": "MILO ALMOST LOOKS RESPONSIBLE", "lines": ["He now eats, sleeps, laughs, talks, and occasionally remembers soap.", "The islands speed up, but the rules remain readable.", "Use the PRIORITY meter, sequence warnings, and cut-window pulse together."], "tip": "Plan one item ahead."},
-	{"title": "THE POSTCARD HOME", "lines": ["Milo has crossed beaches, cities, fields, ruins, and crystal shores.", "He still loses his hat, but he no longer loses himself.", "Finish the journey by making calm choices when every meter wants attention."], "tip": "The best tourist returns with stories—and all five needs safe."},
+	{"title": "THE POSTCARD HOME", "lines": ["Milo has crossed sunny beaches, neon streets, and peaceful country roads.", "He still loses his hat, but he no longer loses himself.", "Finish the journey by making calm choices when every meter wants attention."], "tip": "The best tourist returns with stories—and all five needs safe."},
 ]
 
 var theme_id: StringName = &"tropical"

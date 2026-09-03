@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.8.0 - 2026-09-04
+
+- Rebuilt the procedural backdrop as three visually distinct island chapters: Sunlit Cove uses bright tropical water, palms, a beach hut, birds, and foam; Neon Harbor uses a dusk gradient, stars, skyline depth, neon signs, tower lights, and reflected city glow; Serene Country uses warm daylight, layered hills, crops, trees, a barn, fence, and animated windmill.
+- Added richer atmospheric layers, sun glows, water reflections, cloud shadows, and foreground color grading while preserving readable gameplay lanes.
+- Added Android ETC2/ASTC texture-import configuration and a reproducible Android export preset.
+- Built and verified the signed debug APK: `exports/wandering_tourist_v0.8.0_debug.apk`.
+
 ## v0.7.2 - 2026-09-04
 
 - Added a custom illustrated Milo character cutout to every story briefing.

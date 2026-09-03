@@ -2,14 +2,14 @@
 
 ## Project Identity
 
-- **Current project status:** Phases 0-3 are complete and the live human playtest remains open. The v0.7.2 visual-storytelling checkpoint (2026-09-04) adds illustrated Milo briefings, lighter story framing, richer item cards, clearer win/loss guidance, differentiated need rhythms, risky item-sequence decisions, and softer 16-bit audio; suite 200/200 green.
+- **Current project status:** Phases 0-3 are complete and the live human/device playtest remains open. The v0.8.0 island-atmosphere checkpoint (2026-09-04) adds distinct tropical, neon-harbor, and countryside chapter backgrounds, Android export configuration, and a verified signed debug APK; suite 200/200 green.
 
 - **Platform:** Android, portrait orientation
 - **Engine:** Godot 4.7.1 stable (bundled at `tools/godot`)
 - **Language:** Typed GDScript
 - **Rendering:** 2D
 - **Current phase:** Phase 4 human playtest evidence is the only open gate item; narrative systems checkpoint recorded
-- **Current version/build:** Visual Storytelling v0.7.2 (2026-09-04: illustrated Milo briefings, lighter story layout, upgraded item cards, story-specific results, differentiated fast decay, risky item sequences, softened 16-bit audio; desktop checkpoint, no Android APK yet)
+- **Current version/build:** Island Atmosphere v0.8.0 (2026-09-04: distinct three-island backgrounds, Android ETC2/ASTC export configuration, signed debug APK at `exports/wandering_tourist_v0.8.0_debug.apk`)
 
 ## Source Material Status
 
@@ -64,6 +64,13 @@ One island and one level; Hunger, Rest, and Fun parameters; touch and mouse supp
 - **Items:** The catalog now includes recovery and hazard items for all five needs plus contextual trade-offs for social and hygiene decisions. Spawn bags remain the approved 7-simple/3-trade shape once trade-offs unlock, and fairness validation now evaluates every active parameter.
 - **Presentation:** The HUD renders only the parameters active in the current level, shows 15-level progress, labels the current destination, and supports the expanded item vocabulary with distinct icons and effect chips.
 - **Verification:** Full automated suite: 179 passed, 0 failed across 11 suites; progression validates level unlocks and item catalog coverage, balance validation confirms neglect pressure and bot winnability across the full campaign, and headless boot exits cleanly.
+
+## Island Atmosphere v0.8.0 Checkpoint (2026-09-04)
+
+- **Visual identity:** Each five-level chapter has its own atmosphere. Sunlit Cove combines turquoise water, beach details, palms, hut, birds, and sea foam; Neon Harbor uses a sunset-night gradient, stars, layered skyline, neon signage, tower beacon, street geometry, and water reflections; Serene Country uses warm sky rays, layered green hills, crop rows, trees, barn, fence, and a moving windmill.
+- **Rendering:** Added finer sky/sea bands, theme-specific sun glow, cloud shading, reflections, and subtle foreground color grading without covering the action lanes.
+- **Android build:** Enabled ETC2/ASTC texture import, added the Android preset, and exported a signed arm64 debug APK. Device installation and touch acceptance remain part of the user's phone playtest.
+- **Verification:** Full automated suite remains 200 passed, 0 failed across 11 suites; headless boot exits 0; Android export and APK verification complete.
 
 ## Narrative Systems v0.7.0 Checkpoint (2026-09-03)
 

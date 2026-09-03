@@ -376,10 +376,10 @@ func _stage_definition(level_number: int, id: StringName, title: String, lesson:
 	return stage
 
 func _theme_for_level(level_number: int) -> StringName:
-	return [&"tropical", &"sunset_city", &"countryside", &"ancient_ruins", &"crystal_isles"][(level_number - 1) % 5]
+	return [&"tropical", &"sunset_city", &"countryside"][clampi((level_number - 1) / 5, 0, 2)]
 
 func _theme_name(chapter: int) -> String:
-	return {"tropical": "SUNLIT COVE", "sunset_city": "NEON HARBOR", "countryside": "SERENE COUNTRY", "ancient_ruins": "ANCIENT RUINS", "crystal_isles": "CRYSTAL ISLES"}.get(_theme_for_level(chapter + 1), "ISLAND")
+	return ["SUNLIT COVE", "NEON HARBOR", "SERENE COUNTRY"][clampi(chapter, 0, 2)]
 
 func _level_lesson(level_number: int, chapter: int) -> String:
 	if level_number == 1:

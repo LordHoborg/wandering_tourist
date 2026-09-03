@@ -56,8 +56,9 @@
 - [x] Add front-item cut-window telegraphing, lane pulse feedback, and dedicated timing cue without changing the approved cut rules (v0.5.4, TR-018); suite 153/153.
 - [x] Re-read the complete PDF and expand the playable slice to a 15-level campaign: staged Social/Hygiene parameters, full recovery/hazard/trade-off item catalog, five destination families, dynamic HUD, and active-parameter fairness validation (v0.6.0, 2026-09-03); suite 179/179.
 - [x] Add 15 animated story/tutorial briefings, an illustrated Milo character, lighter story framing, upgraded item cards, differentiated need rhythms, risky recent-item combos, softened procedural audio, and polished result messaging (v0.7.2, 2026-09-04); suite 200/200.
+- [x] Upgrade the three island-chapter backgrounds with distinct visual identities, add Android ETC2/ASTC export configuration, and produce the signed v0.8.0 debug APK (2026-09-04).
 
 ## Future Phases
 
-- [ ] Phase 6: Android Build (export templates, presets, first APK).
+- [x] Phase 6: Android Build (export preset, ETC2/ASTC configuration, first signed debug APK).
 - [ ] Phase 7: Content Expansion.

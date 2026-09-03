@@ -53,7 +53,7 @@ func _init() -> void:
 	_check(game.state_machine.state == RunState.State.COMPLETED and game.advance_stage(), "completion advances to stage 2")
 	_check(stage1_total > 0 and game.score.score == stage1_total, "campaign score carries into the next stage")
 	_check(game.stage_index == 1 and not game.familiarity.has(&"coffee"), "unseen trade-off remains unknown")
-	_check(game.stages[1].theme_id == &"sunset_city", "stage 2 keeps its destination theme")
+	_check(game.stages[1].theme_id == &"tropical" and game.stages[5].theme_id == &"sunset_city" and game.stages[10].theme_id == &"countryside", "five-level island chapters keep distinct visual identities")
 	for index in range(120):
 		game.tick(0.1)
 		for item in game.active_items.duplicate():
@@ -69,7 +69,7 @@ func _init() -> void:
 	game.timer.elapsed = game.timer.duration
 	game.tick(0.0)
 	game.advance_stage()
-	_check(game.stage_index == 2 and game.stages[2].destination_id == &"countryside", "level 3 advances with destination data")
+	_check(game.stage_index == 2 and game.stages[2].destination_id == &"tropical", "level 3 advances within the first island chapter")
 	var idle_game = Coordinator.new(_definitions(), 120.0, "user://progression_idle_test.dat")
 	idle_game.start()
 	idle_game.timer.elapsed = idle_game.timer.duration

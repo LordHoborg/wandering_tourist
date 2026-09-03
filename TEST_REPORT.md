@@ -1,5 +1,13 @@
 # Test Report
 
+## TR-023 — Island atmosphere and Android export
+
+- **Date:** 2026-09-04
+- **Scope:** Player-requested background upgrade with distinct visual identities for each island chapter and a phone-testable Android build.
+- **Changes:** Expanded the procedural backdrop with theme-specific sky, sun, cloud, water, reflection, and foreground layers. Sunlit Cove, Neon Harbor, and Serene Country now use separate landmark silhouettes and color language across their five-level chapters. Enabled ETC2/ASTC texture import and added a reproducible Android export preset.
+- **Verification:** All 11 headless suites pass with 200/200 checks; progression confirms the three five-level theme chapters; headless project boot exits 0; Godot Android export completes, signs, and verifies `exports/wandering_tourist_v0.8.0_debug.apk` (arm64 debug).
+- **Open device gate:** Install and play the APK on a physical Android phone to validate touch feel, audio mix, safe-area behavior, and performance.
+
 ## TR-022 — Character storytelling and item-card art pass
 
 - **Date:** 2026-09-04
