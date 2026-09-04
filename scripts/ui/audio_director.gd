@@ -7,8 +7,9 @@ extends Node
 
 const MIX_RATE := 44100
 const POOL_SIZE := 4
-const AMBIENCE_SECONDS := 18.0
+const AMBIENCE_SECONDS := 14.0
 const AMBIENCE_VOLUME_SCALE := 0.18
+const MENU_VOLUME_SCALE := 0.12
 
 ## Each cue is a list of [frequency_hz, duration_seconds] notes played in
 ## sequence; zero frequency inserts silence.
@@ -32,6 +33,9 @@ const CUES: Dictionary = {
 var streams: Dictionary = {}
 var settings: Node = null ## Injected by the composition root; falls back to the AppSettings autoload.
 var ambience: AudioStreamPlayer = null
+var menu_mode := true
+var menu_stream: AudioStreamWAV
+var game_stream: AudioStreamWAV
 var _players: Array[AudioStreamPlayer] = []
 var _next_player: int = 0
 
@@ -53,10 +57,27 @@ func _ensure_ready() -> void:
 			_players.append(player)
 	if ambience == null:
 		ambience = AudioStreamPlayer.new()
-		ambience.stream = synthesize_ambience()
+		menu_stream = synthesize_menu_music()
+		game_stream = synthesize_ambience()
+		ambience.stream = menu_stream if menu_mode else game_stream
 		add_child(ambience)
 		if is_inside_tree():
 			ambience.play()
+
+func set_menu_mode(enabled: bool) -> void:
+	menu_mode = enabled
+	_ensure_ready()
+	if ambience == null:
+		return
+	_set_ambience_stream(menu_stream if menu_mode else game_stream)
+
+func _set_ambience_stream(next_stream: AudioStreamWAV) -> void:
+	if ambience.stream == next_stream:
+		return
+	ambience.stop()
+	ambience.stream = next_stream
+	if is_inside_tree():
+		ambience.play()
 
 func _process(_delta: float) -> void:
 	if ambience == null:
@@ -69,7 +90,8 @@ func _process(_delta: float) -> void:
 	if muted or volume <= 0.0:
 		ambience.volume_db = -80.0
 	else:
-		ambience.volume_db = linear_to_db(maxf(volume * AMBIENCE_VOLUME_SCALE, 0.001))
+		var scale := MENU_VOLUME_SCALE if menu_mode else AMBIENCE_VOLUME_SCALE
+		ambience.volume_db = linear_to_db(maxf(volume * scale, 0.001))
 
 func has_cue(cue: StringName) -> bool:
 	_ensure_ready()
@@ -155,6 +177,34 @@ static func synthesize_ambience() -> AudioStreamWAV:
 		if i > total - fade:
 			sample *= float(total - i) / fade
 		_append_sample_16(data, sample)
+	var stream := AudioStreamWAV.new()
+	stream.format = AudioStreamWAV.FORMAT_16_BITS
+	stream.mix_rate = MIX_RATE
+	stream.data = data
+	stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	stream.loop_begin = 0
+	stream.loop_end = total
+	return stream
+
+static func synthesize_menu_music() -> AudioStreamWAV:
+	var total := int(MIX_RATE * AMBIENCE_SECONDS)
+	var data := PackedByteArray()
+	var chords := [
+		[196.0, 246.94, 293.66],
+		[174.61, 220.0, 261.63],
+		[164.81, 207.65, 246.94],
+	]
+	for i in total:
+		var time := float(i) / MIX_RATE
+		var chord_index := int(time / 4.6) % chords.size()
+		var chord: Array = chords[chord_index]
+		var local_time := fmod(time, 4.6)
+		var envelope := minf(local_time / 1.2, 1.0) * minf((4.6 - local_time) / 1.5, 1.0)
+		var sample := 0.0
+		for frequency in chord:
+			sample += sin(TAU * float(frequency) * time) * 0.018
+		sample += sin(TAU * 98.0 * time) * 0.012
+		_append_sample_16(data, sample * envelope)
 	var stream := AudioStreamWAV.new()
 	stream.format = AudioStreamWAV.FORMAT_16_BITS
 	stream.mix_rate = MIX_RATE

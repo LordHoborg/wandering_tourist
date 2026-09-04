@@ -1,5 +1,14 @@
 # Test Report
 
+## TR-024 — Android portrait, stability, and menu-audio fix
+
+- **Date:** 2026-09-04
+- **Scope:** Player-reported Android landscape launch, exit after starting a run, and lack of calm title-screen music.
+- **Changes:** Replaced the ineffective Android orientation key with `display/window/handheld/orientation=1`; added runtime portrait enforcement; separated menu music from gameplay ambience; made stream replacement stop before reassignment; capped title/playfield redraws at 30 FPS.
+- **Verification:** All 11 headless suites pass with 202/202 checks; 30-second headless stability run exits 0 without crash errors; Android export completes; `apksigner` verifies v2/v3 signatures; manifest reports `screenOrientation=1`, `versionName=0.8.1`, arm64, and min SDK 24.
+- **Device note:** No Android device was connected to this workstation, so final touch/audio/device-install verification remains with the user's phone test.
+- **Distribution note:** The APK is a debug sideload build; App Scan/Play Protect notices are expected for APKs installed outside Google Play and are separate from runtime stability.
+
 ## TR-023 — Island atmosphere and Android export
 
 - **Date:** 2026-09-04

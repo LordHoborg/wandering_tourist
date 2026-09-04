@@ -2,14 +2,14 @@
 
 ## Project Identity
 
-- **Current project status:** Phases 0-3 are complete and the live human/device playtest remains open. The v0.8.0 island-atmosphere checkpoint (2026-09-04) adds distinct tropical, neon-harbor, and countryside chapter backgrounds, Android export configuration, and a verified signed debug APK; suite 200/200 green.
+- **Current project status:** Phases 0-3 are complete and the live human/device playtest remains open. The v0.8.1 mobile-stability checkpoint (2026-09-04) fixes portrait orientation, adds calm menu music, hardens audio transitions, reduces mobile redraw load, and provides a verified signed debug APK; suite 202/202 green.
 
 - **Platform:** Android, portrait orientation
 - **Engine:** Godot 4.7.1 stable (bundled at `tools/godot`)
 - **Language:** Typed GDScript
 - **Rendering:** 2D
 - **Current phase:** Phase 4 human playtest evidence is the only open gate item; narrative systems checkpoint recorded
-- **Current version/build:** Island Atmosphere v0.8.0 (2026-09-04: distinct three-island backgrounds, Android ETC2/ASTC export configuration, signed debug APK at `exports/wandering_tourist_v0.8.0_debug.apk`)
+- **Current version/build:** Mobile Stability v0.8.1 (2026-09-04: portrait Android export, separate calm menu music, safe audio transitions, 30 FPS redraw cap, signed debug APK at `exports/wandering_tourist_v0.8.1_mobile_test.apk`)
 
 ## Source Material Status
 
@@ -71,6 +71,14 @@ One island and one level; Hunger, Rest, and Fun parameters; touch and mouse supp
 - **Rendering:** Added finer sky/sea bands, theme-specific sun glow, cloud shading, reflections, and subtle foreground color grading without covering the action lanes.
 - **Android build:** Enabled ETC2/ASTC texture import, added the Android preset, and exported a signed arm64 debug APK. Device installation and touch acceptance remain part of the user's phone playtest.
 - **Verification:** Full automated suite remains 200 passed, 0 failed across 11 suites; headless boot exits 0; Android export and APK verification complete.
+
+## Mobile Stability v0.8.1 Checkpoint (2026-09-04)
+
+- **Orientation:** Corrected the Android preset key to `display/window/handheld/orientation=1`; exported manifest reports `screenOrientation=1`, and Android runtime requests portrait as a second safeguard.
+- **Audio:** Added a separate low-volume sustained-chord menu loop and safe stop/replace/play transitions between menu, briefing, and gameplay ambience.
+- **Performance:** Title and playfield procedural redraws are capped at 30 FPS while reduced-motion mode remains static.
+- **Verification:** Full automated suite is 202/202 across 11 suites; 30-second headless stability run exits 0; APK signature verifies with v2/v3; package version is 0.8.1 and minimum SDK is 24.
+- **Distribution note:** This is a debug sideload APK, so Android/Google Play Protect can display an App Scan notice because it was installed outside Google Play.
 
 ## Narrative Systems v0.7.0 Checkpoint (2026-09-03)
 

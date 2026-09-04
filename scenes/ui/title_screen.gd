@@ -8,8 +8,10 @@ extends Control
 signal start_requested
 
 const Backdrop = preload("res://scripts/ui/tropical_backdrop.gd")
+const BACKDROP_FRAME_INTERVAL := 1.0 / 30.0
 
 var best_score: int = 0
+var _backdrop_elapsed := 0.0
 
 @onready var _mute_button: Button = $Buttons/MuteButton
 @onready var _volume_button: Button = $Buttons/VolumeButton
@@ -22,8 +24,13 @@ func _ready() -> void:
 	_motion_button.pressed.connect(_on_motion_pressed)
 	_refresh_settings_labels()
 
-func _process(_delta: float) -> void:
-	queue_redraw()
+func _process(delta: float) -> void:
+	if AppSettings.reduced_motion:
+		return
+	_backdrop_elapsed += delta
+	if _backdrop_elapsed >= BACKDROP_FRAME_INTERVAL:
+		_backdrop_elapsed = fmod(_backdrop_elapsed, BACKDROP_FRAME_INTERVAL)
+		queue_redraw()
 
 func set_best_score(value: int) -> void:
 	best_score = value

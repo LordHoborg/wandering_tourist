@@ -4,7 +4,7 @@ Android portrait 2D game project built with Godot 4 and typed GDScript.
 
 ## Current State
 
-The visual storytelling v0.8.0 checkpoint is recorded (2026-09-04): all 15 levels open with an animated humorous briefing featuring an illustrated Milo character; the three island chapters now have distinct tropical, neon-harbor, and countryside backgrounds; story text uses lighter framing; result screens explain wins and failures with need-specific guidance; item cards use a richer layered presentation; parameter decay follows distinct real-life rhythms; risky item sequences add short-term memory decisions; and the procedural soundtrack uses softer 16-bit synthesis. The full automated suite passes 200/200 including the complete campaign balance gate. A signed debug Android APK is available at `exports/wandering_tourist_v0.8.0_debug.apk` after export.
+The mobile stability v0.8.1 checkpoint is recorded (2026-09-04): Android export is locked to portrait, menu and gameplay use separate soft ambience loops, audio stream switching is lifecycle-safe, and animated backdrops are capped at 30 FPS for lower mobile load. The full automated suite passes 202/202. A signed arm64 debug Android APK is available at `exports/wandering_tourist_v0.8.1_mobile_test.apk` after export.
 
 Run the game: `tools\godot\Godot_v4.7.1-stable_win64.exe --path .`
 
@@ -39,4 +39,6 @@ The original vision is retained at `docs/source/Wandering Tourist - Game Documen
 2. On the title screen, adjust sound/volume/reduced-motion if desired, then start the trip.
 3. Play: tap/click the left or right lane area to cut the front item; Space pauses/resumes, R twice while paused restarts, R once on a result screen starts a fresh trip, N advances after completion.
 
-Export Android APK: `tools\godot\Godot_v4.7.1-stable_win64_console.exe --headless --path . --export-debug "Android" "exports\wandering_tourist_v0.8.0_debug.apk"`
+Export Android APK: `tools\godot\Godot_v4.7.1-stable_win64_console.exe --headless --path . --export-debug "Android" "exports\wandering_tourist_v0.8.1_mobile_test.apk"`
+
+The APK is a debug sideload build. Android/Google Play Protect may show an App Scan notice for APKs installed outside Google Play; this is a distribution warning, not a game crash report.

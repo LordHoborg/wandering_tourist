@@ -48,6 +48,7 @@ func _ready() -> void:
 	audio = AudioDirector.new()
 	audio.settings = AppSettings
 	add_child(audio)
+	audio.set_menu_mode(true)
 	audio_cue_requested.connect(audio.play_cue)
 	hud.warning_cue_requested.connect(audio.play_cue)
 	title_screen.set_best_score(game.best_scores.best_score)
@@ -127,11 +128,13 @@ func _advance_or_restart_campaign() -> void:
 func _show_stage_briefing() -> void:
 	briefing_active = true
 	pause_button.hide()
+	audio.set_menu_mode(true)
 	var stage = game.stages[game.stage_index]
 	stage_briefing.show_stage(game.stage_index + 1, stage.title, stage.theme_id)
 
 func _on_briefing_dismissed() -> void:
 	briefing_active = false
+	audio.set_menu_mode(false)
 	audio.play_cue(&"ui_start")
 	if game.state_machine.state == RunStateMachine.State.IDLE:
 		game.start()

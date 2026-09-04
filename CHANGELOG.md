@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.8.1 - 2026-09-04
+
+- Fixed Android orientation using the correct Godot export key; the manifest now declares portrait and runtime also requests portrait on Android.
+- Added a separate quiet menu music loop with low-volume sustained chords; gameplay keeps its ocean ambience.
+- Made ambience switching stop the old stream before replacement to avoid unsafe audio transitions between title, briefing, and gameplay.
+- Capped title/playfield procedural redraws at 30 FPS to reduce mobile GPU pressure.
+- Built and verified `exports/wandering_tourist_v0.8.1_mobile_test.apk` as a signed arm64 debug APK.
+
 ## v0.8.0 - 2026-09-04
 
 - Rebuilt the procedural backdrop as three visually distinct island chapters: Sunlit Cove uses bright tropical water, palms, a beach hut, birds, and foam; Neon Harbor uses a dusk gradient, stars, skyline depth, neon signs, tower lights, and reflected city glow; Serene Country uses warm daylight, layered hills, crops, trees, a barn, fence, and animated windmill.

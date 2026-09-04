@@ -46,6 +46,9 @@ func _initialize() -> void:
 	_check(ambience_stream.loop_mode == AudioStreamWAV.LOOP_FORWARD and ambience_stream.loop_end * 2 == ambience_stream.data.size(), "ambience stream loops")
 	_check(ambience_stream.data.size() == AudioDirectorClass.MIX_RATE * int(AudioDirectorClass.AMBIENCE_SECONDS) * 2, "ambience length matches loop seconds")
 	_check(ambience_stream.data == AudioDirectorClass.synthesize_ambience().data, "ambience synthesis is deterministic")
+	var menu_stream: AudioStreamWAV = AudioDirectorClass.synthesize_menu_music()
+	_check(menu_stream.loop_mode == AudioStreamWAV.LOOP_FORWARD and menu_stream.data.size() > 0, "menu music is a looping stream")
+	_check(menu_stream.data == AudioDirectorClass.synthesize_menu_music().data, "menu music synthesis is deterministic")
 	_check(director.ambience != null and director.ambience.stream.loop_mode == AudioStreamWAV.LOOP_FORWARD, "ambience player exists and loops")
 	var saved_muted: bool = settings.muted
 	var saved_volume: float = settings.sfx_volume

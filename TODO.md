@@ -57,6 +57,7 @@
 - [x] Re-read the complete PDF and expand the playable slice to a 15-level campaign: staged Social/Hygiene parameters, full recovery/hazard/trade-off item catalog, five destination families, dynamic HUD, and active-parameter fairness validation (v0.6.0, 2026-09-03); suite 179/179.
 - [x] Add 15 animated story/tutorial briefings, an illustrated Milo character, lighter story framing, upgraded item cards, differentiated need rhythms, risky recent-item combos, softened procedural audio, and polished result messaging (v0.7.2, 2026-09-04); suite 200/200.
 - [x] Upgrade the three island-chapter backgrounds with distinct visual identities, add Android ETC2/ASTC export configuration, and produce the signed v0.8.0 debug APK (2026-09-04).
+- [x] Fix Android portrait export, add calm menu music, harden audio transitions, cap mobile redraw load, and produce the signed v0.8.1 mobile-test APK (2026-09-04).
 
 ## Future Phases
 

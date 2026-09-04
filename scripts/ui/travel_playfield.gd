@@ -9,11 +9,13 @@ const CUT_START := 850.0
 const FLASH_DURATION := 0.35
 const ZAP_DURATION := 0.18
 const ARM_DURATION := 0.42
+const BACKDROP_FRAME_INTERVAL := 1.0 / 30.0
 var cut_ready: Array[bool] = [false, false]
 var theme_id: StringName = &"tropical"
 var _flashes: Array[Dictionary] = []
 var _zaps: Array[Dictionary] = []
 var _arms: Array[Dictionary] = []
+var _backdrop_elapsed := 0.0
 
 func set_cut_ready(left_ready: bool, right_ready: bool) -> void:
 	cut_ready = [left_ready, right_ready]
@@ -40,9 +42,13 @@ func arm_lane(lane: int, good: bool) -> void:
 	_arms.append({"lane": lane, "good": good, "at": Time.get_ticks_msec() / 1000.0})
 	queue_redraw()
 
-func _process(_delta: float) -> void:
-	# Backdrop waves/clouds and the action-line pulse animate every frame.
-	queue_redraw()
+func _process(delta: float) -> void:
+	if AppSettings.reduced_motion:
+		return
+	_backdrop_elapsed += delta
+	if _backdrop_elapsed >= BACKDROP_FRAME_INTERVAL:
+		_backdrop_elapsed = fmod(_backdrop_elapsed, BACKDROP_FRAME_INTERVAL)
+		queue_redraw()
 
 func _draw() -> void:
 	var now := Time.get_ticks_msec() / 1000.0
