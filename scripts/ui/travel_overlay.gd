@@ -5,17 +5,37 @@ extends Control
 ## the composition root can resume/restart/advance without a keyboard.
 
 signal tapped
+signal post_level_coin_double_requested
 
 var snapshot: Dictionary = {}
 var _shown_at := -1.0
+var _coin_button: Button
 const TAP_GRACE_SECONDS := 0.4
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
+	_coin_button = Button.new()
+	_coin_button.text = "DOUBLE THESE COINS"
+	_coin_button.position = Vector2(150, 775)
+	_coin_button.size = Vector2(420, 54)
+	_coin_button.add_theme_font_size_override("font_size", 16)
+	_coin_button.add_theme_color_override("font_color", Color("13213c"))
+	var normal := StyleBoxFlat.new()
+	normal.bg_color = Color("f6c85f")
+	normal.border_color = Color("fff0bd")
+	normal.set_border_width_all(2)
+	normal.set_corner_radius_all(14)
+	_coin_button.add_theme_stylebox_override("normal", normal)
+	var hover := normal.duplicate()
+	hover.bg_color = Color("ffe39a")
+	_coin_button.add_theme_stylebox_override("hover", hover)
+	_coin_button.pressed.connect(func() -> void: post_level_coin_double_requested.emit())
+	add_child(_coin_button)
 
 func set_snapshot(next_snapshot: Dictionary) -> void:
 	var was_visible := visible
 	snapshot = next_snapshot; visible = not snapshot.is_empty() and snapshot["state"] != RunStateMachine.State.RUNNING; queue_redraw()
+	_coin_button.visible = visible and bool(snapshot.get("post_level_bonus_available", false))
 	if visible and not was_visible:
 		_shown_at = Time.get_ticks_msec() / 1000.0
 
@@ -79,6 +99,8 @@ func _draw() -> void:
 	draw_string(font, Vector2(120, 678), "HELPFUL ITEMS  %d     MISSED  %d" % [snapshot.get("beneficial_collected", 0), snapshot.get("missed_beneficial", 0)], HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color.WHITE)
 	draw_string(font, Vector2(120, 710), "HAZARDS PASSED  %d     CUT  %d" % [snapshot.get("hazards_passed", 0), snapshot.get("hazards_cut", 0)], HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color.WHITE)
 	draw_string(font, Vector2(120, 742), "SMART MIXES  %d     MIXED CHOICES  %d" % [snapshot.get("beneficial_tradeoffs", 0), snapshot.get("tradeoffs_taken", 0)], HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color("a8e5dc"))
+	if state == RunStateMachine.State.COMPLETED:
+		draw_string(font, Vector2(120, 790), "COINS EARNED  %d     WALLET  %d" % [snapshot.get("stage_coins_banked", 0), snapshot.get("wallet_coins", 0)], HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color("ffe08a"))
 	draw_string(font, Vector2(100, 850), action_text, HORIZONTAL_ALIGNMENT_CENTER, 520, 15, Color.WHITE)
 
 func _failure_advice(parameter: String) -> String:

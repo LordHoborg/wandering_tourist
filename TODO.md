@@ -58,6 +58,7 @@
 - [x] Add 15 animated story/tutorial briefings, an illustrated Milo character, lighter story framing, upgraded item cards, differentiated need rhythms, risky recent-item combos, softened procedural audio, and polished result messaging (v0.7.2, 2026-09-04); suite 200/200.
 - [x] Upgrade the three island-chapter backgrounds with distinct visual identities, add Android ETC2/ASTC export configuration, and produce the signed v0.8.0 debug APK (2026-09-04).
 - [x] Fix Android portrait export, add calm menu music, harden audio transitions, cap mobile redraw load, and produce the signed v0.8.1 mobile-test APK (2026-09-04).
+- [x] Implement the PDF income mechanism: persistent coins, three reward bubbles, optional double-coin challenge/payout, and cosmetic closet (v0.9.0, 2026-09-04).
 
 ## Future Phases
 

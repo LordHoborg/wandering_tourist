@@ -14,6 +14,7 @@ const SpawnBagGenerator = preload("res://scripts/game/spawn_bag_generator.gd")
 const DeterministicRng = preload("res://scripts/game/deterministic_rng.gd")
 const ItemInstance = preload("res://scripts/state/item_instance.gd")
 const StageDefinition = preload("res://scripts/data/stage_definition.gd")
+const CoinWalletClass = preload("res://scripts/game/coin_wallet.gd")
 
 signal snapshot_published(snapshot: Dictionary)
 signal presentation_event(kind: StringName, data: Dictionary)
@@ -31,6 +32,10 @@ const SEQUENCE_RULES: Array[Dictionary] = [
 	{"min_level": 7, "previous": &"night_market", "current": &"group_tour", "window": 14.0, "label": "NO SLEEP TOUR", "deltas": {&"rest": -11.0, &"social": -3.0}},
 	{"min_level": 12, "previous": &"group_tour", "current": &"street_festival", "window": 12.0, "label": "CROWD OVERLOAD", "deltas": {&"rest": -9.0, &"hygiene": -5.0}},
 ]
+const COIN_BUBBLE_INTERVAL := 12
+const COIN_BUBBLE_REWARD := 50
+const TIME_BUBBLE_SECONDS := 8.0
+const STAGE_COIN_BASE := 18
 var state_machine: RunStateMachine = RunStateMachine.new()
 var parameters: ParameterService
 var timer: TimerService
@@ -44,6 +49,10 @@ var simple_items: Array[ItemDefinition] = []
 var trade_items: Array[ItemDefinition] = []
 var item_catalog: Dictionary[StringName, ItemDefinition] = {}
 var golden_item: ItemDefinition
+var coin_bubble_item: ItemDefinition
+var balance_bubble_item: ItemDefinition
+var time_bubble_item: ItemDefinition
+var coin_wallet
 ## Chance that a simple collect spawn in stages 2+ becomes the golden coconut.
 var golden_chance := 0.06
 var stages: Array[StageDefinition] = []
@@ -73,12 +82,21 @@ var failure_parameter_id: StringName = &""
 var stage_entry_score: int = 0
 var last_collected_item_id: StringName = &""
 var last_collected_at: float = -1000.0
+var coin_challenge_active := false
+var coin_challenge_success := false
+var stage_coin_pending := 0
+var stage_coin_banked := 0
+var stage_coin_lost := 0
+var stage_coin_base_reward := 0
+var post_level_bonus_amount := 0
+var post_level_bonus_claimed := false
 
-func _init(definitions: Array[ParameterDefinition], duration: float, repository_path: String) -> void:
+func _init(definitions: Array[ParameterDefinition], duration: float, repository_path: String, wallet = null) -> void:
 	_ensure_parameter_definitions(definitions)
 	parameters = ParameterService.new(definitions)
 	timer = TimerService.new(duration)
 	best_scores = BestScoreRepository.new(repository_path)
+	coin_wallet = wallet if wallet != null else CoinWalletClass.new("")
 	level.duration_seconds = duration
 	_create_prototype_items()
 	_create_stages()
@@ -129,11 +147,19 @@ func handle_lane_intent(lane_id: int) -> void:
 		score.break_momentum()
 	active_items.erase(instance)
 	var score_delta := score.score - score_before
-	if item.should_collect:
+	var coin_delta := item.coin_reward
+	if coin_delta > 0:
+		stage_coin_pending += coin_delta
+	var bonus_data := _apply_bonus_effect(item)
+	if item.should_collect and not item.is_bonus:
 		last_collected_item_id = item.id
 		last_collected_at = timer.elapsed
-	var event_data := {"instance_id": instance.get_instance_id(), "item_id": item.id, "lane": lane_id, "score_delta": score_delta, "deltas": transaction.deltas, "safe": transaction.safe, "combo_label": sequence_rule.get("label", "")}
-	if not item.should_collect:
+	var event_data := {"instance_id": instance.get_instance_id(), "item_id": item.id, "lane": lane_id, "score_delta": score_delta, "coin_delta": coin_delta, "deltas": transaction.deltas, "safe": transaction.safe, "combo_label": sequence_rule.get("label", "")}
+	if item.is_bonus:
+		correct_decisions += 1
+		event_data.merge(bonus_data, true)
+		presentation_event.emit(&"coin_collected" if item.bonus_kind == &"coins" else &"bonus_collected", event_data)
+	elif not item.should_collect:
 		harmful_cuts += 1
 		hazards_cut += 1
 		presentation_event.emit(&"harmful_cut", event_data)
@@ -239,26 +265,37 @@ func _spawn_items(delta: float) -> void:
 		spawn_elapsed = level.spawn_interval - 0.2
 		return
 	spawn_elapsed = 0.0
-	if scheduler.bag.is_empty():
-		_fill_bag()
-	var item := scheduler.take_next(fairness)
+	var bonus_due := stage_index >= 1 and stage_spawn_count > 0 and (stage_spawn_count + 1) % COIN_BUBBLE_INTERVAL == 0
+	var item: ItemDefinition = _next_bonus_item() if bonus_due else _take_scheduled_item()
 	if item == null:
-		# A malformed/remainder bag must not freeze spawning for the rest of the
-		# run. Replace it with a fresh valid bag and try once more.
-		_fill_bag()
-		item = scheduler.take_next(fairness)
-		if item == null:
-			return
-	if stage_index >= 1 and item.should_collect and not item.is_tradeoff and rng.next_float() < golden_chance:
+		return
+	if not bonus_due and stage_index >= 1 and item.should_collect and not item.is_tradeoff and rng.next_float() < golden_chance:
 		item = golden_item
 	var lane := scheduler.next_lane(rng)
 	if _lane_count(lane) >= 2:
 		lane = 1 - lane
+	_spawn_item_instance(item, lane)
+	if bonus_due:
+		var scheduled_item := _take_scheduled_item()
+		var scheduled_lane := 1 - lane
+		if scheduled_item != null and _lane_count(scheduled_lane) < 2:
+			_spawn_item_instance(scheduled_item, scheduled_lane)
+
+func _spawn_item_instance(item: ItemDefinition, lane: int) -> void:
 	var instance := ItemInstance.new(item, lane, timer.elapsed)
 	active_items.append(instance)
 	stage_spawn_count += 1
 	familiarity[item.id] = familiarity.get(item.id, 0) + 1
 	presentation_event.emit(&"spawn", {"instance_id": instance.get_instance_id(), "item_id": item.id, "lane": lane})
+
+func _take_scheduled_item() -> ItemDefinition:
+	if scheduler.bag.is_empty():
+		_fill_bag()
+	var item := scheduler.take_next(fairness)
+	if item != null:
+		return item
+	_fill_bag()
+	return scheduler.take_next(fairness)
 
 func _resolve_passed_items() -> void:
 	for instance in active_items.duplicate():
@@ -304,9 +341,12 @@ func _finish(next_state: RunStateMachine.State) -> void:
 	if state_machine.transition(next_state):
 		best_scores.submit(score.score)
 		if next_state == RunStateMachine.State.FAILED:
+			stage_coin_lost = stage_coin_pending
+			stage_coin_pending = 0
 			presentation_event.emit(&"failed", {"parameter": failure_parameter_id, "score": score.score})
 		elif next_state == RunStateMachine.State.COMPLETED:
-			presentation_event.emit(&"completed", {"score": score.score, "bonus": level.completion_bonus})
+			_bank_stage_coins()
+			presentation_event.emit(&"completed", {"score": score.score, "bonus": level.completion_bonus, "coins": stage_coin_banked, "coin_challenge": coin_challenge_success})
 
 func _create_prototype_items() -> void:
 	simple_items = [
@@ -330,9 +370,23 @@ func _create_prototype_items() -> void:
 		_item(&"group_tour", {&"rest": -5.0, &"fun": 6.0, &"social": 8.0}, 150, true, 0, true)
 	]
 	golden_item = _item(&"golden_coconut", {&"hunger": 4.0, &"rest": 4.0, &"fun": 4.0, &"social": 4.0, &"hygiene": 4.0}, 300, true)
+	golden_item.coin_reward = 15
+	coin_bubble_item = _item(&"coin_bubble", {}, 100, true)
+	coin_bubble_item.coin_reward = COIN_BUBBLE_REWARD
+	coin_bubble_item.is_bonus = true
+	coin_bubble_item.bonus_kind = &"coins"
+	balance_bubble_item = _item(&"balance_bubble", {}, 100, true)
+	balance_bubble_item.is_bonus = true
+	balance_bubble_item.bonus_kind = &"balance"
+	time_bubble_item = _item(&"time_bubble", {}, 100, true)
+	time_bubble_item.is_bonus = true
+	time_bubble_item.bonus_kind = &"time"
 	for item in simple_items + trade_items:
 		item_catalog[item.id] = item
 	item_catalog[golden_item.id] = golden_item
+	item_catalog[coin_bubble_item.id] = coin_bubble_item
+	item_catalog[balance_bubble_item.id] = balance_bubble_item
+	item_catalog[time_bubble_item.id] = time_bubble_item
 
 func _create_stages() -> void:
 	var no_trade_items: Array[StringName] = []
@@ -411,6 +465,7 @@ func _reset_stage_run() -> void:
 	timer = TimerService.new(_stage().duration_seconds)
 	score = ScoreService.new(); score.restore(stage_entry_score); resolver = ItemResolver.new(); scheduler = SpawnScheduler.new(); fairness = SpawnFairnessValidator.new(level.max_recovery_drought, _stage().active_parameters)
 	active_items.clear(); failure_parameter_id = &""; spawn_elapsed = 0.0; lane_ready_at = {0: 0.0, 1: 0.0}; stage_spawn_count = 0; correct_decisions = 0; missed_beneficial = 0; harmful_cuts = 0; beneficial_collected = 0; hazards_passed = 0; hazards_cut = 0; tradeoffs_taken = 0; beneficial_tradeoffs = 0; failed_tradeoffs = 0; item_collections.clear(); item_hazard_passes.clear(); _last_momentum = 0; last_collected_item_id = &""; last_collected_at = -1000.0
+	coin_challenge_active = false; coin_challenge_success = false; stage_coin_pending = 0; stage_coin_banked = 0; stage_coin_lost = 0; stage_coin_base_reward = 0; post_level_bonus_amount = 0; post_level_bonus_claimed = false
 
 func _stage_objective_complete() -> bool:
 	var stage := _stage()
@@ -460,10 +515,59 @@ func publish_snapshot() -> void:
 		if cut_ready and not instance.cut_window_announced:
 			instance.cut_window_announced = true
 			presentation_event.emit(&"cut_window_open", {"instance_id": instance.get_instance_id(), "item_id": instance.definition.id, "lane": instance.lane_id, "collect": instance.definition.should_collect, "decision": _decision_label(instance.definition)})
-		item_snapshots.append({"instance_id": instance.get_instance_id(), "id": instance.definition.id, "lane": instance.lane_id, "progress": clampf(instance.age(timer.elapsed) / level.fall_duration, 0.0, 1.0), "cut_ready": cut_ready, "collect": instance.definition.should_collect, "tradeoff": instance.definition.is_tradeoff, "knowledge": "NEW" if seen <= 1 else ("LEARNING" if seen <= 5 else "KNOWN"), "familiarity_count": seen, "show_effects": instance.definition.is_tradeoff or seen <= 5 or not _active_sequence_rule(instance.definition).is_empty(), "deltas": _preview_deltas(instance.definition), "decision": _decision_label(instance.definition), "decision_reason": _decision_reason(instance.definition)})
+		item_snapshots.append({"instance_id": instance.get_instance_id(), "id": instance.definition.id, "lane": instance.lane_id, "progress": clampf(instance.age(timer.elapsed) / level.fall_duration, 0.0, 1.0), "cut_ready": cut_ready, "collect": instance.definition.should_collect, "tradeoff": instance.definition.is_tradeoff, "bonus": instance.definition.is_bonus, "bonus_kind": instance.definition.bonus_kind, "coin_reward": instance.definition.coin_reward, "knowledge": "NEW" if seen <= 1 else ("LEARNING" if seen <= 5 else "KNOWN"), "familiarity_count": seen, "show_effects": instance.definition.is_tradeoff or instance.definition.is_bonus or instance.definition.coin_reward > 0 or seen <= 5 or not _active_sequence_rule(instance.definition).is_empty(), "deltas": _preview_deltas(instance.definition), "decision": _decision_label(instance.definition), "decision_reason": _decision_reason(instance.definition)})
 	var weakest := _weakest_parameter()
-	var snapshot: Dictionary = {"state": state_machine.state, "score": score.score, "best_score": best_scores.best_score, "bonus": level.completion_bonus, "remaining": timer.remaining(), "parameters": parameters.state.values.duplicate(), "active_parameters": _stage().active_parameters.duplicate(), "failure_parameter": failure_parameter_id, "stage": stage_index + 1, "stage_title": _stage().title, "stage_lesson": _stage().lesson, "theme_id": _stage().theme_id, "objective": _objective_text(), "priority_parameter": weakest["id"], "priority_value": weakest["value"], "momentum": score.momentum, "correct_decisions": correct_decisions, "missed_beneficial": missed_beneficial, "harmful_cuts": harmful_cuts, "beneficial_collected": beneficial_collected, "hazards_passed": hazards_passed, "hazards_cut": hazards_cut, "tradeoffs_taken": tradeoffs_taken, "beneficial_tradeoffs": beneficial_tradeoffs, "failed_tradeoffs": failed_tradeoffs, "items": item_snapshots}
+	var snapshot: Dictionary = {"state": state_machine.state, "score": score.score, "best_score": best_scores.best_score, "bonus": level.completion_bonus, "remaining": timer.remaining(), "parameters": parameters.state.values.duplicate(), "active_parameters": _stage().active_parameters.duplicate(), "failure_parameter": failure_parameter_id, "stage": stage_index + 1, "stage_title": _stage().title, "stage_lesson": _stage().lesson, "theme_id": _stage().theme_id, "objective": _objective_text(), "priority_parameter": weakest["id"], "priority_value": weakest["value"], "momentum": score.momentum, "correct_decisions": correct_decisions, "missed_beneficial": missed_beneficial, "harmful_cuts": harmful_cuts, "beneficial_collected": beneficial_collected, "hazards_passed": hazards_passed, "hazards_cut": hazards_cut, "tradeoffs_taken": tradeoffs_taken, "beneficial_tradeoffs": beneficial_tradeoffs, "failed_tradeoffs": failed_tradeoffs, "wallet_coins": coin_wallet.balance, "run_coins": stage_coin_pending, "stage_coins_banked": stage_coin_banked, "stage_coins_lost": stage_coin_lost, "stage_coin_base_reward": stage_coin_base_reward, "coin_challenge_active": coin_challenge_active, "coin_challenge_success": coin_challenge_success, "post_level_bonus_available": state_machine.state == RunStateMachine.State.COMPLETED and not post_level_bonus_claimed and post_level_bonus_amount > 0, "post_level_bonus_amount": post_level_bonus_amount, "equipped_cosmetic": coin_wallet.equipped, "items": item_snapshots}
 	snapshot_published.emit(snapshot)
+
+func activate_coin_challenge() -> bool:
+	if coin_challenge_active or state_machine.state not in [RunStateMachine.State.IDLE, RunStateMachine.State.PAUSED] or timer.elapsed > 0.01:
+		return false
+	coin_challenge_active = true
+	publish_snapshot()
+	return true
+
+func claim_post_level_coin_double() -> bool:
+	if state_machine.state != RunStateMachine.State.COMPLETED or post_level_bonus_claimed or post_level_bonus_amount <= 0:
+		return false
+	post_level_bonus_claimed = true
+	var awarded: int = coin_wallet.earn(post_level_bonus_amount)
+	stage_coin_banked += awarded
+	presentation_event.emit(&"coin_bonus_claimed", {"coin_delta": awarded, "wallet_coins": coin_wallet.balance})
+	publish_snapshot()
+	return awarded > 0
+
+func _bank_stage_coins() -> void:
+	stage_coin_base_reward = STAGE_COIN_BASE + _stage().level_number * 3 + correct_decisions * 2 + hazards_passed + beneficial_tradeoffs * 4 + score.momentum
+	stage_coin_base_reward = maxi(12, stage_coin_base_reward - harmful_cuts * 2 - missed_beneficial)
+	coin_challenge_success = coin_challenge_active and harmful_cuts == 0 and missed_beneficial <= 1
+	var multiplier := 2 if coin_challenge_success else 1
+	stage_coin_banked = coin_wallet.earn((stage_coin_pending + stage_coin_base_reward) * multiplier)
+	stage_coin_pending = 0
+	post_level_bonus_amount = stage_coin_banked
+
+func _next_bonus_item() -> ItemDefinition:
+	var available: Array[ItemDefinition] = [coin_bubble_item]
+	if _stage().level_number >= 4:
+		available.append(balance_bubble_item)
+	if _stage().level_number >= 7:
+		available.append(time_bubble_item)
+	var bonus_index := int(stage_spawn_count / COIN_BUBBLE_INTERVAL) % available.size()
+	return available[bonus_index]
+
+func _apply_bonus_effect(item: ItemDefinition) -> Dictionary:
+	if not item.is_bonus:
+		return {}
+	if item.bonus_kind == &"balance":
+		for parameter_id: StringName in _stage().active_parameters:
+			parameters.state.values[parameter_id] = 50.0
+		return {"bonus_label": "GREEN RESET", "bonus_detail": "ALL NEEDS CENTERED"}
+	if item.bonus_kind == &"time":
+		var skipped := minf(TIME_BUBBLE_SECONDS, timer.remaining())
+		timer.elapsed += skipped
+		timer.finished = is_equal_approx(timer.elapsed, timer.duration)
+		return {"bonus_label": "BLUE EXPRESS", "bonus_detail": "%d SECONDS FORWARD" % int(skipped), "time_delta": skipped}
+	return {"bonus_label": "YELLOW CACHE", "bonus_detail": "+%d COINS" % item.coin_reward}
 
 func _weakest_parameter() -> Dictionary:
 	var selected_id: StringName = &"hunger"
@@ -478,6 +582,11 @@ func _weakest_parameter() -> Dictionary:
 func _decision_label(item: ItemDefinition) -> String:
 	if not item.should_collect:
 		return "LET PASS"
+	if item.is_bonus:
+		if item.bonus_kind == &"time":
+			var priority_value: float = _weakest_parameter()["value"]
+			return "COLLECT" if priority_value >= 45.0 and timer.remaining() > TIME_BUBBLE_SECONDS + 4.0 else "SAVE IT"
+		return "COLLECT"
 	if not _active_sequence_rule(item).is_empty():
 		return "WAIT"
 	var values: Dictionary = parameters.state.values
@@ -499,6 +608,12 @@ func _decision_label(item: ItemDefinition) -> String:
 func _decision_reason(item: ItemDefinition) -> String:
 	if not item.should_collect:
 		return "avoid the hit"
+	if item.bonus_kind == &"balance":
+		return "centers every active need"
+	if item.bonus_kind == &"time":
+		return "jumps %d seconds forward" % int(TIME_BUBBLE_SECONDS)
+	if item.coin_reward > 0:
+		return "banks %d coins after a clear" % item.coin_reward
 	var sequence_rule := _active_sequence_rule(item)
 	if not sequence_rule.is_empty():
 		return "%s after %s" % [String(sequence_rule.get("label", "bad combo")).to_lower(), String(last_collected_item_id).replace("_", " ")]

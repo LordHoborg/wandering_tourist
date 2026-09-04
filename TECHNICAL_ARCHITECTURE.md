@@ -33,6 +33,7 @@ res://
     game/timer_service.gd
     game/score_service.gd
     game/best_score_repository.gd
+    game/coin_wallet.gd
     game/parameter_service.gd
     game/item_resolver.gd
     game/spawn_scheduler.gd
@@ -114,9 +115,9 @@ States: `IDLE -> RUNNING -> PAUSED -> RUNNING`, `RUNNING -> FAILED`, `RUNNING ->
 
 ## Save, Settings, Debug, and Testing
 
-`BestScoreRepository` is an injected file-backed repository using `user://`; only it reads/writes best score. `AppSettings` is the sole autoload and owns mute, SFX volume, reduced motion, and persisted settings. `RunDebugLogger` receives structured snapshots/events only in debug builds and can export deterministic seed, bag contents, lane choices, transactions, and state transitions.
+`BestScoreRepository` is an injected file-backed repository using `user://`; only it reads/writes best score. `CoinWallet` is injected into `GameplayCoordinator` and `TitleScreen`, persists balance/ownership/equipment in `user://coin_wallet.cfg`, and exposes purchase/equip operations without becoming an autoload. `AppSettings` is the sole autoload and owns mute, SFX volume, reduced motion, and persisted settings. `RunDebugLogger` receives structured snapshots/events only in debug builds and can export deterministic seed, bag contents, lane choices, transactions, and state transitions.
 
-Unit test services with fake clock, RNG, repository, input adapter, and logger. Cover parameter boundaries, trade-off distance scoring, bag/drought fairness, lane selection, pause clock freeze, best-score strictness, and state transitions. Integration tests use a deterministic seed to run a full 120-second simulation and assert acceptance criteria inputs. Manual Android tests cover small/large portrait layouts, pause/background behavior, touch targets, audio/mute, and reduced motion.
+Unit test services with fake clock, RNG, repository, input adapter, wallet, and logger. Cover parameter boundaries, trade-off distance scoring, bag/drought fairness, lane selection, pause clock freeze, best-score strictness, coin persistence/purchases, bonus-bubble effects, and state transitions. Integration tests use a deterministic seed to run the full campaign and assert acceptance criteria inputs. Manual Android tests cover small/large portrait layouts, pause/background behavior, touch targets, audio/mute, reduced motion, coin collection, and cosmetic purchase flow.
 
 ## Android and Export Considerations
 

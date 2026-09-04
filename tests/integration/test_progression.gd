@@ -5,6 +5,7 @@ const Coordinator = preload("res://scripts/game/gameplay_coordinator.gd")
 const RunState = preload("res://scripts/game/run_state_machine.gd")
 const ItemInstance = preload("res://scripts/state/item_instance.gd")
 const StageBriefingClass = preload("res://scripts/ui/stage_briefing.gd")
+const Wallet = preload("res://scripts/game/coin_wallet.gd")
 
 var passed := 0
 var failed := 0
@@ -17,6 +18,8 @@ func _init() -> void:
 	_check(game.stages[5].active_parameters.has(&"social") and game.stages[5].simple_item_ids.has(&"friend_group"), "level 6 unlocks social needs")
 	_check(game.stages[10].active_parameters.has(&"hygiene") and game.stages[10].simple_item_ids.has(&"soap"), "level 11 unlocks hygiene needs")
 	_check(game.item_catalog.has(&"street_festival") and game.item_catalog.has(&"spa_day") and game.item_catalog.has(&"group_tour"), "advanced trade-off catalog is complete")
+	_check(game.item_catalog[&"golden_coconut"].coin_reward == 15 and game.item_catalog[&"coin_bubble"].coin_reward == 50, "coin rewards are attached to rare and yellow bonus items")
+	_check(game.item_catalog[&"balance_bubble"].bonus_kind == &"balance" and game.item_catalog[&"time_bubble"].bonus_kind == &"time", "green and blue bonus bubbles are part of the catalog")
 	_check(StageBriefingClass.STORIES.size() == 15 and String(StageBriefingClass.STORIES[5]["title"]).contains("NEON HARBOR") and String(StageBriefingClass.STORIES[10]["title"]).contains("SERENE COUNTRY"), "briefing story covers all levels and island transitions")
 	_check(StageBriefingClass.MiloTexture != null, "briefing includes the Milo character artwork")
 	for story: Dictionary in StageBriefingClass.STORIES:
@@ -54,6 +57,35 @@ func _init() -> void:
 	_check(stage1_total > 0 and game.score.score == stage1_total, "campaign score carries into the next stage")
 	_check(game.stage_index == 1 and not game.familiarity.has(&"coffee"), "unseen trade-off remains unknown")
 	_check(game.stages[1].theme_id == &"tropical" and game.stages[5].theme_id == &"sunset_city" and game.stages[10].theme_id == &"countryside", "five-level island chapters keep distinct visual identities")
+	var wallet = Wallet.new("")
+	var bonus_game = Coordinator.new(_definitions(), 120.0, "user://progression_coin_test.dat", wallet)
+	bonus_game._apply_stage(6)
+	bonus_game._reset_stage_run()
+	bonus_game.start()
+	bonus_game.parameters.state.values[&"hunger"] = 24.0
+	bonus_game.parameters.state.values[&"rest"] = 38.0
+	bonus_game.parameters.state.values[&"fun"] = 65.0
+	var before_balance: int = wallet.balance
+	bonus_game._apply_bonus_effect(bonus_game.item_catalog[&"balance_bubble"])
+	_check(bonus_game.parameters.state.values[&"hunger"] == 50.0 and bonus_game.parameters.state.values[&"rest"] == 50.0 and bonus_game.parameters.state.values[&"fun"] == 50.0, "green bubble centers all active needs")
+	bonus_game.timer.elapsed = 10.0
+	bonus_game._apply_bonus_effect(bonus_game.item_catalog[&"time_bubble"])
+	_check(is_equal_approx(bonus_game.timer.elapsed, 18.0), "blue bubble advances the run clock")
+	bonus_game.stage_coin_pending = 50
+	bonus_game.coin_challenge_active = true
+	bonus_game.harmful_cuts = 0
+	bonus_game.missed_beneficial = 0
+	bonus_game._bank_stage_coins()
+	_check(wallet.balance > before_balance and bonus_game.coin_challenge_success and bonus_game.stage_coin_banked > bonus_game.stage_coin_base_reward, "clean optional challenge doubles stage coin earnings")
+	bonus_game.state_machine.transition(RunState.State.COMPLETED)
+	var balance_after_stage: int = wallet.balance
+	_check(bonus_game.claim_post_level_coin_double() and wallet.balance == balance_after_stage + bonus_game.post_level_bonus_amount, "post-level double offer awards an equal second payout")
+	_check(not bonus_game.claim_post_level_coin_double(), "post-level payout can only be claimed once")
+	var failed_game = Coordinator.new(_definitions(), 120.0, "user://progression_coin_failure_test.dat", Wallet.new(""))
+	failed_game.start()
+	failed_game.stage_coin_pending = 50
+	failed_game._finish(RunState.State.FAILED)
+	_check(failed_game.stage_coin_lost == 50 and failed_game.stage_coin_pending == 0, "unbanked run coins are lost on failure")
 	for index in range(120):
 		game.tick(0.1)
 		for item in game.active_items.duplicate():

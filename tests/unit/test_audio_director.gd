@@ -16,7 +16,7 @@ func _initialize() -> void:
 	var director = AudioDirectorClass.new()
 	director.settings = settings
 	root.add_child(director)
-	var emitted_kinds: Array[StringName] = [&"stage_started", &"spawn", &"cut_success", &"harmful_cut", &"risky_combo", &"hazard_passed", &"beneficial_missed", &"failed", &"completed", &"warning", &"ui_start", &"cut_window_open"]
+	var emitted_kinds: Array[StringName] = [&"stage_started", &"spawn", &"cut_success", &"harmful_cut", &"risky_combo", &"hazard_passed", &"beneficial_missed", &"failed", &"completed", &"warning", &"ui_start", &"cut_window_open", &"coin_collected", &"bonus_collected", &"coin_bonus_claimed"]
 	var all_covered := true
 	for kind in emitted_kinds:
 		if not director.has_cue(kind):

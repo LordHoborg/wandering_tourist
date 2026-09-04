@@ -11,10 +11,12 @@ var show_effects := true
 var deltas: Dictionary = {}
 var familiarity_count: int = 0
 var decision := "COLLECT"
+var coin_reward := 0
+var bonus_kind: StringName = &""
 
 func configure(data: Dictionary) -> void:
-	item_id = data["id"]; collect = data["collect"]; tradeoff = data["tradeoff"]; cut_ready = data["cut_ready"]; knowledge = data.get("knowledge", "KNOWN"); familiarity_count = data.get("familiarity_count", 0); show_effects = data.get("show_effects", false); deltas = data.get("deltas", {}); decision = data.get("decision", "COLLECT")
-	accent = Color("c88cff") if tradeoff else (Color("8fe3a8") if collect else Color("ff917b"))
+	item_id = data["id"]; collect = data["collect"]; tradeoff = data["tradeoff"]; cut_ready = data["cut_ready"]; knowledge = data.get("knowledge", "KNOWN"); familiarity_count = data.get("familiarity_count", 0); show_effects = data.get("show_effects", false); deltas = data.get("deltas", {}); decision = data.get("decision", "COLLECT"); coin_reward = data.get("coin_reward", 0); bonus_kind = data.get("bonus_kind", &"")
+	accent = _bonus_color() if not bonus_kind.is_empty() else (Color("c88cff") if tradeoff else (Color("8fe3a8") if collect else Color("ff917b")))
 	queue_redraw()
 
 func play_spawn(reduced_motion: bool) -> void:
@@ -49,6 +51,14 @@ func _draw() -> void:
 	draw_circle(Vector2(23, 49), 4, Color(1, 1, 1, 0.20))
 	if show_effects:
 		_draw_effect_chips(Vector2(70, 45))
+	if coin_reward > 0:
+		draw_circle(Vector2(83, 65), 9, Color("f6c85f"))
+		draw_circle(Vector2(83, 65), 6, Color("fff0bd"))
+		draw_string(ThemeDB.fallback_font, Vector2(98, 70), "+%d COINS" % coin_reward, HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("ffe08a"))
+	elif bonus_kind == &"balance":
+		draw_string(ThemeDB.fallback_font, Vector2(74, 70), "CENTER ALL NEEDS", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color("a7f1ca"))
+	elif bonus_kind == &"time":
+		draw_string(ThemeDB.fallback_font, Vector2(82, 70), "SKIP 8 SEC", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("91b9ff"))
 	if cut_ready:
 		draw_string(ThemeDB.fallback_font, Vector2(70, 84), "ACTION!", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("fff1b0"))
 	_draw_decision_badge()
@@ -78,7 +88,7 @@ func _draw_effect_chips(origin: Vector2) -> void:
 		index += 1
 
 func _title() -> String:
-	return {&"fruit": "FRUIT", &"pillow": "PILLOW", &"camera": "CAMERA", &"stale_snack": "STALE SNACK", &"alarm_clock": "ALARM", &"rain_cloud": "RAIN CLOUD", &"friend_group": "FRIENDS", &"awkward_meeting": "AWKWARD", &"soap": "SOAP", &"muddy_shoes": "MUDDY", &"coffee": "COFFEE", &"local_meal": "LOCAL MEAL", &"night_market": "NIGHT MARKET", &"street_festival": "FESTIVAL", &"spa_day": "SPA DAY", &"group_tour": "GROUP TOUR"}.get(item_id, "ITEM")
+	return {&"fruit": "FRUIT", &"pillow": "PILLOW", &"camera": "CAMERA", &"stale_snack": "STALE SNACK", &"alarm_clock": "ALARM", &"rain_cloud": "RAIN CLOUD", &"friend_group": "FRIENDS", &"awkward_meeting": "AWKWARD", &"soap": "SOAP", &"muddy_shoes": "MUDDY", &"coffee": "COFFEE", &"local_meal": "LOCAL MEAL", &"night_market": "NIGHT MARKET", &"street_festival": "FESTIVAL", &"spa_day": "SPA DAY", &"group_tour": "GROUP TOUR", &"golden_coconut": "GOLDEN COCONUT", &"coin_bubble": "YELLOW BUBBLE", &"balance_bubble": "GREEN BUBBLE", &"time_bubble": "BLUE BUBBLE"}.get(item_id, "ITEM")
 
 func _knowledge_label() -> String:
 	if knowledge == "KNOWN":
@@ -103,4 +113,15 @@ func _draw_icon(c: Vector2) -> void:
 	elif item_id == &"street_festival": draw_circle(c, 21, Color("f49ad6")); draw_line(c + Vector2(-25, -17), c + Vector2(25, -17), Color("ffe08a"), 4); draw_line(c + Vector2(-15, -17), c + Vector2(-15, -28), Color("ffe08a"), 3); draw_line(c + Vector2(15, -17), c + Vector2(15, -28), Color("ffe08a"), 3)
 	elif item_id == &"spa_day": draw_circle(c, 22, Color("75e0c0")); draw_circle(c + Vector2(0, -8), 8, Color("fff0bd")); draw_arc(c + Vector2(0, 6), 13, 0.2, PI - 0.2, 12, Color("fff0bd"), 4)
 	elif item_id == &"group_tour": draw_circle(c + Vector2(-11, -5), 8, Color("ffd370")); draw_circle(c + Vector2(11, -5), 8, Color("a88cff")); draw_line(c + Vector2(-17, 21), c + Vector2(-8, 5), Color("ffd370"), 6); draw_line(c + Vector2(17, 21), c + Vector2(8, 5), Color("a88cff"), 6)
+	elif item_id == &"golden_coconut": draw_circle(c, 21, Color("f6c85f")); draw_circle(c, 15, Color("fff0bd")); draw_line(c + Vector2(-8, 0), c + Vector2(8, 0), Color("b8782a"), 3); draw_circle(c + Vector2(-6, -7), 3, Color("b8782a")); draw_circle(c + Vector2(6, 7), 3, Color("b8782a"))
+	elif item_id == &"coin_bubble": draw_circle(c, 23, Color("f6c85f")); draw_circle(c, 17, Color("fff0bd")); draw_string(ThemeDB.fallback_font, c + Vector2(-7, 7), "$", HORIZONTAL_ALIGNMENT_LEFT, -1, 22, Color("9b6529"))
+	elif item_id == &"balance_bubble": draw_circle(c, 23, Color("61d48d")); draw_circle(c, 16, Color("c9f7d7")); draw_line(c + Vector2(-8, 0), c + Vector2(8, 0), Color("287b54"), 4); draw_line(c + Vector2(0, -8), c + Vector2(0, 8), Color("287b54"), 4)
+	elif item_id == &"time_bubble": draw_circle(c, 23, Color("6caeff")); draw_circle(c, 16, Color("d5e9ff")); draw_arc(c, 9, -PI * 0.35, PI * 1.25, 18, Color("275b9b"), 3); draw_colored_polygon(PackedVector2Array([c + Vector2(5, -10), c + Vector2(12, -8), c + Vector2(8, -3)]), Color("275b9b"))
 	else: draw_rect(Rect2(c - Vector2(23, 14), Vector2(46, 29)), Color("db7ede")); draw_line(c + Vector2(-25, -14), c + Vector2(25, -14), Color("ffe08a"), 5); draw_line(c + Vector2(-15, -24), c + Vector2(-15, -14), Color("ffe08a"), 3); draw_line(c + Vector2(15, -24), c + Vector2(15, -14), Color("ffe08a"), 3)
+
+func _bonus_color() -> Color:
+	return {
+		&"coins": Color("f6c85f"),
+		&"balance": Color("61d48d"),
+		&"time": Color("6caeff"),
+	}.get(bonus_kind, Color("f6c85f"))

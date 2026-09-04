@@ -151,6 +151,8 @@ func _should_cut(game, item) -> bool:
 		after_distance += absf(next - 50.0)
 	if game._decision_label(item) == "WAIT":
 		return false
+	if game._decision_label(item) not in ["COLLECT", "GOOD CHOICE"]:
+		return false
 	if item.is_tradeoff:
 		return after_distance < before_distance
 	return true

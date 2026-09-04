@@ -6,7 +6,7 @@ Phase 1 is complete and awaiting approval. This document specifies Prototype v0.
 
 ## Scope and Run Loop
 
-Prototype v0.1 is a portrait Android 2D game with one tropical placeholder island, one level, two active falling-item lanes, Hunger/Rest/Fun, touch and mouse input, pause/restart, timer/score/best score, basic feedback, and placeholder art. Ads, currency, cosmetics, shop, online/social/account features, analytics, and additional islands or parameters are excluded.
+The original Prototype v0.1 scope was a portrait Android 2D game with one tropical placeholder island, one level, two active falling-item lanes, Hunger/Rest/Fun, touch and mouse input, pause/restart, timer/score/best score, basic feedback, and placeholder art. The later PDF-aligned campaign now adds a local coin economy without external monetization: coins are earned through play, optional reward-equivalent challenges, and bonus bubbles, then spent on local tourist cosmetics.
 
 The player survives a 120-second active run by managing the three parameters. Each lane has one fixed electric-line control. Tapping a line resolves its front-most eligible item; items outside the final 0.60-second cut window cannot resolve. Some items should be collected and some should pass. Contextual items require a decision based on current parameter state.
 
@@ -134,3 +134,11 @@ Parameters no longer decay in synchrony. Each stage provides a baseline pressure
 ## Recent-Item Sequence Rules
 
 From level 3 onward, the last collected item and elapsed time can modify the next item's effective deltas. Double Coffee (Coffee after Coffee within 10s), Too Much Food (Night Market after Local Meal within 12s), No Sleep Tour (Group Tour after Night Market within 14s), and Crowd Overload (Street Festival after Group Tour within 12s) apply additional penalties. The item card must show `WAIT` and preview merged deltas while a rule is active; reduced-motion mode preserves all information without entrance animation.
+
+## Coin Economy
+
+The source PDF's income mechanism is represented as a deterministic local economy. A persistent wallet stores balance, lifetime earnings, cosmetic ownership, and the equipped look. Golden Coconuts award 15 coins, while staged bonus bubbles rotate through three readable reward types: yellow bubbles award 50 coins, green bubbles center every active need, and blue bubbles move the run clock forward by 8 seconds. Bonus bubbles are additional spawns and never replace the scheduled item needed for campaign balance.
+
+Before a level, the player may arm an optional clean-run challenge. A successful clear with no harmful cuts and at most one missed helpful item doubles that level's coin payout. After a clear, the player may claim a second equal payout once. These controls are local equivalents of the PDF's optional rewarded-ad hooks; no ad SDK, account system, or network dependency is included in the playable build.
+
+Coins are spent in Milo's Coin Closet on three cosmetic looks: Neon Shades, Scarlet Scarf, and Postcard Aura. Cosmetics are presentation-only, persist across sessions, and never change survival values or score.

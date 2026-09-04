@@ -60,7 +60,13 @@ func _draw() -> void:
 		meter_y += 27.0
 	draw_string(font, Vector2(506, 125), "TIME  %02d:%02d" % [int(snapshot["remaining"]) / 60, int(snapshot["remaining"]) % 60], HORIZONTAL_ALIGNMENT_LEFT, -1, 19, Color.WHITE)
 	draw_string(font, Vector2(506, 164), "SCORE  %d" % snapshot["score"], HORIZONTAL_ALIGNMENT_LEFT, -1, 19, Color("fff0bd")); draw_string(font, Vector2(506, 196), "SPIRIT", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Color("8ce4d8")); _draw_spirit_pips(506, 206, snapshot.get("momentum", 0)); draw_string(font, Vector2(42, 282), snapshot.get("objective", ""), HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color("fff0bd"))
+	_draw_coins(font)
 	_draw_priority(font)
+
+func _draw_coins(font: Font) -> void:
+	draw_circle(Vector2(518, 238), 10, Color("f6c85f"))
+	draw_circle(Vector2(518, 238), 7, Color("fff0bd"))
+	draw_string(font, Vector2(536, 244), "COINS  %d" % snapshot.get("wallet_coins", 0), HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color("ffe08a"))
 
 func _draw_priority(font: Font) -> void:
 	var parameter_id: StringName = snapshot.get("priority_parameter", &"hunger")

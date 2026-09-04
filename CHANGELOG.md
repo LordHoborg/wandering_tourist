@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.9.0 - 2026-09-04
+
+- Added the PDF-aligned persistent coin wallet with lifetime earning/spending totals and cosmetic ownership/equipment.
+- Added yellow `+50` coin bubbles, rare golden coconuts, green all-needs reset bubbles, and blue time-forward bubbles with staged unlocks.
+- Added optional pre-level clean-run coin doubling and post-level equal-payout claiming without adding a real ad SDK.
+- Added Milo's Coin Closet to the title screen with three unlockable visual cosmetics and equipped-cosmetic presentation in briefings.
+- Added coin HUD, item-card reward language, result-screen wallet totals, reward feedback, audio cues, and 16 new economy/progression checks.
+
 ## v0.8.3 - 2026-09-04
 
 - Replaced runtime-generated background loops with imported 14-second WAV assets so menu music and gameplay ambience start reliably on Android.

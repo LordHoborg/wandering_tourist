@@ -8,6 +8,7 @@ const STORY_START_Y := 324.0
 const STORY_BOTTOM_Y := 760.0
 
 signal dismissed
+signal coin_challenge_requested
 
 const STORIES: Array[Dictionary] = [
 	{"title": "THE TOURIST WHO FORGOT HIMSELF", "lines": ["Meet Milo: collector of island postcards, professional loser of water bottles.", "He could name every beach, but sometimes forgot lunch existed.", "Your job is simple: keep Milo alive long enough to enjoy the view."], "tip": "CUT helpful items at the electric line."},
@@ -32,6 +33,9 @@ var _shown_at := 0.0
 var _line_nodes: Array[Label] = []
 var _line_cards: Array[Rect2] = []
 var _continue_button: Button
+var _coin_button: Button
+var _coin_challenge_active := false
+var _equipped_cosmetic: StringName = &"classic"
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
@@ -59,10 +63,29 @@ func _ready() -> void:
 	_continue_button.add_theme_stylebox_override("pressed", pressed_button)
 	_continue_button.pressed.connect(_dismiss)
 	add_child(_continue_button)
+	_coin_button = Button.new()
+	_coin_button.text = "OPTIONAL BOOST  ·  DOUBLE COINS"
+	_coin_button.position = Vector2(72, 944)
+	_coin_button.size = Vector2(390, 58)
+	_coin_button.add_theme_font_size_override("font_size", 15)
+	_coin_button.add_theme_color_override("font_color", Color("fff0bd"))
+	_coin_button.add_theme_color_override("font_hover_color", Color.WHITE)
+	var coin_button_style := StyleBoxFlat.new()
+	coin_button_style.bg_color = Color("4b3b20")
+	coin_button_style.border_color = Color("f6c85f")
+	coin_button_style.set_border_width_all(2)
+	coin_button_style.set_corner_radius_all(16)
+	_coin_button.add_theme_stylebox_override("normal", coin_button_style)
+	var coin_hover_style := coin_button_style.duplicate()
+	coin_hover_style.bg_color = Color("6a5127")
+	_coin_button.add_theme_stylebox_override("hover", coin_hover_style)
+	_coin_button.pressed.connect(func() -> void: coin_challenge_requested.emit())
+	add_child(_coin_button)
 	hide()
 
-func show_stage(stage_number: int, stage_title: String, next_theme: StringName) -> void:
+func show_stage(stage_number: int, stage_title: String, next_theme: StringName, challenge_active: bool = false) -> void:
 	theme_id = next_theme
+	_coin_challenge_active = challenge_active
 	_shown_at = Time.get_ticks_msec() / 1000.0
 	for node in _line_nodes:
 		node.queue_free()
@@ -83,6 +106,7 @@ func show_stage(stage_number: int, stage_title: String, next_theme: StringName) 
 	_continue_button.modulate.a = 1.0
 	_continue_button.disabled = false
 	_continue_button.show()
+	_refresh_coin_button()
 
 func _add_line(text: String, x: float, target_y: float, width: float, font_size: int, color: Color, delay: float, card: bool, height: float = 74.0) -> void:
 	var label := Label.new()
@@ -139,6 +163,20 @@ func _dismiss() -> void:
 	hide()
 	dismissed.emit()
 
+func set_coin_challenge_active(active: bool) -> void:
+	_coin_challenge_active = active
+	_refresh_coin_button()
+
+func set_equipped_cosmetic(cosmetic_id: StringName) -> void:
+	_equipped_cosmetic = cosmetic_id
+	queue_redraw()
+
+func _refresh_coin_button() -> void:
+	if _coin_button == null:
+		return
+	_coin_button.text = "BOOST ARMED  ·  STAGE COINS x2" if _coin_challenge_active else "OPTIONAL BOOST  ·  DOUBLE COINS"
+	_coin_button.modulate = Color("8ce4d8") if _coin_challenge_active else Color.WHITE
+
 func _draw() -> void:
 	if not visible:
 		return
@@ -171,8 +209,24 @@ func _draw() -> void:
 	draw_style_box(tip, tip_rect)
 	draw_circle(Vector2(570, 910), 84, Color(0.03, 0.10, 0.19, 0.82))
 	draw_circle(Vector2(570, 910), 83, Color(0.55, 0.90, 0.84, 0.18), false, 2.0)
-	draw_texture_rect(MiloTexture, Rect2(492, 792, 156, 218), false)
+	var milo_rect := Rect2(492, 792, 156, 218)
+	if _equipped_cosmetic == &"postcard_aura":
+		for radius in [91.0, 77.0]:
+			draw_arc(Vector2(570, 900), radius, 0, TAU, 36, Color(0.55, 0.90, 0.84, 0.18), 4.0)
+	draw_texture_rect(MiloTexture, milo_rect, false)
+	_draw_milo_cosmetic(milo_rect)
 	draw_string(ThemeDB.fallback_font, Vector2(485, 1010), "MILO'S FIELD NOTES", HORIZONTAL_ALIGNMENT_CENTER, 170, 10, Color("8ce4d8"))
+
+func _draw_milo_cosmetic(milo_rect: Rect2) -> void:
+	var face := milo_rect.position + Vector2(milo_rect.size.x * 0.56, milo_rect.size.y * 0.24)
+	if _equipped_cosmetic == &"neon_shades":
+		draw_rect(Rect2(face + Vector2(-25, -3), Vector2(20, 10)), Color("20153b"))
+		draw_rect(Rect2(face + Vector2(3, -3), Vector2(20, 10)), Color("20153b"))
+		draw_line(face + Vector2(-5, 1), face + Vector2(3, 1), Color("65e7e1"), 3)
+	elif _equipped_cosmetic == &"scarlet_scarf":
+		var neck := milo_rect.position + Vector2(milo_rect.size.x * 0.55, milo_rect.size.y * 0.39)
+		draw_arc(neck, 25, 0.10, PI - 0.10, 20, Color("df4b5f"), 8)
+		draw_colored_polygon(PackedVector2Array([neck + Vector2(13, 10), neck + Vector2(34, 48), neck + Vector2(19, 42)]), Color("c73b52"))
 
 func _reduced_motion() -> bool:
 	var settings := get_node_or_null("/root/AppSettings")

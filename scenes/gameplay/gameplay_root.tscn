@@ -143,6 +143,15 @@ offset_right = 660.0
 offset_bottom = 924.0
 theme_override_font_sizes/font_size = 13
 
+[node name="ShopButton" type="Button" parent="TitleScreen/Buttons"]
+layout_mode = 0
+offset_left = 160.0
+offset_top = 950.0
+offset_right = 560.0
+offset_bottom = 1016.0
+theme_override_font_sizes/font_size = 18
+text = "MILO'S COIN CLOSET"
+
 [node name="StageBriefing" type="Control" parent="."]
 visible = false
 layout_mode = 1

@@ -1,5 +1,13 @@
 # Test Report
 
+## TR-026 — PDF-aligned coin economy
+
+- **Date:** 2026-09-04
+- **Scope:** Add the source-PDF income mechanism and make coins useful beyond a counter.
+- **Changes:** Added persistent wallet storage, stage-performance coin banking, yellow `+50` coin bubbles, rare golden-coconut payouts, staged green all-needs reset and blue time-forward bubbles, optional pre-level clean-run doubling, post-level equal-payout claiming, title-screen cosmetic closet, coin HUD/card/result presentation, and economy audio cues. No real ad SDK was added; reward controls are safe integration points for a future provider.
+- **Verification:** Full headless suite passes 222/222 across 12 scripts; balance validation passes 37/37 and the full 15-level campaign remains winnable; wallet persistence passes 9/9; progression/economy passes 49/49; audio cue coverage passes 19/19; editor boot and Android export are validated separately.
+- **Known limitation:** Final reward-ad provider integration and physical Android device confirmation remain outside this build; the current optional reward controls are local deterministic gameplay equivalents.
+
 ## TR-025 — Android audio and runtime stabilization
 
 - **Date:** 2026-09-04

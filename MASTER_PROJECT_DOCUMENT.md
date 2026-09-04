@@ -2,14 +2,14 @@
 
 ## Project Identity
 
-- **Current project status:** Phases 0-3 are complete and the live human/device playtest remains open. The v0.8.3 mobile-stability checkpoint (2026-09-04) keeps portrait orientation, replaces runtime background synthesis with imported menu/game WAV loops, controls playback retries, uses a lightweight Android backdrop, and provides a signed debug APK; suite 205/205 green.
+- **Current project status:** Phases 0-3 are complete and the live human/device playtest remains open. The v0.9.0 coin-economy checkpoint (2026-09-04) adds the PDF-aligned persistent wallet, staged yellow/green/blue reward bubbles, optional double-coin rewards, cosmetic closet, and signed portrait Android export; suite 222/222 green.
 
 - **Platform:** Android, portrait orientation
 - **Engine:** Godot 4.7.1 stable (bundled at `tools/godot`)
 - **Language:** Typed GDScript
 - **Rendering:** 2D
 - **Current phase:** Phase 4 human playtest evidence is the only open gate item; narrative systems checkpoint recorded
-- **Current version/build:** Mobile Stability v0.8.3 (2026-09-04: portrait Android export, imported calm menu music and gameplay ambience, controlled audio retries, lightweight Android backdrop, signed debug APK at `exports/wandering_tourist_v0.8.3_mobile_stable.apk`)
+- **Current version/build:** Coin Economy v0.9.0 (2026-09-04: persistent wallet, PDF reward bubbles, optional coin doubling, cosmetic closet, signed debug APK at `exports/wandering_tourist_v0.9.0_coins.apk`)
 
 ## Source Material Status
 

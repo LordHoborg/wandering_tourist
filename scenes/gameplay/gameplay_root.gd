@@ -5,6 +5,7 @@ const Coordinator = preload("res://scripts/game/gameplay_coordinator.gd")
 const InputAdapter = preload("res://scripts/game/lane_input_adapter.gd")
 const ItemView = preload("res://scripts/ui/travel_item_view.gd")
 const AudioDirector = preload("res://scripts/ui/audio_director.gd")
+const CoinWallet = preload("res://scripts/game/coin_wallet.gd")
 
 const LANE_TOP := 300.0
 const LANE_HEIGHT := 680.0
@@ -23,6 +24,7 @@ var hint_seen := false
 var run_started := false
 var briefing_active := false
 var restart_armed_at := -1.0
+var wallet: CoinWallet
 
 @onready var playfield = $Playfield
 @onready var hud = $Hud
@@ -40,7 +42,8 @@ func _ready() -> void:
 		var definition: ParameterDefinition = Definition.new()
 		definition.id = id
 		definitions.append(definition)
-	game = Coordinator.new(definitions, 120.0, "user://best_score.dat")
+	wallet = CoinWallet.new()
+	game = Coordinator.new(definitions, 120.0, "user://best_score.dat", wallet)
 	game.snapshot_published.connect(_render_snapshot)
 	game.presentation_event.connect(_on_presentation_event)
 	input_adapter = InputAdapter.new()
@@ -52,10 +55,13 @@ func _ready() -> void:
 	audio_cue_requested.connect(audio.play_cue)
 	hud.warning_cue_requested.connect(audio.play_cue)
 	title_screen.set_best_score(game.best_scores.best_score)
+	title_screen.set_coin_wallet(wallet)
 	title_screen.start_requested.connect(_start_run)
 	overlay.tapped.connect(_on_overlay_tapped)
 	pause_button.pressed.connect(_on_pause_pressed)
 	stage_briefing.dismissed.connect(_on_briefing_dismissed)
+	stage_briefing.coin_challenge_requested.connect(_on_coin_challenge_requested)
+	overlay.post_level_coin_double_requested.connect(_on_post_level_coin_double_requested)
 
 func _start_run() -> void:
 	if run_started:
@@ -130,7 +136,16 @@ func _show_stage_briefing() -> void:
 	pause_button.hide()
 	audio.set_menu_mode(true)
 	var stage = game.stages[game.stage_index]
+	stage_briefing.set_equipped_cosmetic(wallet.equipped)
 	stage_briefing.show_stage(game.stage_index + 1, stage.title, stage.theme_id)
+	stage_briefing.set_coin_challenge_active(game.coin_challenge_active)
+
+func _on_coin_challenge_requested() -> void:
+	if game.activate_coin_challenge():
+		stage_briefing.set_coin_challenge_active(true)
+
+func _on_post_level_coin_double_requested() -> void:
+	game.claim_post_level_coin_double()
 
 func _on_briefing_dismissed() -> void:
 	briefing_active = false
@@ -229,6 +244,15 @@ func _on_presentation_event(kind: StringName, data: Dictionary) -> void:
 	elif kind == &"hazard_passed":
 		playfield.flash_lane(lane, true)
 		feedback.show_feedback("GOOD!  +%d" % data.get("score_delta", 50), Color("a7f1ca"), at)
+	elif kind == &"coin_collected":
+		playfield.flash_lane(lane, true)
+		feedback.show_feedback("COIN CACHE!  +%d" % data.get("coin_delta", 0), Color("ffe08a"), at)
+	elif kind == &"bonus_collected":
+		playfield.flash_lane(lane, true)
+		var tint := Color("a7f1ca") if data.get("item_id") == &"balance_bubble" else Color("91b9ff")
+		feedback.show_feedback("%s!  %s" % [data.get("bonus_label", "TRAVEL BOOST"), data.get("bonus_detail", "")], tint, at)
+	elif kind == &"coin_bonus_claimed":
+		feedback.show_feedback("BONUS CLAIMED!  +%d COINS" % data.get("coin_delta", 0), Color("ffe08a"), Vector2(170.0, 740.0))
 	elif kind == &"beneficial_missed":
 		feedback.show_feedback("MISSED %s" % String(data.get("item_id", "ITEM")).to_upper(), Color("ffd38a"), at)
 	elif kind == &"spawn" and not hint_seen:
