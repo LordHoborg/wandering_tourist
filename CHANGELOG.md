@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.8.3 - 2026-09-04
+
+- Replaced runtime-generated background loops with imported 14-second WAV assets so menu music and gameplay ambience start reliably on Android.
+- Added safe stream duplication, controlled playback retries, and explicit menu/game stream switching tests.
+- Added a lightweight static Android backdrop path and disabled continuous backdrop redraws on mobile to reduce GPU pressure.
+- Expanded the automated suite to 205/205 checks and prepared a signed portrait arm64 APK at `exports/wandering_tourist_v0.8.3_mobile_stable.apk`.
+
 ## v0.8.1 - 2026-09-04
 
 - Fixed Android orientation using the correct Godot export key; the manifest now declares portrait and runtime also requests portrait on Android.

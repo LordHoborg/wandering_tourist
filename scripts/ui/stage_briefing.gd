@@ -126,7 +126,7 @@ static func story_layout_fits(story: Dictionary) -> bool:
 	return y <= STORY_BOTTOM_Y
 
 func _process(_delta: float) -> void:
-	if visible:
+	if visible and not OS.has_feature("android"):
 		queue_redraw()
 
 func _unhandled_input(event: InputEvent) -> void:

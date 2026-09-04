@@ -2,14 +2,14 @@
 
 ## Project Identity
 
-- **Current project status:** Phases 0-3 are complete and the live human/device playtest remains open. The v0.8.1 mobile-stability checkpoint (2026-09-04) fixes portrait orientation, adds calm menu music, hardens audio transitions, reduces mobile redraw load, and provides a verified signed debug APK; suite 202/202 green.
+- **Current project status:** Phases 0-3 are complete and the live human/device playtest remains open. The v0.8.3 mobile-stability checkpoint (2026-09-04) keeps portrait orientation, replaces runtime background synthesis with imported menu/game WAV loops, controls playback retries, uses a lightweight Android backdrop, and provides a signed debug APK; suite 205/205 green.
 
 - **Platform:** Android, portrait orientation
 - **Engine:** Godot 4.7.1 stable (bundled at `tools/godot`)
 - **Language:** Typed GDScript
 - **Rendering:** 2D
 - **Current phase:** Phase 4 human playtest evidence is the only open gate item; narrative systems checkpoint recorded
-- **Current version/build:** Mobile Stability v0.8.1 (2026-09-04: portrait Android export, separate calm menu music, safe audio transitions, 30 FPS redraw cap, signed debug APK at `exports/wandering_tourist_v0.8.1_mobile_test.apk`)
+- **Current version/build:** Mobile Stability v0.8.3 (2026-09-04: portrait Android export, imported calm menu music and gameplay ambience, controlled audio retries, lightweight Android backdrop, signed debug APK at `exports/wandering_tourist_v0.8.3_mobile_stable.apk`)
 
 ## Source Material Status
 

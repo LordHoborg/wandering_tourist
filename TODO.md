@@ -43,7 +43,7 @@
 
 - [x] Add title screen with best score and settings UI (sound, SFX volume, reduced motion).
 - [x] Persist `AppSettings` to `user://app_settings.cfg` with clamped setters.
-- [x] Add procedural `AudioDirector`: runtime-synthesized cues for all presentation events, mute/volume gating, settings injection.
+- [x] Add `AudioDirector`: runtime-synthesized short cues, imported background loops, mute/volume gating, settings injection, and controlled playback retries.
 - [x] Add warning-band pulse with reduced-motion fallback and 5-second reminder cues (`WarningMonitor`).
 - [x] Add stage progress dots, result-overlay best score, journey-complete variant, and pause restart confirmation (R twice).
 - [x] Add unit suites for settings, audio, and warning timing; full suite 140/140 green plus clean headless boot (TR-014, 2026-08-31).

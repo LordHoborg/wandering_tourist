@@ -43,6 +43,8 @@ func arm_lane(lane: int, good: bool) -> void:
 	queue_redraw()
 
 func _process(delta: float) -> void:
+	if OS.has_feature("android"):
+		return
 	if AppSettings.reduced_motion:
 		return
 	_backdrop_elapsed += delta

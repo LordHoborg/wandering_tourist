@@ -1,15 +1,17 @@
 class_name AudioDirector
 extends Node
 
-## Procedural sound-effects director. All cues are synthesized at startup as
-## soft 16-bit AudioStreamWAV tones, so the project needs no binary assets.
+## Sound-effects director with small procedural cues and imported WAV ambience.
 ## Honors AppSettings.muted and AppSettings.sfx_volume at play time.
 
 const MIX_RATE := 44100
 const POOL_SIZE := 4
 const AMBIENCE_SECONDS := 14.0
 const AMBIENCE_VOLUME_SCALE := 0.18
-const MENU_VOLUME_SCALE := 0.12
+const MENU_VOLUME_SCALE := 0.42
+const AMBIENCE_RETRY_SECONDS := 1.5
+const MENU_AUDIO_ASSET = preload("res://resources/audio/menu_music.wav")
+const GAME_AUDIO_ASSET = preload("res://resources/audio/game_ambience.wav")
 
 ## Each cue is a list of [frequency_hz, duration_seconds] notes played in
 ## sequence; zero frequency inserts silence.
@@ -34,10 +36,11 @@ var streams: Dictionary = {}
 var settings: Node = null ## Injected by the composition root; falls back to the AppSettings autoload.
 var ambience: AudioStreamPlayer = null
 var menu_mode := true
-var menu_stream: AudioStreamWAV
-var game_stream: AudioStreamWAV
+var menu_stream: AudioStreamWAV = null
+var game_stream: AudioStreamWAV = null
 var _players: Array[AudioStreamPlayer] = []
 var _next_player: int = 0
+var _ambience_retry_elapsed := 0.0
 
 func _ready() -> void:
 	_ensure_ready()
@@ -57,11 +60,12 @@ func _ensure_ready() -> void:
 			_players.append(player)
 	if ambience == null:
 		ambience = AudioStreamPlayer.new()
-		menu_stream = synthesize_menu_music()
-		game_stream = synthesize_ambience()
+		menu_stream = _prepare_loop(MENU_AUDIO_ASSET)
+		game_stream = _prepare_loop(GAME_AUDIO_ASSET)
 		ambience.stream = menu_stream if menu_mode else game_stream
 		add_child(ambience)
-		if is_inside_tree():
+		_update_ambience_volume()
+		if is_inside_tree() and _audio_available():
 			ambience.play()
 
 func set_menu_mode(enabled: bool) -> void:
@@ -76,14 +80,31 @@ func _set_ambience_stream(next_stream: AudioStreamWAV) -> void:
 		return
 	ambience.stop()
 	ambience.stream = next_stream
-	if is_inside_tree():
+	_ambience_retry_elapsed = 0.0
+	_update_ambience_volume()
+	if is_inside_tree() and _audio_available():
 		ambience.play()
 
-func _process(_delta: float) -> void:
+func _prepare_loop(stream: AudioStreamWAV) -> AudioStreamWAV:
+	var prepared: AudioStreamWAV = stream.duplicate()
+	prepared.loop_mode = AudioStreamWAV.LOOP_FORWARD
+	prepared.loop_begin = 0
+	prepared.loop_end = int(prepared.get_length() * prepared.mix_rate)
+	return prepared
+
+func _process(delta: float) -> void:
 	if ambience == null:
 		return
-	if is_inside_tree() and not ambience.playing:
+	_ambience_retry_elapsed += delta
+	if is_inside_tree() and not ambience.playing and _audio_available() and _ambience_retry_elapsed >= AMBIENCE_RETRY_SECONDS:
+		_ambience_retry_elapsed = 0.0
 		ambience.play()
+	_update_ambience_volume()
+
+func _audio_available() -> bool:
+	return AudioServer.get_bus_count() > 0
+
+func _update_ambience_volume() -> void:
 	var source: Node = settings if settings != null else get_node_or_null("/root/AppSettings")
 	var muted: bool = source != null and bool(source.get("muted"))
 	var volume: float = 1.0 if source == null else float(source.get("sfx_volume"))
@@ -202,8 +223,8 @@ static func synthesize_menu_music() -> AudioStreamWAV:
 		var envelope := minf(local_time / 1.2, 1.0) * minf((4.6 - local_time) / 1.5, 1.0)
 		var sample := 0.0
 		for frequency in chord:
-			sample += sin(TAU * float(frequency) * time) * 0.018
-		sample += sin(TAU * 98.0 * time) * 0.012
+			sample += sin(TAU * float(frequency) * time) * 0.05
+		sample += sin(TAU * 98.0 * time) * 0.03
 		_append_sample_16(data, sample * envelope)
 	var stream := AudioStreamWAV.new()
 	stream.format = AudioStreamWAV.FORMAT_16_BITS

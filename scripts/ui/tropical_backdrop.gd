@@ -7,6 +7,9 @@ extends RefCounted
 ## the same world; reduced motion freezes every animated element.
 
 static func draw(canvas: CanvasItem, area: Vector2, time: float, reduced_motion: bool, theme_id: StringName = &"tropical") -> void:
+	if OS.has_feature("android"):
+		_draw_mobile(canvas, area, theme_id)
+		return
 	var time_value := 0.0 if reduced_motion else time
 	var horizon := area.y * (0.50 if theme_id == &"sunset_city" else 0.46)
 	var palette := _palette(theme_id)
@@ -29,6 +32,49 @@ static func draw(canvas: CanvasItem, area: Vector2, time: float, reduced_motion:
 		_palm(canvas, Vector2(area.x * 0.925, area.y * 0.915), 0.85)
 		_tropical_details(canvas, area, horizon, time_value)
 	_foreground_atmosphere(canvas, area, theme_id)
+
+static func _draw_mobile(canvas: CanvasItem, area: Vector2, theme_id: StringName) -> void:
+	var palette := _palette(theme_id)
+	var horizon := area.y * (0.50 if theme_id == &"sunset_city" else 0.46)
+	var bands := 10
+	for band in bands:
+		var fraction := float(band) / bands
+		canvas.draw_rect(Rect2(0, fraction * horizon, area.x, horizon / bands + 2.0), palette["sky_top"].lerp(palette["sky_bottom"], fraction))
+	canvas.draw_circle(Vector2(area.x * 0.78, horizon * 0.60), 58, palette["sun"])
+	canvas.draw_circle(Vector2(area.x * 0.78, horizon * 0.60), 38, palette["sun_core"])
+	for band in 8:
+		var fraction := float(band) / 8.0
+		canvas.draw_rect(Rect2(0, horizon + fraction * (area.y - horizon), area.x, (area.y - horizon) / 8.0 + 2.0), palette["sea_near"].lerp(palette["sea_deep"], fraction))
+	if theme_id == &"sunset_city":
+		var base := horizon + 20.0
+		for index in 8:
+			var width := 70.0 + float(index % 3) * 24.0
+			var height := 110.0 + float((index * 37) % 150)
+			var x := float(index) * area.x / 7.0 - 30.0
+			canvas.draw_rect(Rect2(x, base - height, width, height), palette["city_shadow"])
+			canvas.draw_rect(Rect2(x + 12, base - height + 22, 8, 10), palette["neon"])
+		canvas.draw_rect(Rect2(0, base, area.x, area.y - base), palette["street"])
+	elif theme_id == &"countryside":
+		var base := horizon + 18.0
+		canvas.draw_colored_polygon(PackedVector2Array([
+			Vector2(0, base + 26), Vector2(area.x * 0.25, base - 70), Vector2(area.x * 0.50, base + 18),
+			Vector2(area.x * 0.76, base - 76), Vector2(area.x, base + 20), Vector2(area.x, area.y), Vector2(0, area.y)
+		]), palette["hill_near"])
+		for row in 4:
+			canvas.draw_line(Vector2(0, base + 90 + row * 36), Vector2(area.x, base + 42 + row * 36), Color(palette["field"], 0.65), 4.0)
+		canvas.draw_rect(Rect2(area.x * 0.68, base - 120, 42, 120), palette["barn"])
+		canvas.draw_colored_polygon(PackedVector2Array([
+			Vector2(area.x * 0.65, base - 120), Vector2(area.x * 0.71, base - 152), Vector2(area.x * 0.78, base - 120)
+		]), palette["roof"])
+	else:
+		var base := horizon + 6.0
+		canvas.draw_colored_polygon(PackedVector2Array([
+			Vector2(-20, base), Vector2(area.x * 0.08, base - 50), Vector2(area.x * 0.25, base - 25),
+			Vector2(area.x * 0.40, base - 58), Vector2(area.x * 0.55, base), Vector2(-20, base)
+		]), Color("0d5660"))
+		canvas.draw_colored_polygon(PackedVector2Array([
+			Vector2(0, area.y * 0.86), Vector2(area.x, area.y * 0.86), Vector2(area.x, area.y), Vector2(0, area.y)
+		]), Color("e8bd70"))
 
 static func _sky(canvas: CanvasItem, area: Vector2, horizon: float, palette: Dictionary, theme_id: StringName, time_value: float) -> void:
 	var top: Color = palette["sky_top"]

@@ -49,7 +49,18 @@ func _initialize() -> void:
 	var menu_stream: AudioStreamWAV = AudioDirectorClass.synthesize_menu_music()
 	_check(menu_stream.loop_mode == AudioStreamWAV.LOOP_FORWARD and menu_stream.data.size() > 0, "menu music is a looping stream")
 	_check(menu_stream.data == AudioDirectorClass.synthesize_menu_music().data, "menu music synthesis is deterministic")
-	_check(director.ambience != null and director.ambience.stream.loop_mode == AudioStreamWAV.LOOP_FORWARD, "ambience player exists and loops")
+	_check(
+		AudioDirectorClass.MENU_AUDIO_ASSET.get_length() > 10.0
+		and AudioDirectorClass.GAME_AUDIO_ASSET.get_length() > 10.0
+		and AudioDirectorClass.MENU_AUDIO_ASSET.format == AudioStreamWAV.FORMAT_16_BITS
+		and AudioDirectorClass.GAME_AUDIO_ASSET.format == AudioStreamWAV.FORMAT_16_BITS,
+		"imported background audio assets are valid PCM WAVs"
+	)
+	_check(director.ambience != null and director.ambience.stream == director.menu_stream and director.menu_stream.loop_mode == AudioStreamWAV.LOOP_FORWARD, "menu music starts as the active looping stream")
+	director.set_menu_mode(false)
+	_check(director.ambience.stream == director.game_stream and director.game_stream.loop_mode == AudioStreamWAV.LOOP_FORWARD, "game ambience replaces menu music safely")
+	director.set_menu_mode(true)
+	_check(director.ambience.stream == director.menu_stream, "menu music can resume after gameplay")
 	var saved_muted: bool = settings.muted
 	var saved_volume: float = settings.sfx_volume
 	settings.muted = true

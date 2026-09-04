@@ -4,7 +4,7 @@ Android portrait 2D game project built with Godot 4 and typed GDScript.
 
 ## Current State
 
-The mobile stability v0.8.1 checkpoint is recorded (2026-09-04): Android export is locked to portrait, menu and gameplay use separate soft ambience loops, audio stream switching is lifecycle-safe, and animated backdrops are capped at 30 FPS for lower mobile load. The full automated suite passes 202/202. A signed arm64 debug Android APK is available at `exports/wandering_tourist_v0.8.1_mobile_test.apk` after export.
+The mobile stability v0.8.3 checkpoint is recorded (2026-09-04): Android export is locked to portrait, menu and gameplay use separate imported WAV loops, playback retries are controlled, and Android uses a lighter static procedural backdrop. The full automated suite passes 205/205. A signed arm64 debug Android APK is available at `exports/wandering_tourist_v0.8.3_mobile_stable.apk` after export.
 
 Run the game: `tools\godot\Godot_v4.7.1-stable_win64.exe --path .`
 
@@ -39,6 +39,6 @@ The original vision is retained at `docs/source/Wandering Tourist - Game Documen
 2. On the title screen, adjust sound/volume/reduced-motion if desired, then start the trip.
 3. Play: tap/click the left or right lane area to cut the front item; Space pauses/resumes, R twice while paused restarts, R once on a result screen starts a fresh trip, N advances after completion.
 
-Export Android APK: `tools\godot\Godot_v4.7.1-stable_win64_console.exe --headless --path . --export-debug "Android" "exports\wandering_tourist_v0.8.1_mobile_test.apk"`
+Export Android APK: `tools\godot\Godot_v4.7.1-stable_win64_console.exe --headless --path . --export-debug "Android" "exports\wandering_tourist_v0.8.3_mobile_stable.apk"`
 
 The APK is a debug sideload build. Android/Google Play Protect may show an App Scan notice for APKs installed outside Google Play; this is a distribution warning, not a game crash report.

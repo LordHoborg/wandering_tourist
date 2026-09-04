@@ -1,5 +1,13 @@
 # Test Report
 
+## TR-025 — Android audio and runtime stabilization
+
+- **Date:** 2026-09-04
+- **Scope:** Player-reported exit after a few seconds and missing title/game music in the portrait Android build.
+- **Changes:** Added imported 14-second WAV loops for menu and gameplay; duplicated loop resources before mutation; limited playback retries to 1.5-second intervals; added a lightweight Android-only backdrop and disabled continuous procedural redraw on mobile.
+- **Verification:** All 11 headless suites pass with 205/205 checks; audio tests verify imported assets and menu/game switching; idle project boot completes without script errors; Android export is signed and manifest-checked separately.
+- **Device note:** No physical Android device was connected, so the final crash/audio confirmation remains the user's phone playtest.
+
 ## TR-024 — Android portrait, stability, and menu-audio fix
 
 - **Date:** 2026-09-04
